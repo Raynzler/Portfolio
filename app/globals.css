@@ -1,0 +1,250 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* ─── TRON / Elite Infrastructure Color System ──────────────────────────── */
+:root {
+  /* Backgrounds — obsidian to steel */
+  --background:        #05070A;
+  --bg-panel:          #0B0F14;
+  --bg-surface:        #11161D;
+  --bg-raised:         #161C24;
+  --bg-steel:          #1B2430;
+
+  /* Foreground */
+  --foreground:        #E6F1FF;
+  --foreground-muted:  #AAB6C3;
+  --foreground-dim:    #6B7684;
+
+  /* TRON Cyan — primary accent */
+  --cyan:              #6EE7F9;
+  --cyan-bright:       #4FDFFF;
+  --cyan-cold:         #2EC5FF;
+  --cyan-glow:         #8BE9FD;
+
+  /* Glass / atmospheric */
+  --cyan-edge:         rgba(79, 223, 255, 0.18);
+  --glass-border:      rgba(110, 231, 249, 0.12);
+  --deep-teal:         #0E2A32;
+
+  /* shadcn token mapping */
+  --card:                      var(--bg-panel);
+  --card-foreground:           var(--foreground);
+  --popover:                   var(--bg-surface);
+  --popover-foreground:        var(--foreground);
+  --primary:                   var(--cyan-bright);
+  --primary-foreground:        #05070A;
+  --secondary:                 var(--bg-raised);
+  --secondary-foreground:      var(--foreground-muted);
+  --muted:                     var(--bg-surface);
+  --muted-foreground:          var(--foreground-dim);
+  --accent:                    var(--cyan);
+  --accent-foreground:         #05070A;
+  --destructive:               #FF4D4D;
+  --destructive-foreground:    var(--foreground);
+  --border:                    var(--glass-border);
+  --input:                     var(--bg-raised);
+  --ring:                      var(--cyan-bright);
+  --radius:                    0.25rem;
+
+  /* Sidebar tokens */
+  --sidebar:                   var(--bg-panel);
+  --sidebar-foreground:        var(--foreground);
+  --sidebar-primary:           var(--cyan-bright);
+  --sidebar-primary-foreground:#05070A;
+  --sidebar-accent:            var(--bg-surface);
+  --sidebar-accent-foreground: var(--foreground-muted);
+  --sidebar-border:            var(--glass-border);
+  --sidebar-ring:              var(--cyan-bright);
+
+  /* Chart tokens */
+  --chart-1: var(--cyan-bright);
+  --chart-2: var(--cyan);
+  --chart-3: var(--cyan-cold);
+  --chart-4: var(--cyan-glow);
+  --chart-5: var(--foreground-muted);
+}
+
+@theme inline {
+  --font-sans:   var(--font-sans),   system-ui, sans-serif;
+  --font-mono:   var(--font-mono),   'Courier New', monospace;
+
+  --color-background:              var(--background);
+  --color-foreground:              var(--foreground);
+  --color-card:                    var(--card);
+  --color-card-foreground:         var(--card-foreground);
+  --color-popover:                 var(--popover);
+  --color-popover-foreground:      var(--popover-foreground);
+  --color-primary:                 var(--primary);
+  --color-primary-foreground:      var(--primary-foreground);
+  --color-secondary:               var(--secondary);
+  --color-secondary-foreground:    var(--secondary-foreground);
+  --color-muted:                   var(--muted);
+  --color-muted-foreground:        var(--muted-foreground);
+  --color-accent:                  var(--accent);
+  --color-accent-foreground:       var(--accent-foreground);
+  --color-destructive:             var(--destructive);
+  --color-destructive-foreground:  var(--destructive-foreground);
+  --color-border:                  var(--border);
+  --color-input:                   var(--input);
+  --color-ring:                    var(--ring);
+  --color-chart-1:                 var(--chart-1);
+  --color-chart-2:                 var(--chart-2);
+  --color-chart-3:                 var(--chart-3);
+  --color-chart-4:                 var(--chart-4);
+  --color-chart-5:                 var(--chart-5);
+  --radius-sm:  calc(var(--radius) - 2px);
+  --radius-md:  var(--radius);
+  --radius-lg:  calc(var(--radius) + 2px);
+  --radius-xl:  calc(var(--radius) + 4px);
+  --color-sidebar:                 var(--sidebar);
+  --color-sidebar-foreground:      var(--sidebar-foreground);
+  --color-sidebar-primary:         var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent:          var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border:          var(--sidebar-border);
+  --color-sidebar-ring:            var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background-color: var(--background);
+  }
+}
+
+/* ─── Selection ──────────────────────────────────────────────────────────── */
+::selection {
+  background-color: rgba(79, 223, 255, 0.18);
+  color: #E6F1FF;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  overflow-y: scroll;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #05070A; }
+::-webkit-scrollbar-thumb {
+  background: rgba(79, 223, 255, 0.20);
+  border-radius: 2px;
+  transition: background 180ms ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 223, 255, 0.40);
+}
+
+/* ─── Focus ───────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 1px solid rgba(79, 223, 255, 0.5);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ─── Scroll anchor offset (fixed header) ────────────────────────────────── */
+[id] { scroll-margin-top: 80px; }
+
+/* ─── Framer-motion: prevent layout shifts ───────────────────────────────── */
+[data-framer-component-type] { will-change: opacity, transform; }
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* KEYFRAMES                                                                    */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+/* Availability pulse — 3.5s, restrained operational signal */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1;    transform: scale(1);    }
+  50%       { opacity: 0.45; transform: scale(0.82); }
+}
+
+/* Scanline sweep — used as ::before on hero section */
+@keyframes scanline {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* Subsystem label blink — single cycle on mount, not looping */
+@keyframes blink-once {
+  0%, 100% { opacity: 1;   }
+  40%, 60% { opacity: 0.2; }
+}
+
+/* Edge glow pulse — for illuminated borders */
+@keyframes glow-edge {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1;   }
+}
+
+/* Boot cursor blink */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* SECTION SEPARATOR                                                            */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.section-sep {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(79, 223, 255, 0.08) 20%,
+    rgba(79, 223, 255, 0.22) 50%,
+    rgba(79, 223, 255, 0.08) 80%,
+    transparent 100%
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* SUBSYSTEM LABEL                                                              */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.subsystem-label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(79, 223, 255, 0.45);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* TRON PANEL — illuminated card surface                                        */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.tron-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--glass-border);
+  /* 160ms matches duration.hover */
+  transition: border-color 160ms cubic-bezier(0.4,0,0.2,1),
+              box-shadow   160ms cubic-bezier(0.4,0,0.2,1);
+}
+.tron-panel:hover {
+  border-color: rgba(79, 223, 255, 0.26);
+  box-shadow: 0 0 0 1px rgba(79, 223, 255, 0.06) inset,
+              0 1px 20px rgba(79, 223, 255, 0.035);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* DIAGNOSTIC MODE (activated via keyboard shortcut)                            */
+/* Increases grid visibility and glow intensity subtly.                         */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.diagnostic-active .grid-overlay { opacity: 0.07 !important; }
+.diagnostic-active .tron-panel   { border-color: rgba(79, 223, 255, 0.35) !important; }
+.diagnostic-active .subsystem-label { color: rgba(79, 223, 255, 0.75) !important; }
+.diagnostic-active .section-sep  {
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(79, 223, 255, 0.18) 20%,
+    rgba(79, 223, 255, 0.45) 50%,
+    rgba(79, 223, 255, 0.18) 80%,
+    transparent 100%
+  ) !important;
+}
