@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
 const SKIP_KEY = "grid_boot_seen"
-const TOTAL_MS = 3700
+const TOTAL_MS = 5200
 
 const COMMAND = "whoami"
 const PANELS = ["IDENTITY", "OBSERVE", "TRACE", "DOSSIER"]
@@ -63,11 +63,11 @@ export function BootSequence() {
     window.addEventListener("click", skip, { once: true })
 
     const timers = [
-      window.setTimeout(() => setPhase(1), 520),
-      window.setTimeout(() => setPhase(2), 1420),
-      window.setTimeout(() => setPhase(3), 2080),
-      window.setTimeout(() => setPhase(4), 2620),
-      window.setTimeout(() => setPhase(5), 3340),
+    window.setTimeout(() => setPhase(1), 900),   // whoami typing starts
+    window.setTimeout(() => setPhase(2), 2200),  // hamza appears
+    window.setTimeout(() => setPhase(3), 3200),  // interface tone + grid activation
+    window.setTimeout(() => setPhase(4), 4100),  // subsystem panels appear
+    window.setTimeout(() => setPhase(5), 4900),  // fade out begins
       window.setTimeout(() => {
         setVisible(false)
         sessionStorage.setItem(SKIP_KEY, "1")
