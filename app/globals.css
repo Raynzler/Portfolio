@@ -494,25 +494,15 @@ html {
   background-size: 56px 56px;
 }
 
-.boot-command-line {
-  display: inline-flex;
-  align-items: center;
-  min-width: 7ch;
-  white-space: pre;
-  letter-spacing: 0.01em;
-}
-
 .boot-cursor {
   display: inline-block;
-  width: 0.62em;
-  height: 1.18em;
-  margin-left: 0.16em;
-  border-radius: 1px;
+  width: 8px;
+  height: 1.1em;
+  margin-left: 3px;
+  vertical-align: middle;
   background: rgb(var(--mode-rgb));
-  box-shadow:
-    0 0 7px rgba(var(--mode-rgb), 0.58),
-    0 0 18px rgba(var(--mode-rgb), 0.20);
-  animation: bootBlink 0.82s steps(1, end) infinite;
+  box-shadow: 0 0 8px rgba(var(--mode-rgb), 0.5);
+  animation: bootBlink 1s steps(1) infinite;
 }
 
 @keyframes bootBlink {
