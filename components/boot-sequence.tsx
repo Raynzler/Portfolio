@@ -96,7 +96,7 @@ export function BootSequence() {
           className="fixed inset-0 z-[200] overflow-hidden bg-[#05070A]"
           initial={{ opacity: 1 }}
           animate={{ opacity: phase === 5 ? 0 : 1 }}
-          transition={{ duration: 0.36, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
           aria-hidden="true"
         >
           <motion.div
@@ -129,19 +129,19 @@ export function BootSequence() {
                       key={`${letter}-${index}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: phase >= 1 ? 1 : 0 }}
-                      transition={{ duration: 0.08, delay: 0.54 + index * 0.07 }}
+                      transition={{ duration: 0.08, delay: 0.9 + index * 0.11 }}
                     >
                       {letter}
                     </motion.span>
                   ))}
                 </span>
-                <span className="boot-cursor">_</span>
+                <span className="boot-cursor">▋</span>
               </div>
               <motion.div
                 className="mt-3 text-[rgba(var(--mode-rgb),0.72)]"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: phase >= 2 ? 1 : 0 }}
-                transition={{ duration: 0.26, delay: 0.12 }}
+                transition={{ duration: 0.65, delay: 0.25 }}
               >
                 hamza
               </motion.div>
@@ -159,7 +159,7 @@ export function BootSequence() {
                   className="bg-[#05070A] px-4 py-3"
                   initial={{ opacity: 0, y: 3 }}
                   animate={{ opacity: phase >= 4 ? 1 : 0, y: phase >= 4 ? 0 : 3 }}
-                  transition={{ duration: 0.22, delay: index * 0.09 }}
+                  transition={{ duration: 0.22, delay: 0.25 + index * 0.14 }}
                 >
                   <span className="subsystem-label">{panel}</span>
                 </motion.div>
