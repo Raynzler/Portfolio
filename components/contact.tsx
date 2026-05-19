@@ -143,8 +143,8 @@ export function Contact() {
               <p className="font-mono text-xs" style={{ color: "rgba(107, 118, 132, 0.3)" }}>
                 Next.js · Tailwind CSS · Framer Motion · Vercel
               </p>
-              <span className="subsystem-label" style={{ color: "rgba(79, 223, 255, 0.2)" }}>
-                EOF
+              <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.24)" }}>
+                END OF LINE
               </span>
             </div>
           </motion.div>

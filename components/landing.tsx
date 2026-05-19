@@ -6,16 +6,16 @@ import { staggerContainer, staggerItem } from "@/lib/motion"
 
 export function Landing() {
   return (
-    <section className="relative min-h-[88vh] flex items-center overflow-hidden">
+    <section id="home" className="relative min-h-[88vh] flex items-center overflow-hidden">
 
       {/* ── Atmospheric grid overlay ───────────────────────────────────── */}
       <div
         className="grid-overlay absolute inset-0 pointer-events-none"
         style={{
-          opacity: 0.035,
+          opacity: 0.025,
           backgroundImage: `
-            linear-gradient(rgba(79, 223, 255, 1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(79, 223, 255, 1) 1px, transparent 1px)
+            linear-gradient(rgba(var(--mode-rgb), 1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(var(--mode-rgb), 1) 1px, transparent 1px)
           `,
           backgroundSize: "64px 64px",
         }}
@@ -34,7 +34,7 @@ export function Landing() {
         className="absolute left-0 top-0 bottom-0 w-px pointer-events-none"
         style={{
           background:
-            "linear-gradient(to bottom, transparent 0%, rgba(79, 223, 255, 0.25) 30%, rgba(79, 223, 255, 0.4) 60%, transparent 100%)",
+            "linear-gradient(to bottom, transparent 0%, rgba(var(--mode-rgb), 0.22) 30%, rgba(var(--mode-rgb), 0.34) 60%, transparent 100%)",
         }}
       />
 
@@ -47,14 +47,14 @@ export function Landing() {
           transition={{ duration: 0.4, delay: 0.05 }}
           className="flex items-center gap-3 mb-12"
         >
-          <span className="subsystem-label" style={{ color: "rgba(79, 223, 255, 0.5)" }}>
+          <span className="subsystem-label">
             CORE
           </span>
           <span
             className="h-px flex-1"
             style={{
               background:
-                "linear-gradient(to right, rgba(79, 223, 255, 0.25), transparent)",
+                "linear-gradient(to right, rgba(var(--mode-rgb), 0.25), transparent)",
               maxWidth: "120px",
             }}
           />
@@ -74,7 +74,7 @@ export function Landing() {
           <motion.p
             variants={staggerItem}
             className="font-mono text-xs mb-5 tracking-widest uppercase"
-            style={{ color: "rgba(79, 223, 255, 0.55)" }}
+            style={{ color: "rgba(var(--mode-rgb), 0.55)" }}
           >
             Hamza Shaikh
           </motion.p>
@@ -116,7 +116,7 @@ export function Landing() {
             variants={staggerItem}
             className="flex items-center gap-2 mb-10"
           >
-            <MapPin className="w-3.5 h-3.5" style={{ color: "rgba(79, 223, 255, 0.35)" }} />
+            <MapPin className="w-3.5 h-3.5" style={{ color: "rgba(var(--mode-rgb), 0.35)" }} />
             <span className="font-mono text-xs tracking-wider" style={{ color: "rgba(107, 118, 132, 0.8)" }}>
               Kaiserslautern · Dammam · Mumbai
             </span>
@@ -131,14 +131,14 @@ export function Landing() {
             <span
               className="w-1.5 h-1.5 rounded-full shrink-0"
               style={{
-                backgroundColor: "#4FDFFF",
+                backgroundColor: "rgb(var(--mode-rgb))",
                 animation: "pulse-dot 3.5s ease-in-out infinite",
-                boxShadow: "0 0 6px rgba(79, 223, 255, 0.5)",
+                boxShadow: "0 0 6px rgba(var(--mode-rgb), 0.5)",
               }}
             />
             <span
               className="font-mono text-xs tracking-wider"
-              style={{ color: "rgba(79, 223, 255, 0.5)" }}
+              style={{ color: "rgba(var(--mode-rgb), 0.5)" }}
             >
               SIGNAL · available for infrastructure roles
             </span>
@@ -152,7 +152,7 @@ export function Landing() {
         >
           {/* Top-left corner mark */}
           <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 24V1h23" stroke="rgba(79,223,255,0.18)" strokeWidth="1" />
+            <path d="M1 24V1h23" stroke="rgba(var(--mode-rgb),0.18)" strokeWidth="1" />
           </svg>
         </div>
       </div>

@@ -156,7 +156,7 @@ export function Experience() {
   const eduInView = useInView(eduRef, { once: true, margin: "-40px 0px" })
 
   return (
-    <section id="experience">
+    <section id="experience" className="clu-zone">
       <div className="section-sep" />
 
       <div className="py-24">

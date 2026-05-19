@@ -1,0 +1,57 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 2329 >>
+stream
+BT /F1 22 Tf 72 760 Td (Hamza Shaikh) Tj ET
+BT /F1 12 Tf 72 734 Td (Backend / Infrastructure / SRE Engineer) Tj ET
+BT /F1 9 Tf 72 716 Td (Kaiserslautern | Dammam | Mumbai  |  er.hamzashaikh@gmail.com) Tj ET
+BT /F1 10 Tf 72 680 Td (PROFILE) Tj ET
+BT /F1 9 Tf 72 662 Td (Infrastructure engineer focused on reliability, observability, and operational ownership.) Tj ET
+BT /F1 9 Tf 72 648 Td (M.Sc. Computer Science candidate with distributed systems focus and production DevOps ownership.) Tj ET
+BT /F1 10 Tf 72 612 Td (EXPERIENCE) Tj ET
+BT /F1 9 Tf 72 594 Td (Patil Kaki - DevOps Intern / Sole Infrastructure Owner   Jun-Aug 2023) Tj ET
+BT /F1 8.5 Tf 72 578 Td (- EC2 to ECS/Fargate migration with zero-downtime cutover.) Tj ET
+BT /F1 8.5 Tf 72 564 Td (- GitHub Actions gated deploys with rollback on health check failure.) Tj ET
+BT /F1 8.5 Tf 72 550 Td (- BullMQ/Redis async queue, CloudWatch + ALB observability, 25% OpEx reduction.) Tj ET
+BT /F1 9 Tf 72 526 Td (CMP Infotech - Java Intern   Dec 2021-Jan 2022) Tj ET
+BT /F1 8.5 Tf 72 510 Td (- School management system with Java Swing, MySQL, JDBC, and access control.) Tj ET
+BT /F1 10 Tf 72 474 Td (PROJECTS) Tj ET
+BT /F1 9 Tf 72 456 Td (SentinelSOL - Out-of-band observability for Solana/Jito validators.) Tj ET
+BT /F1 8.5 Tf 72 442 Td (Go daemons, Prometheus, PromQL 3-sigma Z-Score alerting, Alertmanager, Telegram.) Tj ET
+BT /F1 9 Tf 72 418 Td (AutoSRE - Self-healing SRE platform with automated recovery.) Tj ET
+BT /F1 8.5 Tf 72 404 Td (FastAPI control plane, RED metrics, Docker Compose, GitHub Actions CI/CD.) Tj ET
+BT /F1 9 Tf 72 380 Td (GridCast - LSTM-based regional temperature forecasting system.) Tj ET
+BT /F1 8.5 Tf 72 366 Td (TensorFlow/Keras, Optuna TPE, Flask API, React, GeoPandas. IEEE ICSPCRE 2024.) Tj ET
+BT /F1 10 Tf 72 330 Td (EDUCATION) Tj ET
+BT /F1 8.5 Tf 72 312 Td (RPTU Kaiserslautern-Landau - M.Sc. Computer Science, Distributed Systems   2025-2027) Tj ET
+BT /F1 8.5 Tf 72 298 Td (Xavier Institute of Engineering - B.E. Information Technology, CGPA 8.69/10   2020-2024) Tj ET
+BT /F1 10 Tf 72 262 Td (SKILLS) Tj ET
+BT /F1 8.5 Tf 72 244 Td (Go, Python, Bash, C++, Docker, Kubernetes, Terraform, Linux, AWS, GCP, Azure, OCI,) Tj ET
+BT /F1 8.5 Tf 72 230 Td (Prometheus, PromQL, Grafana, Alertmanager, FastAPI, Redis, BullMQ, MySQL, GitHub Actions.) Tj ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2692
+%%EOF

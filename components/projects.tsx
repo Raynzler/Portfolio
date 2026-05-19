@@ -128,7 +128,7 @@ function ProjectPanel({ project, index }: { project: (typeof projects)[0]; index
     >
       {/* ── Panel container ────────────────────────────────────────────── */}
       <div
-        className="tron-panel rounded-sm overflow-hidden"
+        className="tron-panel project-module rounded-sm overflow-hidden"
         style={{ padding: "0" }}
       >
         {/* Panel top bar */}
@@ -139,6 +139,11 @@ function ProjectPanel({ project, index }: { project: (typeof projects)[0]; index
           <div className="flex items-center gap-4">
             <span className="subsystem-label" style={{ color: "rgba(79, 223, 255, 0.4)" }}>
               {project.subsystem}
+            </span>
+            <span className="activation-dots" aria-hidden="true">
+              <span style={{ animationDelay: `${index * 0.2}s` }} />
+              <span style={{ animationDelay: `${index * 0.2 + 0.35}s` }} />
+              <span style={{ animationDelay: `${index * 0.2 + 0.7}s` }} />
             </span>
             <span
               className="w-px h-3 block"
@@ -217,6 +222,20 @@ function ProjectPanel({ project, index }: { project: (typeof projects)[0]; index
           <p className="text-sm leading-relaxed mb-8" style={{ color: "rgba(107, 118, 132, 1)" }}>
             {project.description}
           </p>
+
+          <div className="module-telemetry mb-8" aria-hidden="true">
+            <div className="telemetry-strip">
+              <span style={{ width: "32%", animationDelay: `${index * 0.12}s` }} />
+              <span style={{ width: "58%", animationDelay: `${index * 0.12 + 0.08}s` }} />
+              <span style={{ width: "44%", animationDelay: `${index * 0.12 + 0.16}s` }} />
+            </div>
+            <div className="architecture-flow">
+              <i />
+              <i />
+              <i />
+              <b />
+            </div>
+          </div>
 
           {/* Image placeholders */}
           <div className="grid md:grid-cols-2 gap-4 mb-8">
