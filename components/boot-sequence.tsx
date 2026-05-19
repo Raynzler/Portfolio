@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
 const SKIP_KEY = "grid_boot_seen"
-const TOTAL_MS = 1900
+const TOTAL_MS = 3700
 
-const PANELS = ["IDENTITY", "OBSERVABILITY", "RELAY", "DOSSIER"]
+const COMMAND = "whoami"
+const PANELS = ["IDENTITY", "OBSERVE", "TRACE", "DOSSIER"]
 
 function playInterfaceTone() {
   try {
@@ -43,29 +44,30 @@ export function BootSequence() {
   const [visible, setVisible] = useState(false)
   const [phase, setPhase] = useState(0)
   const skipRef = useRef(false)
+  const tonePlayedRef = useRef(false)
 
   useEffect(() => {
     if (typeof sessionStorage !== "undefined" && sessionStorage.getItem(SKIP_KEY)) return
 
     setVisible(true)
-    playInterfaceTone()
 
     const skip = () => {
       if (skipRef.current) return
       skipRef.current = true
-      setPhase(4)
+      setPhase(5)
       sessionStorage.setItem(SKIP_KEY, "1")
-      window.setTimeout(() => setVisible(false), 220)
+      window.setTimeout(() => setVisible(false), 260)
     }
 
     window.addEventListener("keydown", skip, { once: true })
     window.addEventListener("click", skip, { once: true })
 
     const timers = [
-      window.setTimeout(() => setPhase(1), 120),
-      window.setTimeout(() => setPhase(2), 560),
-      window.setTimeout(() => setPhase(3), 1040),
-      window.setTimeout(() => setPhase(4), 1620),
+      window.setTimeout(() => setPhase(1), 520),
+      window.setTimeout(() => setPhase(2), 1420),
+      window.setTimeout(() => setPhase(3), 2080),
+      window.setTimeout(() => setPhase(4), 2620),
+      window.setTimeout(() => setPhase(5), 3340),
       window.setTimeout(() => {
         setVisible(false)
         sessionStorage.setItem(SKIP_KEY, "1")
@@ -79,6 +81,13 @@ export function BootSequence() {
     }
   }, [])
 
+  useEffect(() => {
+    if (phase >= 3 && !tonePlayedRef.current) {
+      tonePlayedRef.current = true
+      playInterfaceTone()
+    }
+  }, [phase])
+
   return (
     <AnimatePresence>
       {visible && (
@@ -86,18 +95,23 @@ export function BootSequence() {
           key="boot"
           className="fixed inset-0 z-[200] overflow-hidden bg-[#05070A]"
           initial={{ opacity: 1 }}
-          animate={{ opacity: phase === 4 ? 0 : 1 }}
-          transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
+          animate={{ opacity: phase === 5 ? 0 : 1 }}
+          transition={{ duration: 0.36, ease: [0.4, 0, 0.2, 1] }}
           aria-hidden="true"
         >
-          <div className="absolute inset-0 opacity-[0.035] boot-grid" />
-          <div className="scanline-texture opacity-70" />
+          <motion.div
+            className="absolute inset-0 boot-grid"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: phase >= 3 ? 0.045 : 0.012 }}
+            transition={{ duration: 0.62, ease: "easeOut" }}
+          />
+          <div className="scanline-texture opacity-60" />
 
           <motion.div
             className="absolute left-0 right-0 top-1/2 h-px bg-[linear-gradient(to_right,transparent,rgba(var(--mode-rgb),0.55),transparent)] shadow-[0_0_14px_rgba(var(--mode-rgb),0.24)]"
             initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: phase >= 1 ? 1 : 0, opacity: phase >= 1 ? 1 : 0 }}
-            transition={{ duration: 0.34, ease: [0.25, 0.1, 0.25, 1] }}
+            animate={{ scaleX: phase >= 3 ? 1 : 0, opacity: phase >= 3 ? 1 : 0 }}
+            transition={{ duration: 0.54, ease: [0.25, 0.1, 0.25, 1] }}
           />
 
           <div className="absolute left-1/2 top-1/2 w-[min(82vw,560px)] -translate-x-1/2 -translate-y-1/2">
@@ -105,18 +119,29 @@ export function BootSequence() {
               className="mb-8 font-mono text-sm text-[rgba(230,241,255,0.82)]"
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.18, delay: 0.08 }}
+              transition={{ duration: 0.3, delay: 0.18 }}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-h-5">
                 <span className="text-[rgba(var(--mode-rgb),0.58)]">&gt;</span>
-                <span>whoami</span>
+                <span className="inline-flex">
+                  {COMMAND.split("").map((letter, index) => (
+                    <motion.span
+                      key={`${letter}-${index}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: phase >= 1 ? 1 : 0 }}
+                      transition={{ duration: 0.08, delay: 0.54 + index * 0.07 }}
+                    >
+                      {letter}
+                    </motion.span>
+                  ))}
+                </span>
                 <span className="boot-cursor">_</span>
               </div>
               <motion.div
                 className="mt-3 text-[rgba(var(--mode-rgb),0.72)]"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: phase >= 1 ? 1 : 0 }}
-                transition={{ duration: 0.16, delay: 0.12 }}
+                animate={{ opacity: phase >= 2 ? 1 : 0 }}
+                transition={{ duration: 0.26, delay: 0.12 }}
               >
                 hamza
               </motion.div>
@@ -125,16 +150,16 @@ export function BootSequence() {
             <motion.div
               className="grid grid-cols-2 gap-px bg-[rgba(var(--mode-rgb),0.09)] sm:grid-cols-4"
               initial={{ opacity: 0 }}
-              animate={{ opacity: phase >= 2 ? 1 : 0 }}
-              transition={{ duration: 0.18 }}
+              animate={{ opacity: phase >= 4 ? 1 : 0 }}
+              transition={{ duration: 0.28 }}
             >
               {PANELS.map((panel, index) => (
                 <motion.div
                   key={panel}
                   className="bg-[#05070A] px-4 py-3"
                   initial={{ opacity: 0, y: 3 }}
-                  animate={{ opacity: phase >= 2 ? 1 : 0, y: phase >= 2 ? 0 : 3 }}
-                  transition={{ duration: 0.18, delay: index * 0.06 }}
+                  animate={{ opacity: phase >= 4 ? 1 : 0, y: phase >= 4 ? 0 : 3 }}
+                  transition={{ duration: 0.22, delay: index * 0.09 }}
                 >
                   <span className="subsystem-label">{panel}</span>
                 </motion.div>
@@ -144,8 +169,8 @@ export function BootSequence() {
             <motion.div
               className="mt-5 h-px origin-left bg-[linear-gradient(to_right,rgb(var(--mode-rgb)),transparent)]"
               initial={{ scaleX: 0, opacity: 0 }}
-              animate={{ scaleX: phase >= 3 ? 1 : 0, opacity: phase >= 3 ? 0.7 : 0 }}
-              transition={{ duration: 0.34, ease: "easeOut" }}
+              animate={{ scaleX: phase >= 4 ? 1 : 0, opacity: phase >= 4 ? 0.7 : 0 }}
+              transition={{ duration: 0.48, ease: "easeOut" }}
             />
           </div>
         </motion.div>

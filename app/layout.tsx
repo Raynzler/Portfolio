@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { DynamicFavicon } from '@/components/dynamic-favicon'
 import './globals.css'
 
 const spaceGrotesk = Space_Grotesk({
@@ -34,6 +35,9 @@ export const metadata: Metadata = {
     'Python',
   ],
   authors: [{ name: 'Hamza Shaikh' }],
+  icons: {
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+  },
   openGraph: {
     title: 'Hamza Shaikh — SRE / Infrastructure Engineer',
     description:
@@ -52,6 +56,7 @@ export default function RootLayout({
       style={{ scrollPaddingTop: '80px' }}
     >
       <body className="font-sans antialiased min-h-screen" style={{ backgroundColor: '#05070A' }}>
+        <DynamicFavicon />
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

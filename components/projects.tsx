@@ -1,7 +1,7 @@
 "use client"
 
 import { ImagePlaceholder } from "./image-placeholder"
-import { ExternalLink, Trophy } from "lucide-react"
+import { Activity, BellRing, ExternalLink, RadioTower, Server, ShieldCheck, Trophy } from "lucide-react"
 import Link from "next/link"
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
@@ -111,6 +111,90 @@ const statusColors: Record<string, { bg: string; text: string; dot: string }> = 
   live:    { bg: "rgba(79, 223, 255, 0.08)",  text: "#4FDFFF", dot: "#4FDFFF"  },
   active:  { bg: "rgba(79, 223, 255, 0.05)",  text: "#6EE7F9", dot: "#6EE7F9"  },
   shipped: { bg: "rgba(107, 118, 132, 0.12)", text: "#AAB6C3", dot: "#6B7684"  },
+}
+
+const sentinelPipeline = [
+  { label: "Jito-Solana RPC", icon: RadioTower },
+  { label: "Go OOB daemon", icon: Server },
+  { label: "Prometheus / PromQL", icon: Activity },
+  { label: "Alertmanager → Telegram", icon: BellRing },
+]
+
+function SentinelOperationalAssets({ inView }: { inView: boolean }) {
+  return (
+    <motion.div
+      className="sentinel-assets mb-8"
+      initial={{ opacity: 0, y: 6 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
+      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="sentinel-visual sentinel-visual-dashboard">
+        <div className="sentinel-visual-bar">
+          <div className="flex items-center gap-3">
+            <img
+              src="/sentinelsol/logo.png"
+              alt=""
+              className="h-5 w-5 object-contain opacity-85"
+            />
+            <span className="font-mono text-xs text-[rgba(230,241,255,0.76)]">
+              SentinelSOL Telemetry
+            </span>
+          </div>
+          <span className="subsystem-label">LIVE GRAPH</span>
+        </div>
+        <div className="sentinel-graph-frame">
+          <img
+            src="/sentinelsol/graphs.png"
+            alt="SentinelSOL telemetry dashboard showing node slot progression, vote credits, ShredStream ingestion latency, and Jito block engine bundle metrics."
+            className="h-full w-full object-cover object-left-top"
+          />
+          <span className="dashboard-scan" aria-hidden="true" />
+        </div>
+        <div className="sentinel-metric-rail" aria-label="SentinelSOL operating metrics">
+          <span><b>3σ</b>Z-score anomaly window</span>
+          <span><b>OOB</b>zero hot-path impact</span>
+          <span><b>5s</b>refresh cadence</span>
+        </div>
+      </div>
+
+      <div className="sentinel-visual sentinel-visual-architecture">
+        <div className="sentinel-visual-bar">
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="h-4 w-4 text-[rgba(var(--mode-rgb),0.54)]" />
+            <span className="font-mono text-xs text-[rgba(230,241,255,0.76)]">
+              PPT Architecture Extract
+            </span>
+          </div>
+          <span className="subsystem-label">PIPELINE</span>
+        </div>
+
+        <div className="architecture-map">
+          {sentinelPipeline.map(({ label, icon: Icon }, index) => (
+            <div key={label} className="architecture-node">
+              <Icon className="h-4 w-4 text-[rgba(var(--mode-rgb),0.58)]" />
+              <span>{label}</span>
+              {index < sentinelPipeline.length - 1 && <i aria-hidden="true" />}
+            </div>
+          ))}
+        </div>
+
+        <div className="architecture-notes">
+          <div>
+            <span>Predictive</span>
+            <p>ShredStream latency and vote-credit velocity move before delinquency.</p>
+          </div>
+          <div>
+            <span>Out-of-band</span>
+            <p>Daemon polls independently, preserving validator hot-path resources.</p>
+          </div>
+          <div>
+            <span>Revenue-aware</span>
+            <p>Jito bundle acceptance becomes an operating signal, not an epoch post-mortem.</p>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  )
 }
 
 function ProjectPanel({ project, index }: { project: (typeof projects)[0]; index: number }) {
@@ -237,17 +321,20 @@ function ProjectPanel({ project, index }: { project: (typeof projects)[0]; index
             </div>
           </div>
 
-          {/* Image placeholders */}
-          <div className="grid md:grid-cols-2 gap-4 mb-8">
-            {Object.values(project.images).map((image, idx) => (
-              <ImagePlaceholder
-                key={idx}
-                title={image.title}
-                description={image.description}
-                path={image.path}
-              />
-            ))}
-          </div>
+          {project.id === "sentinelsol" ? (
+            <SentinelOperationalAssets inView={isInView} />
+          ) : (
+            <div className="grid md:grid-cols-2 gap-4 mb-8">
+              {Object.values(project.images).map((image, idx) => (
+                <ImagePlaceholder
+                  key={idx}
+                  title={image.title}
+                  description={image.description}
+                  path={image.path}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Tradeoffs */}
           <div className="mb-8">

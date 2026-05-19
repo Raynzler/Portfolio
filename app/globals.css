@@ -25,6 +25,7 @@
   --mode-rgb:          79, 223, 255;
   --mode-accent:       #4FDFFF;
   --mode-edge:         rgba(var(--mode-rgb), 0.18);
+  --clu-intensity:     0;
 
   /* Glass / atmospheric */
   --cyan-edge:         rgba(79, 223, 255, 0.18);
@@ -240,6 +241,25 @@ html {
   100% { transform: translateY(640%); opacity: 0; }
 }
 
+@keyframes ambient-sweep {
+  0%   { transform: translate3d(-28%, -12%, 0) rotate(8deg); opacity: 0; }
+  25%  { opacity: 0.32; }
+  70%  { opacity: 0.16; }
+  100% { transform: translate3d(42%, 18%, 0) rotate(8deg); opacity: 0; }
+}
+
+@keyframes dashboard-scan {
+  0%   { transform: translateX(-120%); opacity: 0; }
+  18%  { opacity: 0.34; }
+  100% { transform: translateX(240%); opacity: 0; }
+}
+
+@keyframes panel-reflection {
+  0%   { transform: translateX(-120%); opacity: 0; }
+  28%  { opacity: 0.28; }
+  100% { transform: translateX(160%); opacity: 0; }
+}
+
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* SECTION SEPARATOR                                                            */
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -289,15 +309,15 @@ html {
 /* Increases grid visibility and glow intensity subtly.                         */
 /* ─────────────────────────────────────────────────────────────────────────── */
 .diagnostic-active .grid-overlay { opacity: 0.07 !important; }
-.diagnostic-active .tron-panel   { border-color: rgba(79, 223, 255, 0.35) !important; }
-.diagnostic-active .subsystem-label { color: rgba(79, 223, 255, 0.75) !important; }
+.diagnostic-active .tron-panel   { border-color: rgba(var(--mode-rgb), 0.35) !important; }
+.diagnostic-active .subsystem-label { color: rgba(var(--mode-rgb), 0.75) !important; }
 .diagnostic-active .section-sep  {
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(79, 223, 255, 0.18) 20%,
-    rgba(79, 223, 255, 0.45) 50%,
-    rgba(79, 223, 255, 0.18) 80%,
+    rgba(var(--mode-rgb), 0.18) 20%,
+    rgba(var(--mode-rgb), 0.45) 50%,
+    rgba(var(--mode-rgb), 0.18) 80%,
     transparent 100%
   ) !important;
 }
@@ -313,8 +333,9 @@ html {
   pointer-events: none;
   background:
     radial-gradient(circle at 50% 12%, rgba(var(--mode-rgb), 0.045), transparent 34%),
+    radial-gradient(circle at 68% 46%, rgba(255, 138, 61, calc(0.035 * var(--clu-intensity))), transparent 28%),
     linear-gradient(180deg, #05070A 0%, #070A0F 46%, #05070A 100%);
-  transition: background 420ms ease;
+  transition: background 900ms ease;
 }
 
 .grid-field {
@@ -328,7 +349,7 @@ html {
   background-size: 72px 72px, 72px 72px, 288px 288px;
   mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 78%, transparent 100%);
   animation: grid-drift 34s linear infinite;
-  transition: opacity 260ms ease;
+  transition: opacity 600ms ease;
 }
 
 .traffic-layer,
@@ -392,6 +413,28 @@ html {
   animation: traffic-rise 17s linear infinite 6.2s;
 }
 
+.traffic-layer-c {
+  left: 12%;
+  top: 62%;
+  width: 76vw;
+  height: 1px;
+  transform: rotate(5deg);
+}
+
+.traffic-layer-c::before {
+  width: 14vw;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255, 138, 61, calc(0.38 + 0.22 * var(--clu-intensity))), transparent);
+  animation: traffic-run 15.5s linear infinite 2.8s;
+}
+
+.traffic-layer-c::after {
+  width: 7vw;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(var(--mode-rgb), 0.34), transparent);
+  animation: traffic-run 19s linear infinite 8.6s;
+}
+
 .trace-highway-a {
   left: 8%;
   bottom: 12%;
@@ -413,6 +456,16 @@ html {
   width: 90px;
   height: 1px;
   animation: traffic-run 10s linear infinite;
+}
+
+.ambient-reflection {
+  position: absolute;
+  inset: -20%;
+  opacity: 0.18;
+  background:
+    linear-gradient(105deg, transparent 30%, rgba(var(--mode-rgb), 0.034), transparent 42%),
+    linear-gradient(78deg, transparent 55%, rgba(255, 138, 61, calc(0.03 * var(--clu-intensity))), transparent 66%);
+  animation: ambient-sweep 18s ease-in-out infinite;
 }
 
 .trace-highway::after {
@@ -484,6 +537,7 @@ html {
 .project-module {
   position: relative;
   transform: translateZ(0);
+  transition: transform 180ms cubic-bezier(0.4,0,0.2,1), border-color 180ms ease, box-shadow 180ms ease;
 }
 
 .project-module::before {
@@ -500,6 +554,26 @@ html {
 
 .project-module:hover::before {
   opacity: 1;
+}
+
+.project-module::after,
+.cv-dossier::before,
+.document-viewer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 38%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(var(--mode-rgb), 0.045), transparent);
+  transform: translateX(-120%);
+  opacity: 0;
+}
+
+.project-module:hover::after,
+.cv-dossier:hover::before,
+.document-viewer:hover::before {
+  animation: panel-reflection 1.7s ease-out;
 }
 
 .activation-dots {
@@ -585,6 +659,167 @@ html {
   animation: flow-pulse 2.8s linear infinite;
 }
 
+.sentinel-assets {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 16px;
+}
+
+.sentinel-visual {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(var(--mode-rgb), 0.13);
+  background:
+    linear-gradient(180deg, rgba(var(--mode-rgb), 0.035), transparent 34%),
+    #070B10;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.015);
+}
+
+.sentinel-visual::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, transparent, rgba(5,7,10,0.72)),
+    repeating-linear-gradient(to bottom, transparent 0, transparent 5px, rgba(var(--mode-rgb),0.018) 6px);
+  opacity: 0.42;
+}
+
+.sentinel-visual-bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(var(--mode-rgb), 0.08);
+}
+
+.sentinel-graph-frame {
+  position: relative;
+  height: clamp(320px, 38vw, 480px);
+  overflow: hidden;
+  background: #0E1117;
+}
+
+.sentinel-graph-frame img {
+  filter: saturate(0.92) contrast(1.04) brightness(0.86);
+  transform: scale(1.012);
+  transform-origin: left top;
+}
+
+.dashboard-scan {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 34%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(var(--mode-rgb), 0.09), transparent);
+  animation: dashboard-scan 5.4s ease-in-out infinite 0.8s;
+}
+
+.sentinel-metric-rail {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  border-top: 1px solid rgba(var(--mode-rgb), 0.08);
+  background: rgba(var(--mode-rgb), 0.06);
+}
+
+.sentinel-metric-rail span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 11px 12px;
+  background: #070B10;
+  color: rgba(170,182,195,0.68);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  line-height: 1.35;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sentinel-metric-rail b {
+  color: rgba(var(--mode-rgb), 0.82);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.sentinel-visual-architecture {
+  min-height: 100%;
+}
+
+.architecture-map {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 12px;
+  padding: 20px 18px 18px;
+}
+
+.architecture-node {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 13px 14px;
+  border: 1px solid rgba(var(--mode-rgb), 0.11);
+  background: rgba(5, 7, 10, 0.58);
+}
+
+.architecture-node span {
+  color: rgba(230,241,255,0.78);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.architecture-node i {
+  position: absolute;
+  left: 25px;
+  bottom: -13px;
+  width: 1px;
+  height: 13px;
+  background: linear-gradient(to bottom, rgba(var(--mode-rgb), 0.58), transparent);
+}
+
+.architecture-notes {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 1px;
+  padding: 0 18px 18px;
+}
+
+.architecture-notes div {
+  border-left: 1px solid rgba(var(--mode-rgb), 0.18);
+  padding: 10px 0 10px 12px;
+}
+
+.architecture-notes span {
+  display: block;
+  margin-bottom: 4px;
+  color: rgba(var(--mode-rgb), 0.62);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.architecture-notes p {
+  color: rgba(170,182,195,0.66);
+  font-size: 0.74rem;
+  line-height: 1.55;
+}
+
 .cv-dossier,
 .document-viewer {
   position: relative;
@@ -612,12 +847,26 @@ html {
   animation: document-scan 5.6s ease-in-out infinite;
 }
 
+.document-viewer iframe {
+  transition: transform 220ms ease, filter 220ms ease;
+}
+
+.document-viewer:hover iframe {
+  transform: scale(1.006);
+  filter: contrast(1.02);
+}
+
 .clu-zone .tron-panel {
   border-color: rgba(var(--mode-rgb), 0.14);
 }
 
 @media (max-width: 720px) {
-  .module-telemetry {
+  .module-telemetry,
+  .sentinel-assets {
+    grid-template-columns: 1fr;
+  }
+
+  .sentinel-metric-rail {
     grid-template-columns: 1fr;
   }
 

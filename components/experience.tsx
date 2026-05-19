@@ -55,13 +55,13 @@ const education = [
 function SectionLabel({ subsystem, title }: { subsystem: string; title: string }) {
   return (
     <div className="flex items-center gap-4 mb-16">
-      <span className="subsystem-label" style={{ color: "rgba(79, 223, 255, 0.45)" }}>
+      <span className="subsystem-label">
         {subsystem}
       </span>
       <span
         className="h-px flex-1"
         style={{
-          background: "linear-gradient(to right, rgba(79, 223, 255, 0.15), transparent)",
+          background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",
           maxWidth: "160px",
         }}
       />
@@ -128,10 +128,10 @@ function ExperienceBlock({
               key={i}
               variants={staggerItem}
               className="text-xs pl-4 leading-relaxed"
-              style={{
-                color: "rgba(170, 182, 195, 0.7)",
-                borderLeft: "1px solid rgba(79, 223, 255, 0.14)",
-              }}
+                style={{
+                  color: "rgba(170, 182, 195, 0.7)",
+                  borderLeft: "1px solid rgba(var(--mode-rgb), 0.14)",
+                }}
             >
               {a}
             </motion.li>
@@ -139,7 +139,7 @@ function ExperienceBlock({
         </motion.ul>
 
         {exp.outcome && (
-          <p className="font-mono text-xs mt-3" style={{ color: "rgba(79, 223, 255, 0.6)" }}>
+          <p className="font-mono text-xs mt-3" style={{ color: "rgba(var(--mode-rgb), 0.6)" }}>
             {exp.outcome}
           </p>
         )}
