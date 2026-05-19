@@ -43,6 +43,7 @@ declare global {
 export function BootSequence() {
   const [visible, setVisible] = useState(false)
   const [phase, setPhase] = useState(0)
+  const [typedCommand, setTypedCommand] = useState("")
   const skipRef = useRef(false)
   const tonePlayedRef = useRef(false)
 
@@ -50,10 +51,12 @@ export function BootSequence() {
     if (typeof sessionStorage !== "undefined" && sessionStorage.getItem(SKIP_KEY)) return
 
     setVisible(true)
+    setTypedCommand("")
 
     const skip = () => {
       if (skipRef.current) return
       skipRef.current = true
+      setTypedCommand(COMMAND)
       setPhase(5)
       sessionStorage.setItem(SKIP_KEY, "1")
       window.setTimeout(() => setVisible(false), 260)
@@ -80,6 +83,28 @@ export function BootSequence() {
       timers.forEach(window.clearTimeout)
     }
   }, [])
+
+  useEffect(() => {
+    if (!visible || phase !== 1) return
+
+    let index = 0
+    let typeTimer: number | undefined
+    const initialDelay = window.setTimeout(() => {
+      setTypedCommand(COMMAND.slice(0, 1))
+      index = 1
+
+      typeTimer = window.setInterval(() => {
+        index += 1
+        setTypedCommand(COMMAND.slice(0, index))
+        if (index >= COMMAND.length && typeTimer) window.clearInterval(typeTimer)
+      }, 115)
+    }, 120)
+
+    return () => {
+      window.clearTimeout(initialDelay)
+      if (typeTimer) window.clearInterval(typeTimer)
+    }
+  }, [phase, visible])
 
   useEffect(() => {
     if (phase >= 3 && !tonePlayedRef.current) {
@@ -123,19 +148,10 @@ export function BootSequence() {
             >
               <div className="flex items-center gap-2 min-h-5">
                 <span className="text-[rgba(var(--mode-rgb),0.58)]">&gt;</span>
-                <span className="inline-flex">
-                  {COMMAND.split("").map((letter, index) => (
-                    <motion.span
-                      key={`${letter}-${index}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: phase >= 1 ? 1 : 0 }}
-                      transition={{ duration: 0.08, delay: 0.9 + index * 0.11 }}
-                    >
-                      {letter}
-                    </motion.span>
-                  ))}
+                <span className="boot-command-line">
+                  <span>{typedCommand}</span>
+                  <span className="boot-cursor" />
                 </span>
-                <span className="boot-cursor">▋</span>
               </div>
               <motion.div
                 className="mt-3 text-[rgba(var(--mode-rgb),0.72)]"
