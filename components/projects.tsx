@@ -5,7 +5,7 @@ import { Activity, BellRing, ExternalLink, RadioTower, Server, ShieldCheck, Trop
 import Link from "next/link"
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
-import { fadeUp, staggerContainer, staggerItem, duration } from "@/lib/motion"
+import { fadeUp, staggerContainer, staggerItem, duration, ease } from "@/lib/motion"
 
 const projects = [
   {
@@ -25,20 +25,6 @@ const projects = [
       "3-sigma threshold tuned empirically against 72-hour rolling baseline",
       "Telegram over PagerDuty for cost and latency in crypto ops context",
     ],
-    images: {
-      dashboard: {
-        title: "ADD IMAGE: Prometheus Dashboard",
-        description:
-          "Screenshot of Prometheus/Grafana showing ShredStream latency, Vote Credit velocity, Z-Score anomaly detection",
-        path: "/images/sentinelsol-dashboard.png",
-      },
-      architecture: {
-        title: "ADD IMAGE: System Architecture",
-        description:
-          "Architecture diagram: Go daemon → Prometheus → Alertmanager → Telegram pipeline",
-        path: "/images/sentinelsol-architecture.png",
-      },
-    },
   },
   {
     id: "autosre",
@@ -46,7 +32,7 @@ const projects = [
     title: "AutoSRE",
     status: "active",
     url: "https://auto-sre.vercel.app",
-    tagline: "Self-healing SRE platform with automated recovery.",
+    tagline: "SRE platform with automated recovery playbooks.",
     description:
       "RED metrics via Prometheus client, 50ms p95 latency budget. Alerting thresholds trigger automated recovery. FastAPI serves the control plane, Docker Compose orchestrates services, GitHub Actions handles CI/CD.",
     stack: ["Python", "FastAPI", "Prometheus", "Docker", "Docker Compose", "GitHub Actions"],
@@ -57,20 +43,6 @@ const projects = [
       "50ms p95 budget chosen based on downstream service SLOs",
       "Automated recovery limited to stateless services to avoid data corruption",
     ],
-    images: {
-      architecture: {
-        title: "ADD IMAGE: Docker Compose Architecture",
-        description:
-          "Service mesh diagram — Prometheus exporters and recovery automation flow",
-        path: "/images/autosre-architecture.png",
-      },
-      metrics: {
-        title: "ADD IMAGE: RED Metrics Dashboard",
-        description:
-          "Rate, Errors, Duration — p95 latency tracking live",
-        path: "/images/autosre-metrics.png",
-      },
-    },
   },
   {
     id: "gridcast",
@@ -90,20 +62,6 @@ const projects = [
       "14-step input window balances temporal context vs. computational cost",
       "Optuna TPE over grid search for efficient hyperparameter exploration",
     ],
-    images: {
-      map: {
-        title: "ADD IMAGE: D3.js Geospatial Map",
-        description:
-          "React + D3.js temperature forecast heatmap across Indian regions",
-        path: "/images/gridcast-map.png",
-      },
-      model: {
-        title: "ADD IMAGE: Model Architecture",
-        description:
-          "LSTM architecture, region partitioning, inference pipeline",
-        path: "/images/gridcast-model.png",
-      },
-    },
   },
 ]
 
@@ -126,7 +84,7 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
       className="sentinel-assets mb-8"
       initial={{ opacity: 0, y: 6 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
-      transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: duration.reveal, ease: ease.outSoft }}
     >
       <div className="sentinel-visual sentinel-visual-dashboard">
         <div className="sentinel-visual-bar">
@@ -162,7 +120,7 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
           <div className="flex items-center gap-3">
             <ShieldCheck className="h-4 w-4 text-[rgba(var(--mode-rgb),0.54)]" />
             <span className="font-mono text-xs text-[rgba(230,241,255,0.76)]">
-              PPT Architecture Extract
+              Architecture Overview
             </span>
           </div>
           <span className="subsystem-label">PIPELINE</span>
@@ -324,16 +282,22 @@ function ProjectPanel({ project, index }: { project: (typeof projects)[0]; index
           {project.id === "sentinelsol" ? (
             <SentinelOperationalAssets inView={isInView} />
           ) : (
-            <div className="grid md:grid-cols-2 gap-4 mb-8">
-              {Object.values(project.images).map((image, idx) => (
-                <ImagePlaceholder
-                  key={idx}
-                  title={image.title}
-                  description={image.description}
-                  path={image.path}
-                />
-              ))}
-            </div>
+            (() => {
+              const imageEntries = Object.values(project.images ?? {})
+              if (imageEntries.length === 0) return null
+              return (
+                <div className="grid md:grid-cols-2 gap-4 mb-8">
+                  {imageEntries.map((image, idx) => (
+                    <ImagePlaceholder
+                      key={idx}
+                      title={image.title}
+                      description={image.description}
+                      path={image.path}
+                    />
+                  ))}
+                </div>
+              )
+            })()
           )}
 
           {/* Tradeoffs */}

@@ -140,13 +140,10 @@ export function Contact() {
             style={{ borderTop: "1px solid rgba(110, 231, 249, 0.07)" }}
           >
             <div className="flex items-center justify-between">
-              <p className="font-mono text-xs" style={{ color: "rgba(107, 118, 132, 0.3)" }}>
-                Next.js · Tailwind CSS · Framer Motion · Vercel
-              </p>
-              <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.24)" }}>
-                END OF LINE
-              </span>
-            </div>
+                <p className="font-mono text-xs" style={{ color: "rgba(107, 118, 132, 0.3)" }}>
+                  Next.js · Tailwind CSS · Framer Motion · Vercel
+                </p>
+              </div>
           </motion.div>
 
         </div>

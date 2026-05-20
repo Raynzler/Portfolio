@@ -59,7 +59,8 @@ export function BootSequence() {
       setTypedCommand(COMMAND)
       setPhase(5)
       sessionStorage.setItem(SKIP_KEY, "1")
-      window.setTimeout(() => setVisible(false), 260)
+      // allow the fade animation to complete before unmounting
+      window.setTimeout(() => setVisible(false), 320)
     }
 
     window.addEventListener("keydown", skip, { once: true })
@@ -121,7 +122,7 @@ export function BootSequence() {
           className="fixed inset-0 z-[200] overflow-hidden bg-[#05070A]"
           initial={{ opacity: 1 }}
           animate={{ opacity: phase === 5 ? 0 : 1 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1]}}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1]}}
           aria-hidden="true"
         >
           <motion.div

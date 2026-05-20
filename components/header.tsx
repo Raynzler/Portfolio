@@ -10,8 +10,8 @@ const NAV_LINKS = [
   { id: "home", label: "HOME" },
   { id: "projects", label: "PROJECTS" },
   { id: "experience", label: "EXPERIENCE" },
-  { id: "contact", label: "CONTACT" },
   { id: "cv", label: "CV" },
+  { id: "contact", label: "CONTACT" },
 ] as const
 
 const NAV_IDS = NAV_LINKS.map((link) => link.id)
@@ -24,7 +24,8 @@ function useActiveSection(ids: readonly string[]) {
 
     const pick = () => {
       frame = 0
-      const activationLine = window.scrollY + 96
+      // match the page's scroll offset (header height / scroll padding)
+      const activationLine = window.scrollY + 80
       let current = ids[0] ?? ""
 
       for (const id of ids) {

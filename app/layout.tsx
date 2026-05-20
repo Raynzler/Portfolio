@@ -58,6 +58,13 @@ export default function RootLayout({
       <body className="font-sans antialiased min-h-screen" style={{ backgroundColor: '#05070A' }}>
         <DynamicFavicon />
         {children}
+
+        <footer className="pointer-events-none fixed bottom-5 right-6 z-40">
+          <span className="end-of-line">
+            END OF LINE<span className="footer-cursor">_</span>
+          </span>
+        </footer>
+
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

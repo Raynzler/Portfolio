@@ -907,3 +907,32 @@ html {
     transition-duration: 0.001ms !important;
   }
 }
+
+
+.end-of-line {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+
+  color: rgba(var(--mode-rgb), 0.34);
+
+  text-shadow:
+    0 0 8px rgba(var(--mode-rgb), 0.18);
+
+  user-select: none;
+}
+
+.footer-cursor {
+  animation: footerBlink 1.2s steps(1) infinite;
+}
+
+@keyframes footerBlink {
+  0%, 49% {
+    opacity: 1;
+  }
+
+  50%, 100% {
+    opacity: 0;
+  }
+}

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Download, FileText, ShieldCheck } from "lucide-react"
 import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { fadeUp, staggerContainer, staggerItem, duration } from "@/lib/motion"
 
 const resumeHref = "/Hamza-Shaikh-CV.pdf"
@@ -25,6 +25,23 @@ const capabilities = [
 export function CvSection() {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: "-60px 0px" })
+  const [pdfAvailable, setPdfAvailable] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    fetch(resumeHref, { method: "HEAD" })
+      .then((response) => {
+        if (isMounted) setPdfAvailable(response.ok)
+      })
+      .catch(() => {
+        if (isMounted) setPdfAvailable(false)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const downloadDisabled = pdfAvailable === false
 
   return (
     <section id="cv" ref={ref}>
@@ -102,7 +119,9 @@ export function CvSection() {
               <Link
                 href={resumeHref}
                 download
-                className="group inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[rgba(var(--mode-rgb),0.20)] bg-[rgba(var(--mode-rgb),0.045)] px-4 py-3 font-mono text-xs uppercase tracking-[0.14em] text-[rgba(230,241,255,0.82)] transition-colors hover:border-[rgba(var(--mode-rgb),0.40)] hover:bg-[rgba(var(--mode-rgb),0.075)]"
+                aria-disabled={downloadDisabled}
+                tabIndex={downloadDisabled ? -1 : undefined}
+                className={`group inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[rgba(var(--mode-rgb),0.20)] bg-[rgba(var(--mode-rgb),0.045)] px-4 py-3 font-mono text-xs uppercase tracking-[0.14em] text-[rgba(230,241,255,0.82)] transition-colors hover:border-[rgba(var(--mode-rgb),0.40)] hover:bg-[rgba(var(--mode-rgb),0.075)]${downloadDisabled ? " pointer-events-none opacity-60" : ""}`}
                 style={{ transitionDuration: `${duration.hover * 1000}ms` }}
               >
                 <Download className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.66)] transition-transform group-hover:-translate-y-0.5" />
@@ -124,11 +143,17 @@ export function CvSection() {
               <div className="relative overflow-hidden p-4 sm:p-6">
                 <div className="document-scan" aria-hidden="true" />
                 <div className="mx-auto aspect-[8.5/11] max-h-[620px] w-full max-w-[440px] overflow-hidden rounded-[2px] border border-[rgba(var(--mode-rgb),0.14)] bg-[#F1F5F8] shadow-[0_0_36px_rgba(var(--mode-rgb),0.06)]">
-                  <iframe
-                    title="CV PDF preview"
-                    src={`${resumeHref}#toolbar=0&navpanes=0&scrollbar=0`}
-                    className="h-full w-full bg-[#F1F5F8]"
-                  />
+                  {pdfAvailable ? (
+                    <iframe
+                      title="CV PDF preview"
+                      src={`${resumeHref}#toolbar=0&navpanes=0&scrollbar=0`}
+                      className="h-full w-full bg-[#F1F5F8]"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center px-6 text-center text-xs text-[rgba(107,118,132,0.7)]">
+                      {pdfAvailable === false ? "CV preview unavailable." : "Loading preview..."}
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
