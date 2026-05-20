@@ -40,28 +40,6 @@ export function Landing() {
 
       <div className="relative max-w-5xl mx-auto px-6 pt-28 pb-12 w-full">
 
-        {/* ── Subsystem boot header ──────────────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.05 }}
-          className="flex items-center gap-3 mb-12"
-        >
-          <span className="subsystem-label">
-            CORE
-          </span>
-          <span
-            className="h-px flex-1"
-            style={{
-              background:
-                "linear-gradient(to right, rgba(var(--mode-rgb), 0.25), transparent)",
-              maxWidth: "120px",
-            }}
-          />
-          <span className="subsystem-label" style={{ opacity: 0.3 }}>
-            v2.0
-          </span>
-        </motion.div>
 
         {/* ── Main identity block ────────────────────────────────────────── */}
         <motion.div
