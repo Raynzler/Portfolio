@@ -79,11 +79,11 @@ export function Landing() {
             className="text-sm leading-relaxed mb-10"
             style={{ color: "var(--foreground-dim)" }}
           >
-            M.Sc. Distributed Systems, RPTU Kaiserslautern-Landau.
+            M.Sc. Computer Science, RPTU Kaiserslautern-Landau.
             <span className="mx-2" style={{ color: "rgba(var(--mode-rgb), 0.25)" }}>
               /
             </span>
-            Previously sole DevOps owner at a production B2C startup.
+            Previously sole DevOps owner at Shark Tank India B2C startup (Intern).
           </motion.p>
 
           <motion.div
@@ -92,7 +92,7 @@ export function Landing() {
           >
             <MapPin className="w-3.5 h-3.5" style={{ color: "rgba(var(--mode-rgb), 0.35)" }} />
             <span className="font-mono text-xs tracking-wider" style={{ color: "var(--foreground-dim)" }}>
-              Kaiserslautern · Dammam · Mumbai
+              Frankfurt,DE · Dammam,KSA · Mumbai,IND
             </span>
           </motion.div>
 

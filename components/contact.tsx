@@ -125,7 +125,7 @@ export function Contact() {
           >
             <div className="flex items-center justify-between">
                 <p className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
-                  Next.js · Tailwind CSS · Framer Motion · Vercel
+                  Portfolio still in development. Thanks for stopping by!
                 </p>
               </div>
           </motion.div>
