@@ -167,12 +167,13 @@ html {
 /* ─── Compositing hints — only on actively animating elements ─────────────── */
 .trail-drift-a,
 .trail-drift-b,
+.trail-flare,
 .system-atmosphere .traffic-layer::before,
 .system-atmosphere .traffic-layer::after,
 .system-atmosphere .trace-highway::before,
 .system-atmosphere .trace-highway::after,
 .system-atmosphere .grid-field {
-  will-change: transform;
+  will-change: transform, opacity;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -210,6 +211,22 @@ html {
 
 .trail-drift-a { animation: trail-drift 8.2s ease-in-out infinite; }
 .trail-drift-b { animation: trail-drift-alt 11.4s ease-in-out infinite; }
+
+@keyframes trail-flare {
+  0%, 82%, 100% { opacity: 1; }
+  88% { opacity: 1.6; }
+  92% { opacity: 1.1; }
+}
+
+.trail-drift-a.trail-flare {
+  animation: trail-drift 8.2s ease-in-out infinite, trail-flare 4.6s ease-in-out infinite 2s;
+}
+.trail-drift-b.trail-flare {
+  animation: trail-drift-alt 11.4s ease-in-out infinite, trail-flare 4.6s ease-in-out infinite 2s;
+}
+.trail-flare:not(.trail-drift-a):not(.trail-drift-b) {
+  animation: trail-flare 4.6s ease-in-out infinite 2s;
+}
 
 /* Boot cursor blink */
 @keyframes cursor-blink {

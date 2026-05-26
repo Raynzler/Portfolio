@@ -25,15 +25,8 @@ export const GLOW = {
 } as const
 
 export const TRAIL = {
-  count: 10,
-  baseWidth: 64,
-  widthStep: 18,
-  baseTop: 8,
-  topStep: 8,
-  baseDuration: 10,
-  durationStep: 2.6,
-  baseDelay: 0.9,
-  containerOpacity: 0.22,
+  count: 12,
+  containerOpacity: 1,
 } as const
 
 export const BOOT = {
