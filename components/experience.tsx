@@ -7,11 +7,11 @@ import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
 const experiences = [
   {
     company: "Patil Kaki",
-    note: "Shark Tank India portfolio company",
+    note: "Shark Tank India B2C Startup",
     role: "DevOps Intern — Sole Infrastructure Owner",
     period: "Jun – Aug 2023",
     description:
-      "Production B2C startup. Full operational ownership of infrastructure during growth phase.",
+      "B2C startup. Full operational ownership of infrastructure during growth phase.",
     achievements: [
       "EC2 to ECS/Fargate migration with zero-downtime cutover",
       "GitHub Actions gated deploys with automated rollback on health check failure",
