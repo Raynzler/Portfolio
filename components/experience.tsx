@@ -65,7 +65,7 @@ function SectionLabel({ subsystem, title }: { subsystem: string; title: string }
           maxWidth: "160px",
         }}
       />
-      <span className="font-mono text-xs" style={{ color: "rgba(107, 118, 132, 0.5)" }}>
+      <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
         {title}
       </span>
     </div>
@@ -96,24 +96,24 @@ function ExperienceBlock({
         {/* Header row */}
         <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-2 mb-4">
           <div>
-            <h3 className="text-sm font-medium" style={{ color: "#E6F1FF" }}>
+            <h3 className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
               {exp.company}
               {exp.note && (
-                <span className="font-mono text-xs ml-2 font-normal" style={{ color: "rgba(107, 118, 132, 0.7)" }}>
+                <span className="font-mono text-xs ml-2 font-normal" style={{ color: "var(--foreground-dim)" }}>
                   — {exp.note}
                 </span>
               )}
             </h3>
-            <p className="text-xs mt-0.5" style={{ color: "rgba(107, 118, 132, 0.8)" }}>
+            <p className="text-xs mt-0.5" style={{ color: "var(--foreground-dim)" }}>
               {exp.role}
             </p>
           </div>
-          <span className="font-mono text-xs shrink-0" style={{ color: "rgba(107, 118, 132, 0.6)" }}>
+          <span className="font-mono text-xs shrink-0" style={{ color: "var(--foreground-dim)" }}>
             {exp.period}
           </span>
         </div>
 
-        <p className="text-xs leading-relaxed mb-5" style={{ color: "rgba(107, 118, 132, 0.9)" }}>
+        <p className="text-xs leading-relaxed mb-5" style={{ color: "var(--foreground-dim)" }}>
           {exp.description}
         </p>
 
@@ -129,7 +129,7 @@ function ExperienceBlock({
               variants={staggerItem}
               className="text-xs pl-4 leading-relaxed"
                 style={{
-                  color: "rgba(170, 182, 195, 0.7)",
+                  color: "var(--foreground-muted)",
                   borderLeft: "1px solid rgba(var(--mode-rgb), 0.14)",
                 }}
             >
@@ -202,23 +202,23 @@ export function Experience() {
                   className="tron-panel rounded-sm px-6 py-5 flex flex-col md:flex-row md:items-baseline md:justify-between gap-2"
                 >
                   <div>
-                    <h3 className="text-sm font-medium" style={{ color: "#E6F1FF" }}>
+                    <h3 className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
                       {edu.institution}
                       <span
                         className="font-mono text-xs ml-2 font-normal"
-                        style={{ color: "rgba(107, 118, 132, 0.7)" }}
+                        style={{ color: "var(--foreground-dim)" }}
                       >
                         — {edu.location}
                       </span>
                     </h3>
-                    <p className="text-xs mt-0.5" style={{ color: "rgba(107, 118, 132, 0.8)" }}>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--foreground-dim)" }}>
                       {edu.degree},{" "}
-                      <span style={{ color: "rgba(170, 182, 195, 0.75)" }}>{edu.focus}</span>
+                      <span style={{ color: "var(--foreground-muted)" }}>{edu.focus}</span>
                     </p>
                   </div>
                   <span
                     className="font-mono text-xs shrink-0"
-                    style={{ color: "rgba(107, 118, 132, 0.6)" }}
+                    style={{ color: "var(--foreground-dim)" }}
                   >
                     {edu.period}
                   </span>

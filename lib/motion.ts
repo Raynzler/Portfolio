@@ -1,14 +1,6 @@
 /**
- * Motion config — Upgrade 3.0.
- * Philosophy: low-latency, infrastructural, tactile.
+ * Motion config — low-latency, infrastructural, tactile.
  * Every curve measured against perceived fluidity, not academic correctness.
- *
- * Key changes from 2.0:
- * - Travel distances halved (y: 6→4, scale offset reduced)
- * - reveal trimmed 280→240ms (snappier viewport entries)
- * - New `trace` timing for nav underline movement
- * - outSoft loosened slightly for scroll-driven reveals
- * - Added `anticipate` easing for panel activations
  */
 
 export const ease = {
@@ -34,15 +26,6 @@ export const fadeUp = {
   },
 }
 
-/** Pure fade — labels, micro-copy, no spatial movement */
-export const fadeIn = {
-  hidden:  { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { duration: 0.20, ease: ease.out },
-  },
-}
-
 /** Stagger container — tight operational rhythm */
 export const staggerContainer = (staggerChildren = 0.05, delayChildren = 0) => ({
   hidden:  {},
@@ -56,16 +39,6 @@ export const staggerItem = {
     opacity: 1,
     y: 0,
     transition: { duration: 0.22, ease: ease.outSoft },
-  },
-}
-
-/** Panel activation — scale stays extremely close to 1 */
-export const panelReveal = {
-  hidden:  { opacity: 0, scale: 0.998 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.20, ease: ease.sharp },
   },
 }
 

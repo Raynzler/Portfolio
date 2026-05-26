@@ -1,6 +1,19 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Z_INDEX } from "@/lib/constants"
+
+const COMMANDS: Record<string, string> = {
+  whoami: "hamza / infrastructure operator",
+  flynn: "FLYNN / user signal acknowledged",
+  clu: "CLU / control plane standing by",
+  encom: "ENCOM / archived network trace",
+  grid: "THE GRID / distant traffic online",
+  endofline: "END OF LINE / program terminated",
+  disc: "IDENTITY DISC / data secured",
+  tron: "TRON / he fights for the users",
+  portal: "I/O TOWER / connection open",
+}
 
 export function SystemAtmosphere() {
   const [egg, setEgg] = useState<string | null>(null)
@@ -8,6 +21,7 @@ export function SystemAtmosphere() {
   useEffect(() => {
     const root = document.documentElement
     let forcedClu = false
+    let diagnostic = false
     let lastC = 0
     let buffer = ""
 
@@ -34,9 +48,21 @@ export function SystemAtmosphere() {
     }
 
     const onKey = (event: KeyboardEvent) => {
-      if (event.metaKey || event.ctrlKey || event.altKey) return
+      if (event.metaKey || event.altKey) return
+
+      // Ctrl+Shift+D: diagnostic mode toggle
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "d") {
+        event.preventDefault()
+        diagnostic = !diagnostic
+        root.classList.toggle("diagnostic-active", diagnostic)
+        showEgg(diagnostic ? "DIAGNOSTIC MODE / subsystems visible" : "DIAGNOSTIC MODE / disengaged")
+        return
+      }
+
+      if (event.ctrlKey) return
       const key = event.key.toLowerCase()
 
+      // Double-tap C: CLU/Flynn toggle
       if (key === "c") {
         const now = Date.now()
         if (now - lastC < 420) {
@@ -51,14 +77,7 @@ export function SystemAtmosphere() {
 
       if (/^[a-z0-9]$/.test(key)) {
         buffer = (buffer + key).slice(-12)
-        const commands: Record<string, string> = {
-          whoami: "hamza / infrastructure operator",
-          flynn: "FLYNN / user signal acknowledged",
-          clu: "CLU / control plane standing by",
-          encom: "ENCOM / archived network trace",
-          grid: "THE GRID / distant traffic online",
-        }
-        for (const [command, response] of Object.entries(commands)) {
+        for (const [command, response] of Object.entries(COMMANDS)) {
           if (buffer.endsWith(command)) showEgg(response)
         }
       }
@@ -69,7 +88,7 @@ export function SystemAtmosphere() {
       observer?.disconnect()
       window.removeEventListener("keydown", onKey)
       root.style.removeProperty("--clu-intensity")
-      root.classList.remove("clu-active", "clu-forced")
+      root.classList.remove("clu-active", "clu-forced", "diagnostic-active")
     }
   }, [])
 
@@ -87,7 +106,7 @@ export function SystemAtmosphere() {
       </div>
 
       {egg && (
-        <div className="diagnostic-overlay" role="status" aria-live="polite">
+        <div className="diagnostic-overlay" role="status" aria-live="polite" style={{ zIndex: Z_INDEX.diagnostic }}>
           <span>{egg}</span>
         </div>
       )}

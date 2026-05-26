@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { DynamicFavicon } from '@/components/dynamic-favicon'
+import { SCROLL, Z_INDEX } from '@/lib/constants'
 import './globals.css'
 
 const spaceGrotesk = Space_Grotesk({
@@ -44,6 +45,11 @@ export const metadata: Metadata = {
       'Backend and infrastructure engineer focused on reliability, observability, and operational ownership.',
     type: 'website',
   },
+  other: {
+    'x-system': 'ENCOM-OS-12',
+    'x-grid-sector': '7-G',
+    'x-clearance': 'FLYNN',
+  },
 }
 
 export default function RootLayout({
@@ -53,13 +59,13 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} bg-background`}
-      style={{ scrollPaddingTop: '80px' }}
+      style={{ scrollPaddingTop: `${SCROLL.headerOffset}px` }}
     >
       <body className="font-sans antialiased min-h-screen" style={{ backgroundColor: '#05070A' }}>
         <DynamicFavicon />
         {children}
 
-        <footer className="pointer-events-none fixed bottom-5 right-6 z-40">
+        <footer className="pointer-events-none fixed bottom-5 right-6" style={{ zIndex: Z_INDEX.footer }}>
           <span className="end-of-line">
             END OF LINE<span className="footer-cursor">_</span>
           </span>

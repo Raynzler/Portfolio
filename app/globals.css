@@ -126,6 +126,7 @@
   body {
     @apply bg-background text-foreground;
     background-color: var(--background);
+    /* 220ms intentional — perceptible mode switch, slower than panel hover (160ms) */
     transition: background-color 220ms ease;
   }
 }
@@ -163,8 +164,16 @@ html {
 /* ─── Scroll anchor offset (fixed header) ────────────────────────────────── */
 [id] { scroll-margin-top: 80px; }
 
-/* ─── Framer-motion: prevent layout shifts ───────────────────────────────── */
-[data-framer-component-type] { will-change: opacity, transform; }
+/* ─── Compositing hints — only on actively animating elements ─────────────── */
+.trail-drift-a,
+.trail-drift-b,
+.system-atmosphere .traffic-layer::before,
+.system-atmosphere .traffic-layer::after,
+.system-atmosphere .trace-highway::before,
+.system-atmosphere .trace-highway::after,
+.system-atmosphere .grid-field {
+  will-change: transform;
+}
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* KEYFRAMES                                                                    */
@@ -176,23 +185,31 @@ html {
   50%       { opacity: 0.45; transform: scale(0.82); }
 }
 
-/* Scanline sweep — used as ::before on hero section */
-@keyframes scanline {
-  0%   { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
+/* ─── Lightcycle trail system ─────────────────────────────────────────────── */
+@keyframes trail-sweep {
+  0%   { transform: translate3d(-30vw, 0, 0); }
+  100% { transform: translate3d(140vw, 0, 0); }
 }
 
-/* Subsystem label blink — single cycle on mount, not looping */
-@keyframes blink-once {
-  0%, 100% { opacity: 1;   }
-  40%, 60% { opacity: 0.2; }
+@keyframes trail-sweep-reverse {
+  0%   { transform: translate3d(140vw, 0, 0); }
+  100% { transform: translate3d(-30vw, 0, 0); }
 }
 
-/* Edge glow pulse — for illuminated borders */
-@keyframes glow-edge {
-  0%, 100% { opacity: 0.5; }
-  50%       { opacity: 1;   }
+@keyframes trail-drift {
+  0%, 100% { transform: translateY(0); }
+  38%      { transform: translateY(-3px); }
+  62%      { transform: translateY(2px); }
 }
+
+@keyframes trail-drift-alt {
+  0%, 100% { transform: translateY(0); }
+  28%      { transform: translateY(2px); }
+  72%      { transform: translateY(-2px); }
+}
+
+.trail-drift-a { animation: trail-drift 8.2s ease-in-out infinite; }
+.trail-drift-b { animation: trail-drift-alt 11.4s ease-in-out infinite; }
 
 /* Boot cursor blink */
 @keyframes cursor-blink {
@@ -534,7 +551,6 @@ html {
   position: fixed;
   right: 24px;
   bottom: 24px;
-  z-index: 90;
   border: 1px solid rgba(var(--mode-rgb), 0.18);
   background: rgba(5, 7, 10, 0.78);
   padding: 10px 12px;
@@ -545,6 +561,38 @@ html {
   text-transform: uppercase;
   box-shadow: 0 0 20px rgba(var(--mode-rgb), 0.045);
   backdrop-filter: blur(10px);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* INTERACTIVE ELEMENTS                                                        */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.contact-link {
+  border: 1px solid transparent;
+  background: transparent;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+.contact-link:hover {
+  border-color: rgba(var(--mode-rgb), 0.14);
+  background: rgba(var(--mode-rgb), 0.03);
+}
+
+.project-link {
+  color: var(--foreground-dim);
+  transition: color 160ms ease;
+}
+.project-link:hover {
+  color: rgb(var(--mode-rgb));
+}
+
+.stack-tag {
+  background: var(--bg-steel);
+  color: var(--foreground-muted);
+  border: 1px solid var(--glass-border);
+  transition: border-color 120ms ease, color 120ms ease;
+}
+.stack-tag:hover {
+  border-color: rgba(var(--mode-rgb), 0.28);
+  color: var(--foreground-muted);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
