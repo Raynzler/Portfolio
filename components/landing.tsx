@@ -25,7 +25,7 @@ export function Landing() {
       <div
         className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
         style={{
-          background: "linear-gradient(to bottom, transparent, #05070A)",
+          background: "linear-gradient(to bottom, transparent, var(--background))",
         }}
       />
 
@@ -48,7 +48,6 @@ export function Landing() {
           initial="hidden"
           animate="visible"
         >
-          {/* Name — small, precise */}
           <motion.p
             variants={staggerItem}
             className="font-mono text-xs mb-5 tracking-widest uppercase"
@@ -57,45 +56,42 @@ export function Landing() {
             Hamza Shaikh
           </motion.p>
 
-          {/* Core positioning — Space Grotesk, cinematic weight */}
           <motion.h1
             variants={staggerItem}
             className="text-3xl md:text-4xl font-light leading-tight mb-8 text-balance"
             style={{
-              color: "#E6F1FF",
+              color: "var(--foreground)",
               letterSpacing: "-0.01em",
               lineHeight: "1.25",
             }}
           >
             Backend and infrastructure engineer
             <br />
-            <span style={{ color: "rgba(170, 182, 195, 0.75)", fontWeight: 300 }}>
+            <span style={{ color: "var(--foreground-muted)", fontWeight: 300 }}>
               focused on reliability, observability,
               <br />
               and operational ownership.
             </span>
           </motion.h1>
 
-          {/* Academic grounding */}
           <motion.p
             variants={staggerItem}
             className="text-sm leading-relaxed mb-10"
-            style={{ color: "rgba(107, 118, 132, 1)" }}
+            style={{ color: "var(--foreground-dim)" }}
           >
             M.Sc. Distributed Systems, RPTU Kaiserslautern-Landau.
-            <span className="mx-2" style={{ color: "rgba(79, 223, 255, 0.25)" }}>
+            <span className="mx-2" style={{ color: "rgba(var(--mode-rgb), 0.25)" }}>
               /
             </span>
             Previously sole DevOps owner at a production B2C startup.
           </motion.p>
 
-          {/* Location */}
           <motion.div
             variants={staggerItem}
             className="flex items-center gap-2 mb-10"
           >
             <MapPin className="w-3.5 h-3.5" style={{ color: "rgba(var(--mode-rgb), 0.35)" }} />
-            <span className="font-mono text-xs tracking-wider" style={{ color: "rgba(107, 118, 132, 0.8)" }}>
+            <span className="font-mono text-xs tracking-wider" style={{ color: "var(--foreground-dim)" }}>
               Kaiserslautern · Dammam · Mumbai
             </span>
           </motion.div>

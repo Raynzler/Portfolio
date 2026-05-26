@@ -2,9 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-
-const SKIP_KEY = "grid_boot_seen"
-const TOTAL_MS = 5200
+import { BOOT, Z_INDEX } from "@/lib/constants"
 
 const COMMAND = "whoami"
 const PANELS = ["IDENTITY", "OBSERVE", "TRACE", "DOSSIER"]
@@ -48,7 +46,7 @@ export function BootSequence() {
   const tonePlayedRef = useRef(false)
 
   useEffect(() => {
-    if (typeof sessionStorage !== "undefined" && sessionStorage.getItem(SKIP_KEY)) return
+    if (typeof sessionStorage !== "undefined" && sessionStorage.getItem(BOOT.storageKey)) return
 
     setVisible(true)
     setTypedCommand("")
@@ -58,9 +56,8 @@ export function BootSequence() {
       skipRef.current = true
       setTypedCommand(COMMAND)
       setPhase(5)
-      sessionStorage.setItem(SKIP_KEY, "1")
-      // allow the fade animation to complete before unmounting
-      window.setTimeout(() => setVisible(false), 320)
+      sessionStorage.setItem(BOOT.storageKey, "1")
+      window.setTimeout(() => setVisible(false), BOOT.skipFadeDuration)
     }
 
     window.addEventListener("keydown", skip, { once: true })
@@ -74,8 +71,8 @@ export function BootSequence() {
     window.setTimeout(() => setPhase(5), 4900),  // fade out begins
       window.setTimeout(() => {
         setVisible(false)
-        sessionStorage.setItem(SKIP_KEY, "1")
-      }, TOTAL_MS),
+        sessionStorage.setItem(BOOT.storageKey, "1")
+      }, BOOT.totalMs),
     ]
 
     return () => {
@@ -119,7 +116,8 @@ export function BootSequence() {
       {visible && (
         <motion.div
           key="boot"
-          className="fixed inset-0 z-[200] overflow-hidden bg-[#05070A]"
+          className="fixed inset-0 overflow-hidden bg-[#05070A]"
+          style={{ zIndex: Z_INDEX.boot }}
           initial={{ opacity: 1 }}
           animate={{ opacity: phase === 5 ? 0 : 1 }}
           transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1]}}

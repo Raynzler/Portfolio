@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import type { MouseEvent } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { duration, ease } from "@/lib/motion"
+import { SCROLL, Z_INDEX } from "@/lib/constants"
 
 const NAV_LINKS = [
   { id: "home", label: "HOME" },
@@ -16,16 +17,18 @@ const NAV_LINKS = [
 
 const NAV_IDS = NAV_LINKS.map((link) => link.id)
 
-function useActiveSection(ids: readonly string[]) {
+function useScrollState(ids: readonly string[]) {
   const [active, setActive] = useState(ids[0] ?? "")
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     let frame = 0
 
-    const pick = () => {
+    const update = () => {
       frame = 0
-      // match the page's scroll offset (header height / scroll padding)
-      const activationLine = window.scrollY + 80
+      setScrolled(window.scrollY > 18)
+
+      const activationLine = window.scrollY + SCROLL.activationLine
       let current = ids[0] ?? ""
 
       for (const id of ids) {
@@ -42,10 +45,10 @@ function useActiveSection(ids: readonly string[]) {
 
     const schedule = () => {
       if (frame) return
-      frame = window.requestAnimationFrame(pick)
+      frame = window.requestAnimationFrame(update)
     }
 
-    pick()
+    update()
     window.addEventListener("scroll", schedule, { passive: true })
     window.addEventListener("resize", schedule)
     return () => {
@@ -55,12 +58,11 @@ function useActiveSection(ids: readonly string[]) {
     }
   }, [ids])
 
-  return active
+  return { active, scrolled }
 }
 
 export function Header() {
-  const [scrolled, setScrolled] = useState(false)
-  const active = useActiveSection(NAV_IDS)
+  const { active, scrolled } = useScrollState(NAV_IDS)
 
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({})
   const navRef = useRef<HTMLUListElement>(null)
@@ -88,30 +90,24 @@ export function Header() {
     return () => window.removeEventListener("resize", updateTrace)
   }, [active])
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 18)
-    onScroll()
-    window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
-  }, [])
-
   const scrollToSection = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
     const el = document.getElementById(id)
     if (!el) return
     event.preventDefault()
-    const top = el.getBoundingClientRect().top + window.scrollY - 78
+    const top = el.getBoundingClientRect().top + window.scrollY - SCROLL.headerOffset
     window.history.pushState(null, "", `#${id}`)
     window.scrollTo({ top, behavior: "smooth" })
   }
 
   return (
     <motion.header
-      className="fixed left-0 right-0 top-0 z-50"
+      className="fixed left-0 right-0 top-0"
       animate={{
         backgroundColor: scrolled ? "rgba(5,7,10,0.90)" : "rgba(5,7,10,0)",
       }}
       transition={{ duration: duration.hover, ease: ease.inOut }}
       style={{
+        zIndex: Z_INDEX.header,
         backdropFilter: scrolled ? "blur(14px)" : "blur(0px)",
         WebkitBackdropFilter: scrolled ? "blur(14px)" : "blur(0px)",
         borderBottom: scrolled

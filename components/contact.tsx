@@ -4,7 +4,7 @@ import { Mail, Github, Linkedin, Twitter } from "lucide-react"
 import Link from "next/link"
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
-import { fadeUp, staggerContainer, staggerItem, duration } from "@/lib/motion"
+import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
 
 const links = [
   {
@@ -55,17 +55,17 @@ export function Contact() {
             animate={isInView ? "visible" : "hidden"}
             className="flex items-center gap-4 mb-16"
           >
-            <span className="subsystem-label" style={{ color: "rgba(79, 223, 255, 0.45)" }}>
+            <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.45)" }}>
               RELAY
             </span>
             <span
               className="h-px"
               style={{
                 width: "120px",
-                background: "linear-gradient(to right, rgba(79, 223, 255, 0.15), transparent)",
+                background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",
               }}
             />
-            <span className="font-mono text-xs" style={{ color: "rgba(107, 118, 132, 0.5)" }}>
+            <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
               Contact
             </span>
           </motion.div>
@@ -77,7 +77,7 @@ export function Contact() {
               animate={isInView ? "visible" : "hidden"}
               transition={{ delay: 0.04 }}
               className="text-xs leading-relaxed mb-10"
-              style={{ color: "rgba(107, 118, 132, 0.9)" }}
+              style={{ color: "var(--foreground-dim)" }}
             >
               Open to infrastructure and reliability engineering roles.
               Prefer async communication.
@@ -96,32 +96,16 @@ export function Contact() {
                     href={link.href}
                     target={link.name !== "Email" ? "_blank" : undefined}
                     rel={link.name !== "Email" ? "noopener noreferrer" : undefined}
-                    className="flex items-center gap-4 px-4 py-3 rounded-sm group transition-colors"
-                    style={{
-                      background: "transparent",
-                      border: "1px solid transparent",
-                      transition: `border-color ${duration.hover * 1000}ms ease, background ${duration.hover * 1000}ms ease`,
-                    }}
-                    onMouseEnter={e => {
-                      const el = e.currentTarget as HTMLElement
-                      el.style.borderColor = "rgba(79, 223, 255, 0.14)"
-                      el.style.background = "rgba(79, 223, 255, 0.03)"
-                    }}
-                    onMouseLeave={e => {
-                      const el = e.currentTarget as HTMLElement
-                      el.style.borderColor = "transparent"
-                      el.style.background = "transparent"
-                    }}
+                    className="contact-link flex items-center gap-4 px-4 py-3 rounded-sm"
                   >
-                    {/* Subsystem micro-label */}
                     <span className="subsystem-label w-12 shrink-0"
-                          style={{ color: "rgba(79, 223, 255, 0.3)" }}>
+                          style={{ color: "rgba(var(--mode-rgb), 0.3)" }}>
                       {link.subsystem}
                     </span>
 
-                    <link.icon className="w-3.5 h-3.5 shrink-0" style={{ color: "rgba(107, 118, 132, 0.5)" }} />
+                    <link.icon className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--foreground-dim)" }} />
 
-                    <span className="font-mono text-xs" style={{ color: "rgba(170, 182, 195, 0.7)" }}>
+                    <span className="font-mono text-xs" style={{ color: "var(--foreground-muted)" }}>
                       {link.label}
                     </span>
                   </Link>
@@ -137,10 +121,10 @@ export function Contact() {
             animate={isInView ? "visible" : "hidden"}
             transition={{ delay: 0.35 }}
             className="mt-24 pt-8"
-            style={{ borderTop: "1px solid rgba(110, 231, 249, 0.07)" }}
+            style={{ borderTop: "1px solid var(--glass-border)" }}
           >
             <div className="flex items-center justify-between">
-                <p className="font-mono text-xs" style={{ color: "rgba(107, 118, 132, 0.3)" }}>
+                <p className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
                   Next.js · Tailwind CSS · Framer Motion · Vercel
                 </p>
               </div>

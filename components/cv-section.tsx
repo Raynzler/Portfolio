@@ -57,7 +57,7 @@ export function CvSection() {
           >
             <span className="subsystem-label">DOSSIER</span>
             <span className="h-px flex-1 max-w-[180px] bg-[linear-gradient(to_right,rgba(var(--mode-rgb),0.16),transparent)]" />
-            <span className="font-mono text-xs text-[rgba(107,118,132,0.55)]">
+            <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
               Curriculum Vitae
             </span>
           </motion.div>
