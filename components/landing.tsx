@@ -114,7 +114,7 @@ export function Landing() {
               className="font-mono text-xs tracking-wider"
               style={{ color: "rgba(var(--mode-rgb), 0.5)" }}
             >
-              SIGNAL · available for infrastructure roles
+              SIGNAL · available for infrastructure roles in Germany, Saudi Arabia, and Remote
             </span>
           </motion.div>
         </motion.div>

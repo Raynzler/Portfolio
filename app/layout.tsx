@@ -20,7 +20,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Hamza Shaikh — SRE / Infrastructure Engineer',
+  title: 'Hamza Shaikh - SRE / Infrastructure Engineer',
   description:
     'Backend and infrastructure engineer focused on reliability, observability, and operational ownership. M.Sc. in Computer Science (Major 1 - Distributed Systems, Major 2 - Software Engineering), RPTU Kaiserslautern.',
   generator: 'Next.js',
