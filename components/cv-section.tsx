@@ -12,7 +12,7 @@ const dossier = [
   ["Role", "Backend / Infrastructure / SRE"],
   ["Focus", "Reliability, observability, operational ownership"],
   ["Base", "Kaiserslautern · Dammam · Mumbai"],
-  ["Education", "M.Sc. Computer Science, Distributed Systems"],
+  ["Education", "M.Sc. Computer Science, Distributed Systems and Software Engineering"],
 ]
 
 const capabilities = [
