@@ -35,6 +35,12 @@ const links = [
     label: "x.com/shamza31",
     subsystem: "SIGNAL",
   },
+  {
+    name: "Telegram",
+    href: "t.me/sHamza31",
+    icon: Telegram,
+    label: "t.me/sHamza31"
+    subsystem: "USER"
 ]
 
 export function Contact() {
