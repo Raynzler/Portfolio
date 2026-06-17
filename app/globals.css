@@ -168,11 +168,13 @@ html {
 .trail-drift-a,
 .trail-drift-b,
 .trail-flare,
+.trail-head,
 .system-atmosphere .traffic-layer::before,
 .system-atmosphere .traffic-layer::after,
 .system-atmosphere .trace-highway::before,
 .system-atmosphere .trace-highway::after,
-.system-atmosphere .grid-field {
+.system-atmosphere .grid-field,
+.system-atmosphere .grid-horizon-plane {
   will-change: transform, opacity;
 }
 
@@ -226,6 +228,16 @@ html {
 }
 .trail-flare:not(.trail-drift-a):not(.trail-drift-b) {
   animation: trail-flare 4.6s ease-in-out infinite 2s;
+}
+
+/* Lightcycle head — bright leading point so trails read as vehicles, not gradients */
+.trail-head {
+  position: absolute;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  transform: translateY(-50%);
 }
 
 /* Boot cursor blink */
@@ -384,6 +396,42 @@ html {
   mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 78%, transparent 100%);
   animation: grid-drift 34s linear infinite;
   transition: opacity 600ms ease;
+}
+
+/* ─── Perspective Grid floor — The Grid horizon, receding into depth ─────── */
+.grid-horizon {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 220vw;
+  height: 46vh;
+  transform: translateX(-50%);
+  perspective: 340px;
+  perspective-origin: 50% 0%;
+  opacity: 0.5;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to top, #000 0%, #000 26%, transparent 90%);
+  mask-image: linear-gradient(to top, #000 0%, #000 26%, transparent 90%);
+}
+
+.grid-horizon-plane {
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  bottom: 0;
+  height: 200%;
+  transform-origin: 50% 100%;
+  transform: rotateX(74deg) translateY(-64px);
+  background-image:
+    linear-gradient(to right, rgba(var(--mode-rgb), 0.55) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(var(--mode-rgb), 0.55) 1px, transparent 1px);
+  background-size: 64px 64px;
+  animation: grid-horizon-run 7.5s linear infinite;
+}
+
+@keyframes grid-horizon-run {
+  from { transform: rotateX(74deg) translateY(-64px); }
+  to   { transform: rotateX(74deg) translateY(0); }
 }
 
 .traffic-layer,
@@ -599,6 +647,39 @@ html {
 }
 .project-link:hover {
   color: rgb(var(--mode-rgb));
+}
+
+/* Hero call-to-action buttons */
+.hero-cta {
+  border: 1px solid transparent;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+.hero-cta svg {
+  transition: transform 160ms ease;
+}
+.hero-cta-primary {
+  color: rgba(230, 241, 255, 0.9);
+  border-color: rgba(var(--mode-rgb), 0.35);
+  background: rgba(var(--mode-rgb), 0.07);
+}
+.hero-cta-primary:hover {
+  border-color: rgba(var(--mode-rgb), 0.6);
+  background: rgba(var(--mode-rgb), 0.12);
+  color: #E6F1FF;
+}
+.hero-cta-primary:hover svg {
+  transform: translateY(2px);
+}
+.hero-cta-ghost {
+  color: var(--foreground-muted);
+  border-color: rgba(var(--mode-rgb), 0.16);
+}
+.hero-cta-ghost:hover {
+  border-color: rgba(var(--mode-rgb), 0.4);
+  color: rgb(var(--mode-rgb));
+}
+.hero-cta-ghost:hover svg {
+  transform: translate(1px, -1px);
 }
 
 .stack-tag {
