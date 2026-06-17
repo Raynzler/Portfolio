@@ -42,12 +42,6 @@ const links = [
     label: "x.com/shamza31",
     subsystem: "SIGNAL",
   },
-  {
-    name: "Telegram",
-    href: "t.me/sHamza31",
-    icon: Telegram,
-    label: "t.me/sHamza31"
-    subsystem: "USER"
 ]
 
 export function Contact() {
@@ -136,14 +130,9 @@ export function Contact() {
             className="mt-24 pt-8"
             style={{ borderTop: "1px solid var(--glass-border)" }}
           >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
-                  © 2026 Hamza Shaikh
-                </p>
-                <p className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
-                  Designed &amp; built with Next.js
-                </p>
-              </div>
+            <p className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
+                Portfolio still in development. Thanks for stopping by!
+              </p>
           </motion.div>
 
         </div>
