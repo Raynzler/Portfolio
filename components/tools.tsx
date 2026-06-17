@@ -15,7 +15,7 @@ const toolCategories = [
 
 const certifications = [
   { name: "AWS Certified Cloud Practitioner", year: "2023" },
-  { name: "Postman API Fundamentals — Student Expert", year: "2023" },
+  { name: "Postman API Fundamentals · Student Expert", year: "2023" },
 ]
 
 export function Tools() {

@@ -8,10 +8,10 @@ const experiences = [
   {
     company: "Patil Kaki",
     note: "Shark Tank India B2C Startup",
-    role: "DevOps Intern — Sole Infrastructure Owner",
+    role: "DevOps Intern, sole infrastructure owner",
     period: "Jun – Aug 2023",
     description:
-      "B2C startup. Full operational ownership of infrastructure during growth phase.",
+      "Only engineer responsible for the production stack while the company scaled.",
     achievements: [
       "EC2 to ECS/Fargate migration with zero-downtime cutover",
       "GitHub Actions gated deploys with automated rollback on health check failure",
@@ -26,7 +26,7 @@ const experiences = [
     note: "Microsoft Partner",
     role: "Java Intern",
     period: "Dec 2021 – Jan 2022",
-    description: "Enterprise desktop application development.",
+    description: "Desktop application development in Java.",
     achievements: [
       "School management system with multi-user access control",
       "Java Swing UI with MySQL persistence via JDBC",
@@ -100,7 +100,7 @@ function ExperienceBlock({
               {exp.company}
               {exp.note && (
                 <span className="font-mono text-xs ml-2 font-normal" style={{ color: "var(--foreground-dim)" }}>
-                  — {exp.note}
+                  · {exp.note}
                 </span>
               )}
             </h3>
@@ -208,7 +208,7 @@ export function Experience() {
                         className="font-mono text-xs ml-2 font-normal"
                         style={{ color: "var(--foreground-dim)" }}
                       >
-                        — {edu.location}
+                        · {edu.location}
                       </span>
                     </h3>
                     <p className="text-xs mt-0.5" style={{ color: "var(--foreground-dim)" }}>

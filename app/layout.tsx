@@ -22,7 +22,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'Hamza Shaikh - SRE / Infrastructure Engineer',
   description:
-    'Backend and infrastructure engineer focused on reliability, observability, and operational ownership. M.Sc. in Computer Science (Major 1 - Distributed Systems, Major 2 - Software Engineering), RPTU Kaiserslautern.',
+    'Backend and infrastructure engineer. I keep production systems observable, quick to recover, and cheap to run. M.Sc. Computer Science (Distributed Systems and Software Engineering), RPTU Kaiserslautern.',
   generator: 'Next.js',
   keywords: [
     'SRE',
@@ -40,9 +40,9 @@ export const metadata: Metadata = {
     icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
   },
   openGraph: {
-    title: 'Hamza Shaikh — SRE / Infrastructure Engineer',
+    title: 'Hamza Shaikh - SRE / Infrastructure Engineer',
     description:
-      'Backend and infrastructure engineer focused on reliability, observability, and operational ownership.',
+      'Backend and infrastructure engineer. I keep production systems observable, quick to recover, and cheap to run.',
     type: 'website',
   },
   other: {

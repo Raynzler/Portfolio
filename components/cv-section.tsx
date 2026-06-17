@@ -10,7 +10,7 @@ const resumeHref = "/Hamza-Shaikh-CV.pdf"
 
 const dossier = [
   ["Role", "Backend / Infrastructure / SRE"],
-  ["Focus", "Reliability, observability, operational ownership"],
+  ["Focus", "Observability, automated recovery, cloud cost"],
   ["Base", "Kaiserslautern · Dammam · Mumbai"],
   ["Education", "M.Sc. Computer Science, Distributed Systems and Software Engineering"],
 ]
@@ -76,8 +76,8 @@ export function CvSection() {
                     Hamza Shaikh
                   </h2>
                   <p className="mt-2 text-xs leading-relaxed text-[rgba(170,182,195,0.72)]">
-                    Infrastructure engineer with production DevOps ownership and a distributed
-                    systems academic track.
+                    Infrastructure engineer with production DevOps ownership, now doing a
+                    distributed systems master&apos;s.
                   </p>
                 </div>
                 <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-[rgba(var(--mode-rgb),0.52)]" />
@@ -100,7 +100,7 @@ export function CvSection() {
               </div>
 
               <div className="mb-8">
-                <p className="subsystem-label mb-4">CAPABILITY INDEX</p>
+                <p className="subsystem-label mb-4">CAPABILITIES</p>
                 <div className="space-y-2">
                   {capabilities.map((capability, index) => (
                     <div key={capability} className="flex items-center gap-3">

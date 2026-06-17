@@ -81,9 +81,9 @@ const projects: Project[] = [
     status: "active",
     url: "https://auto-sre.vercel.app",
     repo: "https://github.com/Raynzler/Auto-SRE",
-    tagline: "Instrumented SRE platform with automated recovery patterns.",
+    tagline: "FastAPI service instrumented with RED metrics and threshold-driven recovery.",
     description:
-      "RED metrics via the Prometheus client against a 50ms p95 latency budget. Alerting thresholds drive automated recovery for stateless services. FastAPI serves the control plane, Docker Compose orchestrates services, GitHub Actions handles CI/CD.",
+      "RED metrics via the Prometheus client against a 50ms p95 latency budget. Alerting thresholds drive automated recovery for stateless services. FastAPI serves the API, Docker Compose runs the stack, GitHub Actions handles CI/CD.",
     stack: ["Python", "FastAPI", "Prometheus", "Docker", "Docker Compose", "GitHub Actions"],
     deployment: "Docker Compose + GitHub Actions CI/CD",
     award: null,
@@ -101,15 +101,15 @@ const projects: Project[] = [
     notes: [
       {
         title: "Instrumented",
-        body: "RED metrics on every request via the Prometheus client — counters, histograms, and labeled gauges.",
+        body: "RED metrics on every request via the Prometheus client (counters, histograms, labeled gauges).",
       },
       {
         title: "Health-checked",
-        body: "Liveness and readiness probes designed for container orchestration and zero-downtime restarts.",
+        body: "Liveness and readiness probes so rolling restarts don't drop traffic.",
       },
       {
         title: "Reproducible",
-        body: "Full stack stands up via Docker Compose; deploys automated through GitHub Actions.",
+        body: "The whole stack comes up with one Docker Compose command. Deploys run through GitHub Actions.",
       },
     ],
     tradeoffs: [

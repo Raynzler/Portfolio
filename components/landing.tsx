@@ -6,8 +6,8 @@ import { motion } from "framer-motion"
 import { staggerContainer, staggerItem } from "@/lib/motion"
 
 const proof = [
-  { label: "AWARD · 2026", value: "3rd — Superteam Germany Solana Ideathon, Frankfurt" },
-  { label: "LIVE SYSTEM", value: "SentinelSOL — Solana validator observability" },
+  { label: "AWARD · 2026", value: "3rd · Superteam Germany Solana Ideathon" },
+  { label: "LIVE SYSTEM", value: "SentinelSOL · Solana validator observability" },
   { label: "M.SC.", value: "Distributed Systems · RPTU Kaiserslautern" },
   { label: "PRODUCTION", value: "Sole DevOps owner · −25% cloud OpEx · live 3+ yrs" },
 ]
@@ -73,12 +73,12 @@ export function Landing() {
               lineHeight: "1.25",
             }}
           >
-            Backend and infrastructure engineer
+            Backend and infrastructure engineer.
             <br />
             <span style={{ color: "var(--foreground-muted)", fontWeight: 300 }}>
-              focused on reliability, observability,
+              I keep production systems observable,
               <br />
-              and operational ownership.
+              quick to recover, and cheap to run.
             </span>
           </motion.h1>
 
@@ -87,8 +87,8 @@ export function Landing() {
             className="text-sm leading-relaxed mb-8 max-w-xl"
             style={{ color: "var(--foreground-dim)" }}
           >
-            I design, ship, and operate the systems that keep services alive —
-            validator telemetry, Prometheus alerting, CI/CD, and production cloud infrastructure.
+            In practice that&apos;s validator telemetry, Prometheus alerting, CI/CD,
+            and the production cloud underneath them, usually with me as the only person on call.
           </motion.p>
 
           {/* ── Proof rail — credibility above the fold ───────────────────── */}
