@@ -1,6 +1,6 @@
 "use client"
 
-import { Mail, Github, Linkedin, Twitter } from "lucide-react"
+import { Mail, Github, Linkedin, Twitter, Send } from "lucide-react"
 import Link from "next/link"
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
@@ -13,6 +13,13 @@ const links = [
     icon: Mail,
     label: "er.hamzashaikh@gmail.com",
     subsystem: "LINK",
+  },
+  {
+    name: "Telegram",
+    href: "https://t.me/shamza31",
+    icon: Send,
+    label: "t.me/shamza31",
+    subsystem: "COMMS",
   },
   {
     name: "GitHub",
@@ -79,8 +86,8 @@ export function Contact() {
               className="text-xs leading-relaxed mb-10"
               style={{ color: "var(--foreground-dim)" }}
             >
-              Open to infrastructure and reliability engineering roles.
-              Prefer async communication.
+              Open to backend, infrastructure, platform, and SRE roles across Europe and the GCC.
+              Fastest reach: Telegram or email.
             </motion.p>
 
             {/* Contact links — terminal console feel */}
@@ -123,9 +130,12 @@ export function Contact() {
             className="mt-24 pt-8"
             style={{ borderTop: "1px solid var(--glass-border)" }}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
-                  Portfolio still in development. Thanks for stopping by!
+                  © 2026 Hamza Shaikh
+                </p>
+                <p className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
+                  Designed &amp; built with Next.js
                 </p>
               </div>
           </motion.div>

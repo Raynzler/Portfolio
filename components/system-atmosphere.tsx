@@ -96,6 +96,9 @@ export function SystemAtmosphere() {
     <>
       <div className="system-atmosphere" aria-hidden="true">
         <div className="grid-field" />
+        <div className="grid-horizon">
+          <div className="grid-horizon-plane" />
+        </div>
         <div className="traffic-layer traffic-layer-a" />
         <div className="traffic-layer traffic-layer-b" />
         <div className="traffic-layer traffic-layer-c" />

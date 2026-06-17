@@ -103,34 +103,49 @@ export function LightcycleGrid() {
       style={{ zIndex: Z_INDEX.lightcycle, opacity: TRAIL.containerOpacity }}
       aria-hidden="true"
     >
-      {TRAILS.map((trail, i) => (
-        <div
-          key={i}
-          className={[trail.driftClass, trail.flare ? "trail-flare" : null].filter(Boolean).join(" ") || undefined}
-          style={{
-            position: "absolute",
-            top: trail.top,
-            left: 0,
-            right: 0,
-            height: "1px",
-            transform: trail.angle ? `rotate(${trail.angle}deg)` : undefined,
-            transformOrigin: "center center",
-          }}
-        >
+      {TRAILS.map((trail, i) => {
+        const headColor = trail.reverse ? "rgb(255,170,90)" : "rgb(120,230,255)"
+        const headGlow = trail.reverse ? "rgba(255,138,61,0.7)" : "rgba(79,223,255,0.75)"
+        return (
           <div
+            key={i}
+            className={[trail.driftClass, trail.flare ? "trail-flare" : null].filter(Boolean).join(" ") || undefined}
             style={{
-              width: trail.width,
-              height: "2px",
-              background: trail.gradient,
-              opacity: trail.opacity,
-              borderRadius: 1,
-              filter: trail.filter,
-              animation: `${trail.reverse ? "trail-sweep-reverse" : "trail-sweep"} ${trail.duration}s ${trail.reverse ? "cubic-bezier(0.4, 0, 0.6, 1)" : "linear"} ${trail.delay}s infinite`,
-              willChange: "transform",
+              position: "absolute",
+              top: trail.top,
+              left: 0,
+              right: 0,
+              height: "1px",
+              transform: trail.angle ? `rotate(${trail.angle}deg)` : undefined,
+              transformOrigin: "center center",
             }}
-          />
-        </div>
-      ))}
+          >
+            <div
+              style={{
+                position: "relative",
+                width: trail.width,
+                height: "2px",
+                background: trail.gradient,
+                opacity: Math.min(1, trail.opacity * 1.35),
+                borderRadius: 1,
+                filter: trail.filter,
+                animation: `${trail.reverse ? "trail-sweep-reverse" : "trail-sweep"} ${trail.duration}s ${trail.reverse ? "cubic-bezier(0.4, 0, 0.6, 1)" : "linear"} ${trail.delay}s infinite`,
+                willChange: "transform",
+              }}
+            >
+              {/* Bright leading head — right edge for forward, left edge for reverse */}
+              <span
+                className="trail-head"
+                style={{
+                  [trail.reverse ? "left" : "right"]: "-1px",
+                  background: headColor,
+                  boxShadow: `0 0 6px 1px ${headGlow}, 0 0 12px ${headGlow}`,
+                }}
+              />
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

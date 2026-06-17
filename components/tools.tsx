@@ -5,17 +5,17 @@ import { motion, useInView } from "framer-motion"
 import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
 
 const toolCategories = [
-  { name: "Languages",     items: ["Go", "Python", "Bash", "C++"] },
-  { name: "Infrastructure",items: ["Docker", "Kubernetes", "Terraform", "Linux"] },
-  { name: "Observability", items: ["Prometheus", "PromQL", "Grafana", "Alertmanager"] },
-  { name: "Cloud",         items: ["AWS", "GCP", "Azure", "OCI", "DigitalOcean"] },
-  { name: "Automation",    items: ["GitHub Actions", "NGINX"] },
-  { name: "Storage",       items: ["Redis", "BullMQ", "MySQL", "SQLite"] },
+  { name: "Languages",      items: ["Go", "Python", "Bash", "C++"] },
+  { name: "Infrastructure", items: ["Docker", "Kubernetes", "Terraform", "Linux"] },
+  { name: "Observability",  items: ["Prometheus", "PromQL", "Grafana", "Alertmanager"] },
+  { name: "Cloud",          items: ["AWS", "GCP", "Azure", "OCI", "DigitalOcean"] },
+  { name: "CI / Automation",items: ["GitHub Actions", "CI/CD", "NGINX"] },
+  { name: "Data & Queues",  items: ["Redis", "BullMQ", "MySQL", "SQLite"] },
 ]
 
 const certifications = [
   { name: "AWS Certified Cloud Practitioner", year: "2023" },
-  { name: "Postman API Fundamentals Student Expert", year: "2023" },
+  { name: "Postman API Fundamentals — Student Expert", year: "2023" },
 ]
 
 export function Tools() {
@@ -26,7 +26,7 @@ export function Tools() {
   const certInView = useInView(certRef, { once: true, margin: "-40px 0px" })
 
   return (
-    <section id="tools" ref={sectionRef}>
+    <section id="stack" ref={sectionRef}>
       <div className="section-sep" />
 
       <div className="py-24">
@@ -39,18 +39,18 @@ export function Tools() {
             animate={isInView ? "visible" : "hidden"}
             className="flex items-center gap-4 mb-16"
           >
-            <span className="subsystem-label" style={{ color: "rgba(79, 223, 255, 0.45)" }}>
+            <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.45)" }}>
               IO
             </span>
             <span
               className="h-px flex-1"
               style={{
-                background: "linear-gradient(to right, rgba(79, 223, 255, 0.15), transparent)",
+                background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",
                 maxWidth: "160px",
               }}
             />
-            <span className="font-mono text-xs" style={{ color: "rgba(107, 118, 132, 0.5)" }}>
-              Tools &amp; Infrastructure
+            <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
+              Stack &amp; Capabilities
             </span>
           </motion.div>
 
@@ -60,24 +60,31 @@ export function Tools() {
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-px mb-16"
-            style={{ background: "rgba(110, 231, 249, 0.06)" }}
+            style={{ background: "rgba(var(--mode-rgb), 0.06)" }}
           >
             {toolCategories.map((category) => (
               <motion.div
                 key={category.name}
                 variants={staggerItem}
                 className="px-5 py-5"
-                style={{ background: "#05070A" }}
+                style={{ background: "var(--background)" }}
               >
                 <h3
                   className="subsystem-label mb-3"
-                  style={{ color: "rgba(79, 223, 255, 0.4)" }}
+                  style={{ color: "rgba(var(--mode-rgb), 0.4)" }}
                 >
                   {category.name}
                 </h3>
-                <p className="text-xs leading-relaxed" style={{ color: "rgba(170, 182, 195, 0.75)" }}>
-                  {category.items.join(" · ")}
-                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {category.items.map((item) => (
+                    <span
+                      key={item}
+                      className="stack-tag font-mono text-xs px-2 py-0.5 rounded-sm"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -90,17 +97,17 @@ export function Tools() {
               animate={certInView ? "visible" : "hidden"}
               className="flex items-center gap-4 mb-8"
             >
-              <span className="subsystem-label" style={{ color: "rgba(79, 223, 255, 0.4)" }}>
+              <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.4)" }}>
                 SIGNAL
               </span>
               <span
                 className="h-px"
                 style={{
                   width: "80px",
-                  background: "linear-gradient(to right, rgba(79, 223, 255, 0.15), transparent)",
+                  background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",
                 }}
               />
-              <span className="font-mono text-xs" style={{ color: "rgba(107, 118, 132, 0.5)" }}>
+              <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
                 Certifications
               </span>
             </motion.div>
@@ -121,14 +128,14 @@ export function Tools() {
                   <span
                     className="w-1.5 h-1.5 rounded-full shrink-0"
                     style={{
-                      background: "rgba(79, 223, 255, 0.5)",
-                      boxShadow: "0 0 4px rgba(79, 223, 255, 0.3)",
+                      background: "rgba(var(--mode-rgb), 0.5)",
+                      boxShadow: "0 0 4px rgba(var(--mode-rgb), 0.3)",
                     }}
                   />
-                  <span className="text-xs flex-1" style={{ color: "rgba(170, 182, 195, 0.8)" }}>
+                  <span className="text-xs flex-1" style={{ color: "var(--foreground-muted)" }}>
                     {cert.name}
                   </span>
-                  <span className="font-mono text-xs" style={{ color: "rgba(107, 118, 132, 0.5)" }}>
+                  <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
                     {cert.year}
                   </span>
                 </motion.div>

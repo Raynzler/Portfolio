@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { id: "home", label: "HOME" },
   { id: "projects", label: "PROJECTS" },
   { id: "experience", label: "EXPERIENCE" },
+  { id: "stack", label: "STACK" },
   { id: "cv", label: "CV" },
   { id: "contact", label: "CONTACT" },
 ] as const
@@ -116,10 +117,10 @@ export function Header() {
         transition: `border-color ${duration.hover}s ease, backdrop-filter ${duration.hover}s ease`,
       }}
     >
-      <nav className="mx-auto flex max-w-5xl items-center justify-center px-4 py-4 sm:px-6">
+      <nav className="mx-auto flex max-w-5xl items-center justify-center px-3 py-4 sm:px-6">
         <ul
           ref={navRef}
-          className="relative flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-center sm:gap-7"
+          className="relative flex w-full items-center justify-between gap-1 sm:w-auto sm:justify-center sm:gap-7"
           role="list"
           aria-label="Primary"
         >
@@ -163,7 +164,7 @@ export function Header() {
                   ref={(el) => {
                     itemRefs.current[id] = el
                   }}
-                  className="nav-link relative block px-1 py-1 font-mono text-[0.67rem] tracking-[0.16em] sm:text-xs"
+                  className="nav-link relative block px-0.5 py-1 font-mono text-[0.62rem] tracking-[0.04em] sm:px-1 sm:text-xs sm:tracking-[0.16em]"
                   aria-current={isActive ? "location" : undefined}
                   data-active={isActive}
                   onClick={(event) => scrollToSection(event, id)}
