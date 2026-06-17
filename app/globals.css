@@ -597,6 +597,11 @@ html {
   }
 }
 
+.boot-bar {
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
 .nav-link {
   color: rgba(107, 118, 132, 0.92);
   text-decoration: none;

@@ -15,7 +15,12 @@ export const Z_INDEX = {
 
 export const SCROLL = {
   headerOffset: 80,
-  activationLine: 80,
+  // Fraction of the viewport height at which a section is considered active.
+  // The section whose top has scrolled above this line (measured from the
+  // viewport top) wins. ~0.4 means "active once it dominates the upper view",
+  // which keeps the highlight in sync with what is actually on screen for
+  // tall, full-height sections instead of lagging one section behind.
+  activationFraction: 0.4,
 } as const
 
 export const GLOW = {

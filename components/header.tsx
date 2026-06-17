@@ -29,7 +29,7 @@ function useScrollState(ids: readonly string[]) {
       frame = 0
       setScrolled(window.scrollY > 18)
 
-      const activationLine = window.scrollY + SCROLL.activationLine
+      const activationLine = window.scrollY + window.innerHeight * SCROLL.activationFraction
       let current = ids[0] ?? ""
 
       for (const id of ids) {
