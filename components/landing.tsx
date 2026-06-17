@@ -1,8 +1,16 @@
 "use client"
 
-import { MapPin } from "lucide-react"
+import { MapPin, ArrowDown, ExternalLink } from "lucide-react"
+import Link from "next/link"
 import { motion } from "framer-motion"
 import { staggerContainer, staggerItem } from "@/lib/motion"
+
+const proof = [
+  { label: "AWARD · 2026", value: "3rd — Superteam Germany Solana Ideathon, Frankfurt" },
+  { label: "LIVE SYSTEM", value: "SentinelSOL — Solana validator observability" },
+  { label: "M.SC.", value: "Distributed Systems · RPTU Kaiserslautern" },
+  { label: "PRODUCTION", value: "Sole DevOps owner · −25% cloud OpEx · live 3+ yrs" },
+]
 
 export function Landing() {
   return (
@@ -58,7 +66,7 @@ export function Landing() {
 
           <motion.h1
             variants={staggerItem}
-            className="text-3xl md:text-4xl font-light leading-tight mb-8 text-balance"
+            className="text-3xl md:text-4xl font-light leading-tight mb-6 text-balance"
             style={{
               color: "var(--foreground)",
               letterSpacing: "-0.01em",
@@ -76,19 +84,57 @@ export function Landing() {
 
           <motion.p
             variants={staggerItem}
-            className="text-sm leading-relaxed mb-10"
+            className="text-sm leading-relaxed mb-8 max-w-xl"
             style={{ color: "var(--foreground-dim)" }}
           >
-            M.Sc. Computer Science, RPTU Kaiserslautern-Landau.
-            <span className="mx-2" style={{ color: "rgba(var(--mode-rgb), 0.25)" }}>
-              /
-            </span>
-            Previously sole DevOps owner at Shark Tank India B2C startup (Intern).
+            I design, ship, and operate the systems that keep services alive —
+            validator telemetry, Prometheus alerting, CI/CD, and production cloud infrastructure.
           </motion.p>
+
+          {/* ── Proof rail — credibility above the fold ───────────────────── */}
+          <motion.div
+            variants={staggerItem}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-px rounded-sm overflow-hidden mb-8"
+            style={{
+              background: "rgba(var(--mode-rgb), 0.10)",
+              border: "1px solid rgba(var(--mode-rgb), 0.10)",
+            }}
+          >
+            {proof.map((item) => (
+              <div key={item.label} className="px-4 py-3" style={{ background: "var(--bg-panel)" }}>
+                <p className="subsystem-label mb-1.5" style={{ color: "rgba(var(--mode-rgb), 0.5)" }}>
+                  {item.label}
+                </p>
+                <p className="text-xs leading-snug" style={{ color: "var(--foreground)" }}>
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* ── Primary actions ───────────────────────────────────────────── */}
+          <motion.div variants={staggerItem} className="flex flex-wrap items-center gap-3 mb-10">
+            <Link
+              href="#projects"
+              className="hero-cta hero-cta-primary inline-flex items-center gap-2 rounded-sm px-4 py-2.5 font-mono text-xs uppercase tracking-[0.14em]"
+            >
+              View Projects
+              <ArrowDown className="h-3.5 w-3.5" />
+            </Link>
+            <Link
+              href="https://github.com/Raynzler"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hero-cta hero-cta-ghost inline-flex items-center gap-2 rounded-sm px-4 py-2.5 font-mono text-xs uppercase tracking-[0.14em]"
+            >
+              GitHub
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
+          </motion.div>
 
           <motion.div
             variants={staggerItem}
-            className="flex items-center gap-2 mb-10"
+            className="flex items-center gap-2 mb-6"
           >
             <MapPin className="w-3.5 h-3.5" style={{ color: "rgba(var(--mode-rgb), 0.35)" }} />
             <span className="font-mono text-xs tracking-wider" style={{ color: "var(--foreground-dim)" }}>

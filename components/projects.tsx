@@ -1,11 +1,39 @@
 "use client"
 
-import { ImagePlaceholder } from "./image-placeholder"
-import { Activity, BellRing, ExternalLink, RadioTower, Server, ShieldCheck, Trophy } from "lucide-react"
+import {
+  Activity,
+  BellRing,
+  Cpu,
+  Database,
+  ExternalLink,
+  Github,
+  Map as MapIcon,
+  RadioTower,
+  RotateCcw,
+  Server,
+  ShieldCheck,
+  Trophy,
+  type LucideIcon,
+} from "lucide-react"
 import Link from "next/link"
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import { fadeUp, staggerContainer, staggerItem, duration, ease } from "@/lib/motion"
+
+interface PipelineNode {
+  label: string
+  icon: LucideIcon
+}
+
+interface Metric {
+  value: string
+  label: string
+}
+
+interface ArchitectureNote {
+  title: string
+  body: string
+}
 
 interface Project {
   id: string
@@ -13,6 +41,7 @@ interface Project {
   title: string
   status: string
   url: string
+  repo?: string
   tagline: string
   description: string
   stack: string[]
@@ -20,7 +49,9 @@ interface Project {
   award: string | null
   tradeoffs: string[]
   publication?: string
-  images?: Record<string, { title: string; description: string; path: string }>
+  pipeline?: PipelineNode[]
+  metrics?: Metric[]
+  notes?: ArchitectureNote[]
 }
 
 const projects: Project[] = [
@@ -30,6 +61,7 @@ const projects: Project[] = [
     title: "SentinelSOL",
     status: "live",
     url: "https://sentinelsol-sre.vercel.app",
+    repo: "https://github.com/Raynzler/SentinelSOL",
     tagline: "Out-of-band observability for Solana/Jito validators.",
     description:
       "Go daemons collect ShredStream latency and Vote Credit velocity. PromQL + 3-sigma Z-Score against rolling baseline. Alertmanager routes to Telegram before delinquency. No sidecar, no cloud dependency.",
@@ -48,12 +80,38 @@ const projects: Project[] = [
     title: "AutoSRE",
     status: "active",
     url: "https://auto-sre.vercel.app",
-    tagline: "SRE platform with automated recovery playbooks.",
+    repo: "https://github.com/Raynzler/Auto-SRE",
+    tagline: "Instrumented SRE platform with automated recovery patterns.",
     description:
-      "RED metrics via Prometheus client, 50ms p95 latency budget. Alerting thresholds trigger automated recovery. FastAPI serves the control plane, Docker Compose orchestrates services, GitHub Actions handles CI/CD.",
+      "RED metrics via the Prometheus client against a 50ms p95 latency budget. Alerting thresholds drive automated recovery for stateless services. FastAPI serves the control plane, Docker Compose orchestrates services, GitHub Actions handles CI/CD.",
     stack: ["Python", "FastAPI", "Prometheus", "Docker", "Docker Compose", "GitHub Actions"],
     deployment: "Docker Compose + GitHub Actions CI/CD",
     award: null,
+    pipeline: [
+      { label: "FastAPI service · RED metrics", icon: Server },
+      { label: "Prometheus scrape + recording rules", icon: Activity },
+      { label: "Alertmanager thresholds", icon: BellRing },
+      { label: "Automated recovery playbook", icon: RotateCcw },
+    ],
+    metrics: [
+      { value: "50ms", label: "p95 latency budget" },
+      { value: "RED", label: "rate · errors · duration" },
+      { value: "CI/CD", label: "GitHub Actions gated" },
+    ],
+    notes: [
+      {
+        title: "Instrumented",
+        body: "RED metrics on every request via the Prometheus client — counters, histograms, and labeled gauges.",
+      },
+      {
+        title: "Health-checked",
+        body: "Liveness and readiness probes designed for container orchestration and zero-downtime restarts.",
+      },
+      {
+        title: "Reproducible",
+        body: "Full stack stands up via Docker Compose; deploys automated through GitHub Actions.",
+      },
+    ],
     tradeoffs: [
       "FastAPI over Flask for async support and OpenAPI generation",
       "50ms p95 budget chosen based on downstream service SLOs",
@@ -71,8 +129,33 @@ const projects: Project[] = [
       "28 LSTM models across 7 regions × 4 IMD seasons. 70 years of daily max temperature grids (1951–2021). 14-step input window, 7-step forecast. Optuna TPE per-subset hyperparameter search.",
     stack: ["Python", "TensorFlow", "Keras", "LSTM", "Flask", "React.js", "Optuna", "GeoPandas"],
     deployment: "Flask inference API + React frontend",
-    publication: "IEEE ICSPCRE 2024, Paper ID 652",
+    publication: "IEEE ICSPCRE 2024 · Paper ID 652 (submitted)",
     award: null,
+    pipeline: [
+      { label: "IMD gridded temperatures · 1951–2021", icon: Database },
+      { label: "28 LSTM models · 7 regions × 4 seasons", icon: Cpu },
+      { label: "Flask inference API", icon: Server },
+      { label: "React + D3 heatwave map", icon: MapIcon },
+    ],
+    metrics: [
+      { value: "28", label: "region × season models" },
+      { value: "70 yrs", label: "daily temp grids" },
+      { value: "7-day", label: "forecast horizon" },
+    ],
+    notes: [
+      {
+        title: "Partitioned",
+        body: "Per-region, per-season models over a single global network for interpretability.",
+      },
+      {
+        title: "Tuned",
+        body: "Optuna TPE hyperparameter search run independently across all 28 model subsets.",
+      },
+      {
+        title: "Full-stack",
+        body: "Flask REST inference backend with a React + D3 geospatial visualisation frontend.",
+      },
+    ],
     tradeoffs: [
       "Region × season model partitioning over single global model for interpretability",
       "14-step input window balances temporal context vs. computational cost",
@@ -87,12 +170,52 @@ const statusColors = {
   shipped: { bg: "rgba(107, 118, 132, 0.12)",    text: "var(--foreground-muted)", dot: "var(--foreground-dim)"  },
 } as const
 
-const sentinelPipeline = [
+const sentinelPipeline: PipelineNode[] = [
   { label: "Jito-Solana RPC", icon: RadioTower },
   { label: "Go OOB daemon", icon: Server },
   { label: "Prometheus / PromQL", icon: Activity },
   { label: "Alertmanager → Telegram", icon: BellRing },
 ]
+
+function PipelineMap({ nodes }: { nodes: PipelineNode[] }) {
+  return (
+    <div className="architecture-map">
+      {nodes.map(({ label, icon: Icon }, index) => (
+        <div key={label} className="architecture-node">
+          <Icon className="h-4 w-4 text-[rgba(var(--mode-rgb),0.58)]" />
+          <span>{label}</span>
+          {index < nodes.length - 1 && <i aria-hidden="true" />}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function MetricRail({ metrics }: { metrics: Metric[] }) {
+  return (
+    <div className="sentinel-metric-rail" aria-label="Operating metrics">
+      {metrics.map((m) => (
+        <span key={m.label}>
+          <b>{m.value}</b>
+          {m.label}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function ArchitectureNotes({ notes }: { notes: ArchitectureNote[] }) {
+  return (
+    <div className="architecture-notes">
+      {notes.map((n) => (
+        <div key={n.title}>
+          <span>{n.title}</span>
+          <p>{n.body}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 function SentinelOperationalAssets({ inView }: { inView: boolean }) {
   return (
@@ -124,11 +247,13 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
           />
           <span className="dashboard-scan" aria-hidden="true" />
         </div>
-        <div className="sentinel-metric-rail" aria-label="SentinelSOL operating metrics">
-          <span><b>3σ</b>Z-score anomaly window</span>
-          <span><b>OOB</b>zero hot-path impact</span>
-          <span><b>5s</b>refresh cadence</span>
-        </div>
+        <MetricRail
+          metrics={[
+            { value: "3σ", label: "Z-score anomaly window" },
+            { value: "OOB", label: "zero hot-path impact" },
+            { value: "5s", label: "refresh cadence" },
+          ]}
+        />
       </div>
 
       <div className="sentinel-visual sentinel-visual-architecture">
@@ -142,30 +267,52 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
           <span className="subsystem-label">PIPELINE</span>
         </div>
 
-        <div className="architecture-map">
-          {sentinelPipeline.map(({ label, icon: Icon }, index) => (
-            <div key={label} className="architecture-node">
-              <Icon className="h-4 w-4 text-[rgba(var(--mode-rgb),0.58)]" />
-              <span>{label}</span>
-              {index < sentinelPipeline.length - 1 && <i aria-hidden="true" />}
-            </div>
-          ))}
+        <PipelineMap nodes={sentinelPipeline} />
+
+        <ArchitectureNotes
+          notes={[
+            { title: "Predictive", body: "ShredStream latency and vote-credit velocity move before delinquency." },
+            { title: "Out-of-band", body: "Daemon polls independently, preserving validator hot-path resources." },
+            { title: "Revenue-aware", body: "Jito bundle acceptance becomes an operating signal, not an epoch post-mortem." },
+          ]}
+        />
+      </div>
+    </motion.div>
+  )
+}
+
+function ProjectArchitecture({
+  pipeline,
+  metrics,
+  notes,
+  inView,
+}: {
+  pipeline: PipelineNode[]
+  metrics: Metric[]
+  notes: ArchitectureNote[]
+  inView: boolean
+}) {
+  return (
+    <motion.div
+      className="mb-8"
+      initial={{ opacity: 0, y: 6 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
+      transition={{ duration: duration.reveal, ease: ease.outSoft }}
+    >
+      <div className="sentinel-visual sentinel-visual-architecture">
+        <div className="sentinel-visual-bar">
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="h-4 w-4 text-[rgba(var(--mode-rgb),0.54)]" />
+            <span className="font-mono text-xs text-[rgba(230,241,255,0.76)]">
+              Architecture Overview
+            </span>
+          </div>
+          <span className="subsystem-label">PIPELINE</span>
         </div>
 
-        <div className="architecture-notes">
-          <div>
-            <span>Predictive</span>
-            <p>ShredStream latency and vote-credit velocity move before delinquency.</p>
-          </div>
-          <div>
-            <span>Out-of-band</span>
-            <p>Daemon polls independently, preserving validator hot-path resources.</p>
-          </div>
-          <div>
-            <span>Revenue-aware</span>
-            <p>Jito bundle acceptance becomes an operating signal, not an epoch post-mortem.</p>
-          </div>
-        </div>
+        <PipelineMap nodes={pipeline} />
+        <MetricRail metrics={metrics} />
+        <ArchitectureNotes notes={notes} />
       </div>
     </motion.div>
   )
@@ -228,19 +375,32 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             </span>
           </div>
 
-          {/* External link */}
-          <Link
-            href={project.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="project-link flex items-center gap-1.5 font-mono text-xs group/link"
-          >
-            <span>LINK</span>
-            <ExternalLink
-              className="w-3 h-3 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
-              style={{ transitionDuration: `${duration.hover * 1000}ms` }}
-            />
-          </Link>
+          {/* External links */}
+          <div className="flex items-center gap-4">
+            {project.repo && (
+              <Link
+                href={project.repo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="project-link flex items-center gap-1.5 font-mono text-xs group/code"
+              >
+                <Github className="w-3 h-3" />
+                <span>CODE</span>
+              </Link>
+            )}
+            <Link
+              href={project.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="project-link flex items-center gap-1.5 font-mono text-xs group/link"
+            >
+              <span>LINK</span>
+              <ExternalLink
+                className="w-3 h-3 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
+                style={{ transitionDuration: `${duration.hover * 1000}ms` }}
+              />
+            </Link>
+          </div>
         </div>
 
         {/* Panel body */}
@@ -267,7 +427,7 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
           )}
 
           {/* Publication */}
-          {"publication" in project && project.publication && (
+          {project.publication && (
             <p className="font-mono text-xs mb-6" style={{ color: "var(--foreground-dim)" }}>
               {project.publication}
             </p>
@@ -277,40 +437,16 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             {project.description}
           </p>
 
-          <div className="module-telemetry mb-8" aria-hidden="true">
-            <div className="telemetry-strip">
-              <span style={{ width: "32%", animationDelay: `${index * 0.12}s` }} />
-              <span style={{ width: "58%", animationDelay: `${index * 0.12 + 0.08}s` }} />
-              <span style={{ width: "44%", animationDelay: `${index * 0.12 + 0.16}s` }} />
-            </div>
-            <div className="architecture-flow">
-              <i />
-              <i />
-              <i />
-              <b />
-            </div>
-          </div>
-
           {project.id === "sentinelsol" ? (
             <SentinelOperationalAssets inView={isInView} />
-          ) : (
-            (() => {
-              const imageEntries = Object.values(project.images ?? {})
-              if (imageEntries.length === 0) return null
-              return (
-                <div className="grid md:grid-cols-2 gap-4 mb-8">
-                  {imageEntries.map((image, idx) => (
-                    <ImagePlaceholder
-                      key={idx}
-                      title={image.title}
-                      description={image.description}
-                      path={image.path}
-                    />
-                  ))}
-                </div>
-              )
-            })()
-          )}
+          ) : project.pipeline && project.metrics && project.notes ? (
+            <ProjectArchitecture
+              pipeline={project.pipeline}
+              metrics={project.metrics}
+              notes={project.notes}
+              inView={isInView}
+            />
+          ) : null}
 
           {/* Tradeoffs */}
           <div className="mb-8">

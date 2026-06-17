@@ -2,6 +2,7 @@ import { Header } from "@/components/header"
 import { Landing } from "@/components/landing"
 import { Projects } from "@/components/projects"
 import { Experience } from "@/components/experience"
+import { Tools } from "@/components/tools"
 import { Contact } from "@/components/contact"
 import { BootSequence } from "@/components/boot-sequence"
 import { CvSection } from "@/components/cv-section"
@@ -18,6 +19,7 @@ export default function Home() {
       <Landing />
       <Projects />
       <Experience />
+      <Tools />
       <CvSection />
       <Contact />
     </main>
