@@ -1087,3 +1087,281 @@ html {
     opacity: 0;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* INCIDENT REPLAY — SentinelSOL operational timeline                          */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.incident-track {
+  position: relative;
+  z-index: 2;
+  padding: 18px 18px 6px;
+}
+
+.incident-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 50px 16px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  padding-bottom: 18px;
+}
+
+.incident-step::after {
+  content: "";
+  position: absolute;
+  left: 70px;
+  top: 9px;
+  bottom: 0;
+  z-index: 0;
+  width: 1px;
+  background: rgba(var(--mode-rgb), 0.16);
+}
+
+.incident-step:last-child::after { display: none; }
+
+.incident-time {
+  padding-top: 1px;
+  text-align: right;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: rgba(var(--mode-rgb), 0.6);
+}
+
+.incident-marker {
+  position: relative;
+  z-index: 1;
+  justify-self: center;
+  width: 9px;
+  height: 9px;
+  margin-top: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--mode-rgb), 0.55);
+  background: #05070A;
+  box-shadow: 0 0 6px rgba(var(--mode-rgb), 0.22);
+}
+
+.incident-step[data-human="true"] .incident-marker {
+  border-color: rgba(230, 241, 255, 0.5);
+  background: rgba(230, 241, 255, 0.1);
+  box-shadow: 0 0 6px rgba(230, 241, 255, 0.14);
+}
+
+.incident-title {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(230, 241, 255, 0.86);
+}
+
+.incident-phase {
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+}
+
+.incident-detail {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: rgba(170, 182, 195, 0.62);
+}
+
+.incident-summary {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  border-top: 1px solid rgba(var(--mode-rgb), 0.08);
+  background: rgba(var(--mode-rgb), 0.06);
+}
+
+.incident-summary span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 11px 14px;
+  background: #070B10;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(170, 182, 195, 0.6);
+}
+
+.incident-summary b {
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(var(--mode-rgb), 0.85);
+}
+
+.incident-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgb(var(--mode-rgb));
+  box-shadow: 0 0 6px rgba(var(--mode-rgb), 0.5);
+  animation: pulse-dot 3s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* ENGINEERING NOTES — expandable case study                                   */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.engineering-notes-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(var(--mode-rgb), 0.12);
+  background: rgba(var(--mode-rgb), 0.02);
+  color: rgba(230, 241, 255, 0.78);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+.engineering-notes-toggle:hover {
+  border-color: rgba(var(--mode-rgb), 0.3);
+  background: rgba(var(--mode-rgb), 0.045);
+  color: rgb(var(--mode-rgb));
+}
+.engineering-notes-toggle svg { color: rgba(var(--mode-rgb), 0.7); }
+.en-hint {
+  margin-left: auto;
+  color: rgba(170, 182, 195, 0.4);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* FIELD LOG                                                                    */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.field-log-row {
+  border-left: 1px solid transparent;
+  transition: border-color 160ms ease;
+}
+.field-log-row:hover {
+  border-left-color: rgba(var(--mode-rgb), 0.42);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* OPERATOR CREDENTIALS — hidden recruiter command                             */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.creds-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(5, 7, 10, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: credsFade 180ms ease;
+}
+.creds-card {
+  width: min(440px, 100%);
+  padding: 18px 18px 16px;
+  border: 1px solid rgba(var(--mode-rgb), 0.22);
+  background:
+    linear-gradient(180deg, rgba(var(--mode-rgb), 0.04), transparent 40%),
+    #0B0F14;
+  box-shadow: 0 0 40px rgba(var(--mode-rgb), 0.08),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.015);
+}
+.creds-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(var(--mode-rgb), 0.1);
+}
+.creds-close {
+  padding: 2px 6px;
+  border: 1px solid rgba(var(--mode-rgb), 0.18);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: rgba(var(--mode-rgb), 0.55);
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+.creds-close:hover {
+  color: rgb(var(--mode-rgb));
+  border-color: rgba(var(--mode-rgb), 0.4);
+}
+.creds-list {
+  display: grid;
+  gap: 1px;
+  border: 1px solid rgba(var(--mode-rgb), 0.07);
+  background: rgba(var(--mode-rgb), 0.07);
+}
+.creds-list > div {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #0B0F14;
+}
+.creds-list dt {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(var(--mode-rgb), 0.42);
+}
+.creds-list dd {
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: rgba(230, 241, 255, 0.82);
+}
+.creds-foot {
+  margin-top: 12px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: rgba(170, 182, 195, 0.4);
+}
+@keyframes credsFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* SECTION ATMOSPHERE STATES — subtle per-zone shifts (data-zone on <html>)     */
+/* The feeling of traversing systems: signal up on PROJECTS, archive on the     */
+/* FIELD LOG, calm shutdown on CONTACT. EXPERIENCE warmth is the CLU pass.       */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.traffic-layer,
+.trace-highway,
+.ambient-reflection { transition: opacity 800ms ease; }
+.grid-horizon { transition: opacity 700ms ease; }
+
+html[data-zone="projects"] .grid-field { opacity: 0.058; }
+html[data-zone="projects"] .traffic-layer,
+html[data-zone="projects"] .trace-highway { opacity: 0.68; }
+
+html[data-zone="fieldlog"] .grid-field { opacity: 0.024; }
+html[data-zone="fieldlog"] .traffic-layer,
+html[data-zone="fieldlog"] .trace-highway { opacity: 0.32; }
+html[data-zone="fieldlog"] .grid-horizon { opacity: 0.34; }
+html[data-zone="fieldlog"] .ambient-reflection { opacity: 0.09; }
+
+html[data-zone="contact"] .grid-field { opacity: 0.03; }
+html[data-zone="contact"] .traffic-layer,
+html[data-zone="contact"] .trace-highway { opacity: 0.26; }
+html[data-zone="contact"] .grid-horizon { opacity: 0.3; }
+
+/* ─── Responsive tweaks for the new components ───────────────────────────── */
+@media (max-width: 640px) {
+  .en-hint { display: none; }
+  .incident-step { grid-template-columns: 44px 14px minmax(0, 1fr); gap: 10px; }
+  .incident-step::after { left: 60px; }
+  .incident-summary { grid-template-columns: 1fr; }
+  .creds-list > div { grid-template-columns: 80px 1fr; gap: 10px; }
+}

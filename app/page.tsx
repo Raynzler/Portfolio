@@ -4,6 +4,7 @@ import { Projects } from "@/components/projects"
 import { Experience } from "@/components/experience"
 import { Tools } from "@/components/tools"
 import { Contact } from "@/components/contact"
+import { FieldLog } from "@/components/field-log"
 import { BootSequence } from "@/components/boot-sequence"
 import { CvSection } from "@/components/cv-section"
 import { SystemAtmosphere } from "@/components/system-atmosphere"
@@ -21,6 +22,7 @@ export default function Home() {
       <Experience />
       <Tools />
       <CvSection />
+      <FieldLog />
       <Contact />
     </main>
   )

@@ -3,6 +3,7 @@
 import {
   Activity,
   BellRing,
+  ChevronRight,
   Cpu,
   Database,
   ExternalLink,
@@ -16,9 +17,10 @@ import {
   type LucideIcon,
 } from "lucide-react"
 import Link from "next/link"
-import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
+import { motion, AnimatePresence, useInView } from "framer-motion"
+import { useRef, useState } from "react"
 import { fadeUp, staggerContainer, staggerItem, duration, ease } from "@/lib/motion"
+import { IncidentReplay } from "@/components/incident-replay"
 
 interface PipelineNode {
   label: string
@@ -33,6 +35,13 @@ interface Metric {
 interface ArchitectureNote {
   title: string
   body: string
+}
+
+interface CaseStudy {
+  problem: string
+  decisions: string[]
+  lessons: string[]
+  failureModes: string[]
 }
 
 interface Project {
@@ -52,6 +61,7 @@ interface Project {
   pipeline?: PipelineNode[]
   metrics?: Metric[]
   notes?: ArchitectureNote[]
+  caseStudy?: CaseStudy
 }
 
 const projects: Project[] = [
@@ -73,6 +83,24 @@ const projects: Project[] = [
       "3-sigma threshold tuned empirically against 72-hour rolling baseline",
       "Telegram over PagerDuty for cost and latency in crypto ops context",
     ],
+    caseStudy: {
+      problem:
+        "A validator's rewards slow the moment vote credits drop, but stock dashboards only surface delinquency after it has already cost an epoch. There was no early, out-of-band signal an operator could act on.",
+      decisions: [
+        "Poll the RPC out-of-band instead of injecting a sidecar — monitoring must never compete with the validator for the hot path.",
+        "Detect anomalies with a 3σ Z-score over a rolling 72h baseline rather than a static threshold, so it adapts to each validator's normal.",
+        "Page over Telegram: zero cost, sub-second delivery, and where the crypto-ops conversation already happens.",
+      ],
+      lessons: [
+        "Vote-credit velocity is a leading indicator; ShredStream latency alone lags the actual revenue impact.",
+        "A baseline that re-learns is the hard part — a fixed threshold either pages constantly or never fires.",
+      ],
+      failureModes: [
+        "RPC unreachable: the daemon has to alert on its own silence, or an outage reads as calm.",
+        "Cold start: the first 72h have no baseline, so thresholds stay wide until enough history accrues.",
+        "Epoch boundaries cause legitimate velocity dips that must be excluded from paging.",
+      ],
+    },
   },
   {
     id: "autosre",
@@ -117,6 +145,23 @@ const projects: Project[] = [
       "50ms p95 budget chosen based on downstream service SLOs",
       "Automated recovery limited to stateless services to avoid data corruption",
     ],
+    caseStudy: {
+      problem:
+        "Stateless services fail in boring, repetitive ways. Waking a human for a restart that a runbook could perform is wasted MTTR — but automating recovery carelessly is how you turn one incident into ten.",
+      decisions: [
+        "Instrument RED metrics on every request so the signal is request-shaped, not host-shaped.",
+        "Derive the 50ms p95 budget from downstream SLOs rather than picking a round number.",
+        "Scope automated recovery to stateless services only — anything holding state stays human-gated.",
+      ],
+      lessons: [
+        "Automated recovery is only safe with a hard blast-radius limit; the limit matters more than the automation.",
+        "Any action that can loop needs a circuit breaker, or the recovery becomes the incident.",
+      ],
+      failureModes: [
+        "Recovery loop: a service still failing its health check after restart must escalate to a human, not retry forever.",
+        "Thundering restart: concurrent recoveries need a concurrency cap so the platform doesn't bounce everything at once.",
+      ],
+    },
   },
   {
     id: "gridcast",
@@ -161,6 +206,23 @@ const projects: Project[] = [
       "14-step input window balances temporal context vs. computational cost",
       "Optuna TPE over grid search for efficient hyperparameter exploration",
     ],
+    caseStudy: {
+      problem:
+        "Regional heatwave forecasting has to respect that monsoon-season and dry-season dynamics are different physical regimes. A single global model blurs them together and loses both accuracy and explainability.",
+      decisions: [
+        "Train 28 per-region, per-season models instead of one network — each fits its own regime and stays interpretable.",
+        "Use a 14-step input window as the balance between temporal context and training cost across all 28 subsets.",
+        "Run Optuna TPE per subset rather than grid search; the joint space was too large to sweep.",
+      ],
+      lessons: [
+        "Partitioning by domain knowledge (region × season) beat a larger single model on both accuracy and explainability.",
+        "Per-subset tuning is expensive to orchestrate — the bookkeeping across 28 runs was the real engineering.",
+      ],
+      failureModes: [
+        "Sparse subsets: some region/season splits have thin data and overfit without heavier regularisation.",
+        "Distribution shift: a 70-year baseline underweights recent warming, so the latest years skew residuals.",
+      ],
+    },
   },
 ]
 
@@ -318,10 +380,55 @@ function ProjectArchitecture({
   )
 }
 
+function CaseStudyList({ label, items }: { label: string; items: string[] }) {
+  return (
+    <div>
+      <p className="subsystem-label mb-3" style={{ color: "rgba(var(--mode-rgb), 0.4)" }}>
+        {label}
+      </p>
+      <ul className="space-y-2">
+        {items.map((item, i) => (
+          <li
+            key={i}
+            className="text-xs leading-relaxed pl-4"
+            style={{
+              color: "var(--foreground-muted)",
+              borderLeft: "1px solid rgba(var(--mode-rgb), 0.14)",
+            }}
+          >
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+function CaseStudyBody({ cs }: { cs: CaseStudy }) {
+  return (
+    <div className="case-study pt-5 grid gap-7">
+      <div>
+        <p className="subsystem-label mb-3" style={{ color: "rgba(var(--mode-rgb), 0.4)" }}>
+          Problem
+        </p>
+        <p className="text-xs leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
+          {cs.problem}
+        </p>
+      </div>
+      <CaseStudyList label="Key Decisions" items={cs.decisions} />
+      <div className="grid gap-7 md:grid-cols-2">
+        <CaseStudyList label="Lessons Learned" items={cs.lessons} />
+        <CaseStudyList label="Failure Modes" items={cs.failureModes} />
+      </div>
+    </div>
+  )
+}
+
 function ProjectPanel({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: "-60px 0px" })
   const sc = statusColors[project.status as keyof typeof statusColors] ?? statusColors.shipped
+  const [showNotes, setShowNotes] = useState(false)
 
   return (
     <motion.article
@@ -438,7 +545,10 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
           </p>
 
           {project.id === "sentinelsol" ? (
-            <SentinelOperationalAssets inView={isInView} />
+            <>
+              <SentinelOperationalAssets inView={isInView} />
+              <IncidentReplay inView={isInView} />
+            </>
           ) : project.pipeline && project.metrics && project.notes ? (
             <ProjectArchitecture
               pipeline={project.pipeline}
@@ -447,6 +557,41 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
               inView={isInView}
             />
           ) : null}
+
+          {/* Engineering notes — expandable case study */}
+          {project.caseStudy && (
+            <div className="mb-8">
+              <button
+                type="button"
+                onClick={() => setShowNotes((v) => !v)}
+                aria-expanded={showNotes}
+                aria-controls={`notes-${project.id}`}
+                className="engineering-notes-toggle"
+              >
+                <ChevronRight
+                  className="h-3.5 w-3.5 shrink-0 transition-transform"
+                  style={{ transform: showNotes ? "rotate(90deg)" : "none" }}
+                />
+                <span>Engineering notes</span>
+                <span className="en-hint">problem · decisions · lessons · failure modes</span>
+              </button>
+              <AnimatePresence initial={false}>
+                {showNotes && (
+                  <motion.div
+                    id={`notes-${project.id}`}
+                    key="notes"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.28, ease: ease.outSoft }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <CaseStudyBody cs={project.caseStudy} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* Tradeoffs */}
           <div className="mb-8">

@@ -5,12 +5,12 @@ import { motion, useInView } from "framer-motion"
 import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
 
 const toolCategories = [
-  { name: "Languages",      items: ["Go", "Python", "Bash", "C++"] },
   { name: "Infrastructure", items: ["Docker", "Kubernetes", "Terraform", "Linux"] },
   { name: "Observability",  items: ["Prometheus", "PromQL", "Grafana", "Alertmanager"] },
   { name: "Cloud",          items: ["AWS", "GCP", "Azure", "OCI", "DigitalOcean"] },
-  { name: "CI / Automation",items: ["GitHub Actions", "CI/CD", "NGINX"] },
-  { name: "Data & Queues",  items: ["Redis", "BullMQ", "MySQL", "SQLite"] },
+  { name: "Languages",      items: ["Go", "Python", "Bash", "C++"] },
+  { name: "Automation",     items: ["GitHub Actions", "CI/CD", "NGINX"] },
+  { name: "Storage",        items: ["Redis", "BullMQ", "MySQL", "SQLite"] },
 ]
 
 const certifications = [
@@ -53,6 +53,17 @@ export function Tools() {
               Stack &amp; Capabilities
             </span>
           </motion.div>
+
+          <motion.p
+            variants={fadeUp}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            className="text-xs leading-relaxed mb-12 max-w-md"
+            style={{ color: "var(--foreground-dim)" }}
+          >
+            What I reach for, grouped by where it sits in the stack. Listed because I&apos;ve shipped
+            or operated something with it, not to pad a list.
+          </motion.p>
 
           {/* Tool grid */}
           <motion.div
