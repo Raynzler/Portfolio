@@ -2,7 +2,7 @@
 
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
-import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
+import { fadeUp } from "@/lib/motion"
 
 /**
  * Field Log — a deliberately un-navigated archive. There is no nav link to it;
@@ -10,6 +10,12 @@ import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
  * exposure as field notes (what the room was actually about), not a list of
  * conferences attended. Dates are at the granularity I can stand behind.
  */
+// TEMPORARY MAINTENANCE STATE
+// The real entries below are intentionally hidden until verified, personalised
+// dates and takeaways are confirmed. To restore, delete the surrounding /* */,
+// re-add `staggerContainer, staggerItem` to the motion import, and swap the
+// maintenance panel back for the <motion.ol> list (see git history, commit b3b2cd8).
+/*
 type Tag = "SOLANA" | "ETHEREUM" | "AI" | "BUILD"
 
 interface LogEntry {
@@ -26,7 +32,7 @@ const entries: LogEntry[] = [
     location: "Berlin, DE",
     date: "Jun 2026",
     tag: "SOLANA",
-    note: "Superteam Germany's flagship. Tracks on validator economics, stablecoin rails, and Solana-as-infrastructure — the same ecosystem the SentinelSOL ideathon ran under.",
+    note: "Superteam Germany's flagship. Tracks on validator economics, stablecoin rails, and Solana-as-infrastructure, the same ecosystem the SentinelSOL ideathon ran under.",
   },
   {
     event: "Berlin Blockchain Week",
@@ -40,7 +46,7 @@ const entries: LogEntry[] = [
     location: "Berlin, DE",
     date: "2026",
     tag: "AI",
-    note: "Agent orchestration and evaluation. Most of the hard problems were reliability ones — retries, tool-call failure handling, and observability for non-deterministic systems.",
+    note: "Agent orchestration and evaluation. Most of the hard problems were reliability ones, retries, tool-call failure handling, and observability for non-deterministic systems.",
   },
   {
     event: "ETH Day",
@@ -61,7 +67,7 @@ const entries: LogEntry[] = [
     location: "Bengaluru, IN",
     date: "2022",
     tag: "SOLANA",
-    note: "Hands-on with the program model and the validator architecture — Anchor, accounts, and how a vote actually lands on-chain.",
+    note: "Hands-on with the program model and the validator architecture, Anchor, accounts, and how a vote actually lands on-chain.",
   },
   {
     event: "Google DevFest",
@@ -82,7 +88,7 @@ const entries: LogEntry[] = [
     location: "Online",
     date: "2023",
     tag: "BUILD",
-    note: "Team build, tight deadline. Reinforced that the boring parts — deploys, env parity, a health check — are what decide whether a demo survives.",
+    note: "Team build, tight deadline. Reinforced that the boring parts, deploys, env parity, a health check, are what decide whether a demo survives.",
   },
 ]
 
@@ -92,6 +98,7 @@ const tagColor: Record<Tag, string> = {
   AI: "rgba(var(--mode-rgb), 0.6)",
   BUILD: "rgba(170, 182, 195, 0.6)",
 }
+*/
 
 export function FieldLog() {
   const ref = useRef<HTMLElement>(null)
@@ -138,46 +145,26 @@ export function FieldLog() {
             infrastructure and crypto ecosystems I&apos;ve spent time in.
           </motion.p>
 
-          <motion.ol
-            variants={staggerContainer(0.05, 0.08)}
+          {/* Temporary maintenance state — real entries hidden until verified */}
+          <motion.div
+            variants={fadeUp}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
-            className="space-y-px"
-            style={{ background: "rgba(var(--mode-rgb), 0.07)" }}
+            className="tron-panel rounded-sm px-6 py-8 flex items-start gap-4"
           >
-            {entries.map((entry) => (
-              <motion.li
-                key={`${entry.event}-${entry.date}`}
-                variants={staggerItem}
-                className="field-log-row px-5 py-4"
-                style={{ background: "var(--bg-panel)" }}
-              >
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span
-                    className="font-mono text-[0.65rem] tracking-[0.12em] shrink-0 w-[150px]"
-                    style={{ color: "rgba(var(--mode-rgb), 0.5)" }}
-                  >
-                    {entry.date} · {entry.location}
-                  </span>
-                  <h3 className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-                    {entry.event}
-                  </h3>
-                  <span
-                    className="font-mono text-[0.6rem] tracking-[0.14em] ml-auto"
-                    style={{ color: tagColor[entry.tag] }}
-                  >
-                    {entry.tag}
-                  </span>
-                </div>
-                <p
-                  className="text-xs leading-relaxed mt-2 pl-[150px] max-[640px]:pl-0"
-                  style={{ color: "var(--foreground-muted)" }}
-                >
-                  {entry.note}
-                </p>
-              </motion.li>
-            ))}
-          </motion.ol>
+            <span
+              className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5"
+              style={{
+                backgroundColor: "rgb(var(--mode-rgb))",
+                animation: "pulse-dot 3.5s ease-in-out infinite",
+                boxShadow: "0 0 6px rgba(var(--mode-rgb), 0.5)",
+              }}
+            />
+            <p className="text-xs leading-relaxed max-w-md" style={{ color: "var(--foreground-muted)" }}>
+              Field Log is currently being updated. Additional events, hackathons, conferences,
+              and community activities will be added soon.
+            </p>
+          </motion.div>
 
           {/* Colophon — the inspiration, discovered rather than announced */}
           <motion.p
