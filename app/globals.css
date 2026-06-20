@@ -1428,52 +1428,6 @@ html[data-zone="contact"] .grid-horizon { opacity: 0.3; }
 .stack-tag:active { border-color: rgba(var(--mode-rgb), 0.4); }
 .creds-close:active { background: rgba(var(--mode-rgb), 0.08); }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* SECTION ENTRY — a signal sweeps the separator as each subsystem comes online */
-/* Scroll-driven (not autoplay); composited transform; graceful where absent.   */
-/* ─────────────────────────────────────────────────────────────────────────── */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .section-sep {
-      position: relative;
-      overflow: hidden;
-    }
-    .section-sep::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        to right,
-        transparent 0%,
-        rgba(var(--mode-rgb), 0.75) 50%,
-        transparent 100%
-      );
-      transform: translateX(-100%);
-      will-change: transform;
-      animation: section-acquire linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 78%;
-    }
-    @keyframes section-acquire {
-      to { transform: translateX(100%); }
-    }
-  }
-}
-
-/* ─── Grid horizon depth cue — a faint far edge where the floor recedes ───── */
-.grid-horizon::before {
-  content: "";
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  top: 14%;
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(var(--mode-rgb), 0.32), transparent);
-  filter: blur(0.5px);
-  opacity: 0.55;
-  pointer-events: none;
-}
-
 /* ─── Responsive tweaks for the new components ───────────────────────────── */
 @media (max-width: 640px) {
   .en-hint { display: none; }

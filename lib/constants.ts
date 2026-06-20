@@ -30,8 +30,8 @@ export const GLOW = {
 } as const
 
 export const TRAIL = {
-  count: 7,
-  containerOpacity: 0.7,
+  count: 12,
+  containerOpacity: 1,
 } as const
 
 export const BOOT = {
