@@ -7,8 +7,10 @@ import {
   Cpu,
   Database,
   ExternalLink,
+  FileText,
   Github,
   Map as MapIcon,
+  Network,
   RadioTower,
   RotateCcw,
   Server,
@@ -424,11 +426,73 @@ function CaseStudyBody({ cs }: { cs: CaseStudy }) {
   )
 }
 
+function ProjectActions({
+  project,
+  hasArch,
+  onArchitecture,
+  onCaseStudy,
+}: {
+  project: Project
+  hasArch: boolean
+  onArchitecture: () => void
+  onCaseStudy: () => void
+}) {
+  return (
+    <div className="project-actions mb-8" role="group" aria-label={`${project.title} actions`}>
+      <Link
+        href={project.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="project-action project-action-primary"
+      >
+        <ExternalLink aria-hidden="true" />
+        <span>Live System</span>
+      </Link>
+      {project.repo && (
+        <Link
+          href={project.repo}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="project-action"
+        >
+          <Github aria-hidden="true" />
+          <span>Source Code</span>
+        </Link>
+      )}
+      {project.caseStudy && (
+        <button type="button" className="project-action" onClick={onCaseStudy}>
+          <FileText aria-hidden="true" />
+          <span>Case Study</span>
+        </button>
+      )}
+      {hasArch && (
+        <button type="button" className="project-action" onClick={onArchitecture}>
+          <Network aria-hidden="true" />
+          <span>Architecture</span>
+        </button>
+      )}
+    </div>
+  )
+}
+
 function ProjectPanel({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: "-60px 0px" })
   const sc = statusColors[project.status as keyof typeof statusColors] ?? statusColors.shipped
   const [showNotes, setShowNotes] = useState(false)
+  const archRef = useRef<HTMLDivElement>(null)
+  const notesRef = useRef<HTMLDivElement>(null)
+  const hasArch = project.id === "sentinelsol" || !!project.pipeline
+
+  const goToArchitecture = () => {
+    archRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+  }
+  const openCaseStudy = () => {
+    setShowNotes(true)
+    window.setTimeout(() => {
+      notesRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+    }, 80)
+  }
 
   return (
     <motion.article
@@ -482,32 +546,14 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             </span>
           </div>
 
-          {/* External links */}
-          <div className="flex items-center gap-4">
-            {project.repo && (
-              <Link
-                href={project.repo}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="project-link flex items-center gap-1.5 font-mono text-xs group/code"
-              >
-                <Github className="w-3 h-3" />
-                <span>CODE</span>
-              </Link>
-            )}
-            <Link
-              href={project.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="project-link flex items-center gap-1.5 font-mono text-xs group/link"
-            >
-              <span>LINK</span>
-              <ExternalLink
-                className="w-3 h-3 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
-                style={{ transitionDuration: `${duration.hover * 1000}ms` }}
-              />
-            </Link>
-          </div>
+          {/* Status indicator — primary actions live in the body action bar below */}
+          <span
+            className="hidden sm:flex items-center gap-2 font-mono text-[0.6rem] tracking-[0.14em] uppercase"
+            style={{ color: "rgba(var(--mode-rgb), 0.4)" }}
+            aria-hidden="true"
+          >
+            SECTOR {String(index + 1).padStart(2, "0")}
+          </span>
         </div>
 
         {/* Panel body */}
@@ -540,27 +586,37 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             </p>
           )}
 
+          {/* Explicit, obvious actions — no hunting for where to click */}
+          <ProjectActions
+            project={project}
+            hasArch={hasArch}
+            onArchitecture={goToArchitecture}
+            onCaseStudy={openCaseStudy}
+          />
+
           <p className="text-sm leading-relaxed mb-8" style={{ color: "var(--foreground-dim)" }}>
             {project.description}
           </p>
 
-          {project.id === "sentinelsol" ? (
-            <>
-              <SentinelOperationalAssets inView={isInView} />
-              <IncidentReplay inView={isInView} />
-            </>
-          ) : project.pipeline && project.metrics && project.notes ? (
-            <ProjectArchitecture
-              pipeline={project.pipeline}
-              metrics={project.metrics}
-              notes={project.notes}
-              inView={isInView}
-            />
-          ) : null}
+          <div ref={archRef} style={{ scrollMarginTop: "96px" }}>
+            {project.id === "sentinelsol" ? (
+              <>
+                <SentinelOperationalAssets inView={isInView} />
+                <IncidentReplay inView={isInView} />
+              </>
+            ) : project.pipeline && project.metrics && project.notes ? (
+              <ProjectArchitecture
+                pipeline={project.pipeline}
+                metrics={project.metrics}
+                notes={project.notes}
+                inView={isInView}
+              />
+            ) : null}
+          </div>
 
           {/* Engineering notes — expandable case study */}
           {project.caseStudy && (
-            <div className="mb-8">
+            <div className="mb-8" ref={notesRef} style={{ scrollMarginTop: "96px" }}>
               <button
                 type="button"
                 onClick={() => setShowNotes((v) => !v)}

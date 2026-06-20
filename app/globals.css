@@ -1357,6 +1357,123 @@ html[data-zone="contact"] .traffic-layer,
 html[data-zone="contact"] .trace-highway { opacity: 0.26; }
 html[data-zone="contact"] .grid-horizon { opacity: 0.3; }
 
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* PROJECT ACTIONS — explicit, obvious click targets                           */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.project-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.project-action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 15px;
+  border: 1px solid rgba(var(--mode-rgb), 0.16);
+  border-radius: 2px;
+  background: rgba(var(--mode-rgb), 0.03);
+  color: rgba(230, 241, 255, 0.8);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+.project-action svg {
+  width: 13px;
+  height: 13px;
+  color: rgba(var(--mode-rgb), 0.7);
+  transition: color 160ms ease;
+}
+/* Illuminated top edge — "hardware activation" on hover/focus */
+.project-action::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(var(--mode-rgb), 0.65), transparent);
+  transform: scaleX(0);
+  transition: transform 220ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.project-action:hover,
+.project-action:focus-visible {
+  border-color: rgba(var(--mode-rgb), 0.45);
+  background: rgba(var(--mode-rgb), 0.07);
+  color: #e6f1ff;
+}
+.project-action:hover svg,
+.project-action:focus-visible svg { color: rgb(var(--mode-rgb)); }
+.project-action:hover::after,
+.project-action:focus-visible::after { transform: scaleX(1); }
+.project-action:active { background: rgba(var(--mode-rgb), 0.11); }
+.project-action-primary {
+  border-color: rgba(var(--mode-rgb), 0.34);
+  background: rgba(var(--mode-rgb), 0.08);
+  color: #e6f1ff;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* MICROINTERACTION POLISH — active/press feedback (focus is global)            */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.hero-cta:active { transform: translateY(0.5px); }
+.contact-link:active { background: rgba(var(--mode-rgb), 0.05); }
+.engineering-notes-toggle:active { background: rgba(var(--mode-rgb), 0.07); }
+.stack-tag:active { border-color: rgba(var(--mode-rgb), 0.4); }
+.creds-close:active { background: rgba(var(--mode-rgb), 0.08); }
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* SECTION ENTRY — a signal sweeps the separator as each subsystem comes online */
+/* Scroll-driven (not autoplay); composited transform; graceful where absent.   */
+/* ─────────────────────────────────────────────────────────────────────────── */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .section-sep {
+      position: relative;
+      overflow: hidden;
+    }
+    .section-sep::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(var(--mode-rgb), 0.75) 50%,
+        transparent 100%
+      );
+      transform: translateX(-100%);
+      will-change: transform;
+      animation: section-acquire linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 78%;
+    }
+    @keyframes section-acquire {
+      to { transform: translateX(100%); }
+    }
+  }
+}
+
+/* ─── Grid horizon depth cue — a faint far edge where the floor recedes ───── */
+.grid-horizon::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 14%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(var(--mode-rgb), 0.32), transparent);
+  filter: blur(0.5px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 /* ─── Responsive tweaks for the new components ───────────────────────────── */
 @media (max-width: 640px) {
   .en-hint { display: none; }
@@ -1364,4 +1481,5 @@ html[data-zone="contact"] .grid-horizon { opacity: 0.3; }
   .incident-step::after { left: 60px; }
   .incident-summary { grid-template-columns: 1fr; }
   .creds-list > div { grid-template-columns: 80px 1fr; gap: 10px; }
+  .project-action { flex: 1 1 auto; justify-content: center; }
 }
