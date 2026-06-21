@@ -398,6 +398,12 @@ html {
   perspective-origin: 50% 0%;
   opacity: 0.5;
   pointer-events: none;
+  /* The child plane is 3D-transformed (rotateX). `overflow:hidden` on a distant
+     ancestor does NOT reliably clip 3D descendants in WebKit, so the ~4769px
+     plane spilled past the viewport there (the "giant bottom bar"). clip-path on
+     the perspective parent clips the rendered 3D output on every engine. */
+  overflow: hidden;
+  clip-path: inset(0);
   -webkit-mask-image: linear-gradient(to top, #000 0%, #000 26%, transparent 90%);
   mask-image: linear-gradient(to top, #000 0%, #000 26%, transparent 90%);
 }
