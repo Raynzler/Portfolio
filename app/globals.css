@@ -269,18 +269,6 @@ html {
   42%      { opacity: 0.72; transform: scale(1); }
 }
 
-@keyframes telemetry-reveal {
-  0%   { transform: scaleX(0.18); opacity: 0.18; }
-  55%  { opacity: 0.62; }
-  100% { transform: scaleX(1); opacity: 0.38; }
-}
-
-@keyframes flow-pulse {
-  0%   { left: 0%; opacity: 0; }
-  18%  { opacity: 0.62; }
-  100% { left: 100%; opacity: 0; }
-}
-
 @keyframes document-scan {
   0%   { transform: translateY(-120%); opacity: 0; }
   20%  { opacity: 0.42; }
@@ -387,7 +375,7 @@ html {
 .grid-field {
   position: absolute;
   inset: -12%;
-  opacity: 0.04;
+  opacity: 0.052;
   background-image:
     linear-gradient(rgba(var(--mode-rgb), 1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(var(--mode-rgb), 1) 1px, transparent 1px),
@@ -769,63 +757,6 @@ html {
   height: 5px;
 }
 
-.module-telemetry {
-  display: grid;
-  grid-template-columns: minmax(0, 0.72fr) minmax(160px, 0.28fr);
-  gap: 18px;
-  align-items: center;
-}
-
-.telemetry-strip {
-  display: grid;
-  gap: 6px;
-}
-
-.telemetry-strip span {
-  display: block;
-  height: 1px;
-  transform-origin: left center;
-  background: linear-gradient(to right, rgba(var(--mode-rgb), 0.48), transparent);
-  animation: telemetry-reveal 1.8s ease-out both;
-}
-
-.architecture-flow {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 24px;
-}
-
-.architecture-flow::before {
-  content: "";
-  position: absolute;
-  left: 7px;
-  right: 7px;
-  top: 50%;
-  height: 1px;
-  background: rgba(var(--mode-rgb), 0.14);
-}
-
-.architecture-flow i {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 7px;
-  height: 7px;
-  border: 1px solid rgba(var(--mode-rgb), 0.26);
-  background: #05070A;
-}
-
-.architecture-flow b {
-  position: absolute;
-  top: calc(50% - 1px);
-  width: 26px;
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(var(--mode-rgb), 0.74), transparent);
-  animation: flow-pulse 2.8s linear infinite;
-}
-
 .sentinel-assets {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
@@ -1028,7 +959,6 @@ html {
 }
 
 @media (max-width: 720px) {
-  .module-telemetry,
   .sentinel-assets {
     grid-template-columns: 1fr;
   }

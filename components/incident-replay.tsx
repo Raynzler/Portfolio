@@ -31,7 +31,7 @@ const steps: Step[] = [
     t: "00:05",
     phase: "DETECT",
     title: "Vote-credit velocity deviation",
-    detail: "Per-slot credit accrual rate falls below the rolling mean — earnings slowing before any miss.",
+    detail: "Per-slot credit accrual rate falls below the rolling mean, so earnings slow before any miss.",
   },
   {
     t: "00:10",
