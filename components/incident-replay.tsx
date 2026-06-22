@@ -1,137 +1,214 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { staggerContainer, staggerItem } from "@/lib/motion"
+import { useEffect, useRef, useState } from "react"
 
 /**
- * Incident Replay — a single SentinelSOL detection walked end to end, the way an
- * operator would reconstruct it from a postmortem. Timestamps are relative to
- * first signal; the gap between ALERT and RESOLVED is the part that matters
- * (automated time-to-alert ~1m13s, human time-to-resolve ~6m). It is a static
- * timeline, not an animation loop — the point is the reasoning, not motion.
+ * Incident Replay — a single SentinelSOL detection, scrubbed by scroll.
+ *
+ * Not a reveal, not a slideshow. As the card scrolls a playhead travels the
+ * timeline, each step comes online in order, and the status board (state + T+
+ * clock) advances the way it would during a real incident. The automated half
+ * (signal -> 3sigma -> PromQL -> Alertmanager -> Telegram) takes ~1m13s; the
+ * human half (investigation -> resolution) is where the minutes go.
+ *
+ * Implementation: one rAF-throttled scroll handler writes progress to a CSS
+ * variable (--p) that drives the rail fill (scaleY) and playhead (top) with no
+ * React re-render; only the active-step index is state, and it changes at most
+ * 8 times. Everything is opacity / scaleY / top% inside the card, so it cannot
+ * overflow the viewport.
  */
-type Phase = "DETECT" | "ALERT" | "RESPOND"
+type Phase = "BASELINE" | "DETECT" | "ALERT" | "RESPOND" | "RESOLVED"
 
 interface Step {
   t: string
+  phase: Phase
   title: string
   detail: string
-  phase: Phase
-  human?: boolean
 }
 
-const steps: Step[] = [
+const STEPS: Step[] = [
   {
-    t: "00:00",
-    phase: "DETECT",
-    title: "Signal detected",
-    detail: "Scrape cycle ingests vote-credit counts and ShredStream latency from the validator RPC.",
+    t: "T+00:00",
+    phase: "BASELINE",
+    title: "Vote Credit Velocity",
+    detail: "Per-slot vote-credit accrual tracked against a 72h rolling mean. Nominal.",
   },
   {
-    t: "00:05",
+    t: "T+00:06",
     phase: "DETECT",
-    title: "Vote-credit velocity deviation",
-    detail: "Per-slot credit accrual rate falls below the rolling mean, so earnings slow before any miss.",
+    title: "Deviation Detected",
+    detail: "Accrual rate drifts below the mean; earnings slow before a single vote is missed.",
   },
   {
-    t: "00:10",
+    t: "T+00:12",
     phase: "DETECT",
-    title: "3-sigma threshold breached",
-    detail: "Z-score crosses 3σ against the 72h baseline. Noise filtered; this is a real excursion.",
+    title: "Threshold Breached",
+    detail: "Z-score crosses 3σ against the rolling baseline. Noise filtered out; this is real.",
   },
   {
-    t: "01:10",
+    t: "T+01:12",
     phase: "DETECT",
-    title: "PromQL holds for 1m",
-    detail: "Recording rule feeds the alert expression; it stays true across the `for: 1m` window before firing.",
+    title: "PromQL Evaluation",
+    detail: "Recording rule feeds the alert expression; it stays true across the for: 1m window.",
   },
   {
-    t: "01:12",
+    t: "T+01:13",
     phase: "ALERT",
-    title: "Alertmanager triggered",
-    detail: "Alert grouped and deduplicated, routed by severity. No flapping, one notification.",
+    title: "Alertmanager Triggered",
+    detail: "Grouped, deduplicated, routed by severity. One page, no flapping.",
   },
   {
-    t: "01:13",
+    t: "T+01:14",
     phase: "ALERT",
-    title: "Telegram notification",
-    detail: "Operator paged in-channel with validator identity, the breaching metric, and current value.",
+    title: "Telegram Notification",
+    detail: "Operator paged in-channel with validator identity, the metric, and its current value.",
   },
   {
-    t: "02:00",
+    t: "T+02:00",
     phase: "RESPOND",
-    human: true,
-    title: "Operator investigation",
-    detail: "Check Jito block-engine bundle acceptance and peer set; correlate against the epoch boundary.",
+    title: "Operator Investigation",
+    detail: "Check Jito block-engine bundle acceptance and peer set; correlate with the epoch boundary.",
   },
   {
-    t: "06:30",
-    phase: "RESPOND",
-    human: true,
-    title: "Resolved",
-    detail: "Peer set reconnected before delinquency. Credit velocity re-stabilises; baseline re-learns.",
+    t: "T+06:30",
+    phase: "RESOLVED",
+    title: "Resolution",
+    detail: "Peer set reconnected before delinquency. Credit velocity re-stabilises; 0 slots lost.",
   },
 ]
 
-const phaseTone: Record<Phase, string> = {
-  DETECT: "rgba(var(--mode-rgb), 0.55)",
-  ALERT: "rgba(var(--mode-rgb), 0.8)",
-  RESPOND: "rgba(230, 241, 255, 0.6)",
+const STATE: Record<Phase, { label: string; tone: number }> = {
+  BASELINE: { label: "NOMINAL", tone: 0.5 },
+  DETECT: { label: "DETECTING", tone: 0.78 },
+  ALERT: { label: "ALERTING", tone: 1 },
+  RESPOND: { label: "INVESTIGATING", tone: 0.86 },
+  RESOLVED: { label: "RESOLVED", tone: 0.62 },
 }
 
-export function IncidentReplay({ inView }: { inView: boolean }) {
+export function IncidentReplay() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [active, setActive] = useState(0)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const reduced =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+
+    if (reduced) {
+      el.style.setProperty("--p", "1")
+      setActive(STEPS.length - 1)
+      return
+    }
+
+    // Geometry is cached on mount / resize / reflow so the scroll handler only
+    // reads window.scrollY (no per-frame getBoundingClientRect -> no layout
+    // thrash). Updating directly in the scroll event is frame-paced by the
+    // browser and avoids requestAnimationFrame (which some embedded/background
+    // renderers pause).
+    let docTop = 0
+    let height = 0
+    let vh = 0
+    const measure = () => {
+      const r = el.getBoundingClientRect()
+      docTop = r.top + window.scrollY
+      height = r.height
+      vh = window.innerHeight
+    }
+    const update = () => {
+      const elTop = docTop - window.scrollY
+      // progress: 0 when the card top sits at 82% of the viewport (entering from
+      // below), 1 when the card bottom reaches 40% of the viewport (scrolled up).
+      const enter = vh * 0.82
+      const exitTop = 0.4 * vh - height
+      const denom = enter - exitTop || 1
+      const p = Math.max(0, Math.min(1, (enter - elTop) / denom))
+      el.style.setProperty("--p", p.toFixed(4))
+      const idx = Math.max(0, Math.min(STEPS.length - 1, Math.floor(p * STEPS.length)))
+      setActive((prev) => (prev === idx ? prev : idx))
+    }
+    const onResize = () => {
+      measure()
+      update()
+    }
+
+    measure()
+    update()
+    window.addEventListener("scroll", update, { passive: true })
+    window.addEventListener("resize", onResize)
+    // Re-measure when layout shifts (e.g. the dashboard image finishes loading).
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(onResize) : null
+    ro?.observe(document.body)
+
+    return () => {
+      window.removeEventListener("scroll", update)
+      window.removeEventListener("resize", onResize)
+      ro?.disconnect()
+    }
+  }, [])
+
+  const current = STEPS[active]
+  const state = STATE[current.phase]
+
   return (
-    <div className="sentinel-visual incident-replay mb-8">
+    <div className="sentinel-visual incident-replay mb-8" ref={ref}>
       <div className="sentinel-visual-bar">
         <div className="flex items-center gap-3">
           <span className="incident-pip" aria-hidden="true" />
-          <span className="font-mono text-xs text-[rgba(230,241,255,0.76)]">
-            Incident Replay
-          </span>
+          <span className="font-mono text-xs text-[rgba(230,241,255,0.78)]">Incident Replay</span>
         </div>
-        <span className="subsystem-label">TIMELINE · 1 EVENT</span>
+        <div className="flex items-center gap-3">
+          <span
+            className="incident-status font-mono"
+            style={{
+              color: `rgba(var(--mode-rgb), ${(0.55 + state.tone * 0.45).toFixed(2)})`,
+              borderColor: `rgba(var(--mode-rgb), ${(0.18 + state.tone * 0.3).toFixed(2)})`,
+              background: `rgba(var(--mode-rgb), ${(0.04 + state.tone * 0.06).toFixed(2)})`,
+            }}
+          >
+            <span className="incident-status-dot" />
+            {state.label}
+          </span>
+          <span className="incident-clock font-mono tabular-nums">{current.t}</span>
+        </div>
       </div>
 
-      <motion.ol
-        className="incident-track"
-        variants={staggerContainer(0.05, 0.05)}
-        initial="hidden"
-        animate={inView ? "visible" : "hidden"}
-        aria-label="SentinelSOL incident timeline, signal detection to resolution"
+      <ol
+        className="incident-steps"
+        aria-label="SentinelSOL incident timeline, vote-credit velocity to resolution"
       >
-        {steps.map((step) => (
-          <motion.li
-            key={step.t + step.title}
-            variants={staggerItem}
-            className="incident-step"
-            data-human={step.human ? "true" : undefined}
-          >
-            <span className="incident-time font-mono">{step.t}</span>
-            <span className="incident-marker" aria-hidden="true" />
-            <div className="incident-body">
-              <div className="flex items-center gap-2">
-                <span className="incident-title">{step.title}</span>
-                <span
-                  className="incident-phase font-mono"
-                  style={{ color: phaseTone[step.phase] }}
-                >
-                  {step.human ? "MANUAL" : step.phase}
-                </span>
+        <div className="incident-rail-base" aria-hidden="true" />
+        <div className="incident-rail-fill" aria-hidden="true" />
+        <div className="incident-playhead" aria-hidden="true" />
+
+        {STEPS.map((step, i) => {
+          const stepState = i < active ? "past" : i === active ? "active" : "future"
+          return (
+            <li key={step.t + step.title} className="incident-step" data-state={stepState}>
+              <span className="incident-time font-mono">{step.t}</span>
+              <span className="incident-marker" aria-hidden="true" />
+              <div className="incident-body">
+                <div className="flex items-center gap-2">
+                  <span className="incident-title">{step.title}</span>
+                  <span className="incident-phase font-mono">{step.phase}</span>
+                </div>
+                <p className="incident-detail">{step.detail}</p>
               </div>
-              <p className="incident-detail">{step.detail}</p>
-            </div>
-          </motion.li>
-        ))}
-      </motion.ol>
+            </li>
+          )
+        })}
+      </ol>
 
       <div className="incident-summary">
         <span>
           <b>1m13s</b>
-          time to alert · automated
+          detect to page · automated
         </span>
         <span>
           <b>~5m</b>
-          time to resolve · operator
+          page to resolve · operator
         </span>
         <span>
           <b>0</b>

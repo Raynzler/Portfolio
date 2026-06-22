@@ -602,7 +602,7 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             {project.id === "sentinelsol" ? (
               <>
                 <SentinelOperationalAssets inView={isInView} />
-                <IncidentReplay inView={isInView} />
+                <IncidentReplay />
               </>
             ) : project.pipeline && project.metrics && project.notes ? (
               <ProjectArchitecture

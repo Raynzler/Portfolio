@@ -1027,77 +1027,143 @@ html {
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* INCIDENT REPLAY — SentinelSOL operational timeline                          */
 /* ─────────────────────────────────────────────────────────────────────────── */
-.incident-track {
+/* Scroll-driven timeline. The rail and markers share a single x: markers sit
+   inside each step (step content-left is 18px from the container border, so
+   marker left:64px == 82px from the border), so the rail/fill/playhead use
+   left:82px to line up exactly. */
+.incident-steps {
   position: relative;
   z-index: 2;
-  padding: 18px 18px 6px;
+  padding: 20px 18px 8px;
+}
+
+.incident-rail-base,
+.incident-rail-fill {
+  position: absolute;
+  left: 82px;
+  top: 26px;
+  bottom: 24px;
+  width: 1px;
+  z-index: 0;
+}
+.incident-rail-base { background: rgba(var(--mode-rgb), 0.16); }
+.incident-rail-fill {
+  transform-origin: top center;
+  /* --p (0..1) is the scroll-scrub progress, written by the component */
+  transform: scaleY(var(--p, 0));
+  background: linear-gradient(to bottom, rgba(var(--mode-rgb), 0.75), rgba(var(--mode-rgb), 0.32));
+  box-shadow: 0 0 8px rgba(var(--mode-rgb), 0.28);
+}
+
+.incident-playhead {
+  position: absolute;
+  left: 82px;
+  z-index: 3;
+  top: calc(3% + var(--p, 0) * 92%);
+  width: 11px;
+  height: 11px;
+  margin-left: -5.5px;
+  margin-top: -5.5px;
+  border-radius: 999px;
+  background: rgb(var(--mode-rgb));
+  box-shadow: 0 0 10px 2px rgba(var(--mode-rgb), 0.55);
 }
 
 .incident-step {
   position: relative;
-  display: grid;
-  grid-template-columns: 50px 16px minmax(0, 1fr);
-  align-items: start;
-  gap: 12px;
-  padding-bottom: 18px;
+  padding: 0 0 22px 100px;
+  transition: opacity 260ms ease;
 }
-
-.incident-step::after {
-  content: "";
-  position: absolute;
-  left: 70px;
-  top: 9px;
-  bottom: 0;
-  z-index: 0;
-  width: 1px;
-  background: rgba(var(--mode-rgb), 0.16);
-}
-
-.incident-step:last-child::after { display: none; }
+.incident-step:last-child { padding-bottom: 4px; }
 
 .incident-time {
-  padding-top: 1px;
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 56px;
   text-align: right;
-  font-size: 0.66rem;
-  letter-spacing: 0.04em;
-  color: rgba(var(--mode-rgb), 0.6);
+  font-size: 0.64rem;
+  letter-spacing: 0.02em;
+  color: rgba(var(--mode-rgb), 0.5);
+  transition: color 260ms ease;
 }
 
 .incident-marker {
-  position: relative;
+  position: absolute;
+  left: 64px;
+  top: 4px;
   z-index: 1;
-  justify-self: center;
   width: 9px;
   height: 9px;
-  margin-top: 4px;
+  margin-left: -4.5px;
   border-radius: 999px;
-  border: 1px solid rgba(var(--mode-rgb), 0.55);
+  border: 1px solid rgba(var(--mode-rgb), 0.4);
   background: #05070A;
-  box-shadow: 0 0 6px rgba(var(--mode-rgb), 0.22);
-}
-
-.incident-step[data-human="true"] .incident-marker {
-  border-color: rgba(230, 241, 255, 0.5);
-  background: rgba(230, 241, 255, 0.1);
-  box-shadow: 0 0 6px rgba(230, 241, 255, 0.14);
+  transition: background 260ms ease, border-color 260ms ease, box-shadow 260ms ease;
 }
 
 .incident-title {
   font-size: 0.78rem;
   font-weight: 500;
-  color: rgba(230, 241, 255, 0.86);
+  color: rgba(230, 241, 255, 0.7);
+  transition: color 260ms ease;
 }
 
 .incident-phase {
-  font-size: 0.56rem;
+  font-size: 0.54rem;
   letter-spacing: 0.14em;
+  color: rgba(var(--mode-rgb), 0.45);
+  transition: color 260ms ease;
 }
 
 .incident-detail {
   margin-top: 4px;
   font-size: 0.72rem;
   line-height: 1.5;
-  color: rgba(170, 182, 195, 0.62);
+  color: rgba(170, 182, 195, 0.5);
+  transition: color 260ms ease;
+}
+
+/* State machine — future (dim) / past (reached) / active (live) */
+.incident-step[data-state="future"] { opacity: 0.42; }
+.incident-step[data-state="past"] .incident-marker {
+  background: rgba(var(--mode-rgb), 0.5);
+  border-color: rgba(var(--mode-rgb), 0.5);
+}
+.incident-step[data-state="past"] .incident-title { color: rgba(230, 241, 255, 0.74); }
+.incident-step[data-state="active"] .incident-marker {
+  background: rgb(var(--mode-rgb));
+  border-color: rgb(var(--mode-rgb));
+  box-shadow: 0 0 10px 2px rgba(var(--mode-rgb), 0.55);
+}
+.incident-step[data-state="active"] .incident-title { color: #e6f1ff; }
+.incident-step[data-state="active"] .incident-detail { color: rgba(170, 182, 195, 0.82); }
+.incident-step[data-state="active"] .incident-time { color: rgba(var(--mode-rgb), 0.85); }
+
+/* Status pill + clock — the live incident board readout */
+.incident-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid rgba(var(--mode-rgb), 0.25);
+  border-radius: 2px;
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: color 240ms ease, border-color 240ms ease, background 240ms ease;
+}
+.incident-status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+}
+.incident-clock {
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+  color: rgba(230, 241, 255, 0.55);
 }
 
 .incident-summary {
@@ -1367,8 +1433,12 @@ html[data-zone="contact"] .grid-horizon { opacity: 0.3; }
 /* ─── Responsive tweaks for the new components ───────────────────────────── */
 @media (max-width: 640px) {
   .en-hint { display: none; }
-  .incident-step { grid-template-columns: 44px 14px minmax(0, 1fr); gap: 10px; }
-  .incident-step::after { left: 60px; }
+  .incident-step { padding-left: 86px; }
+  .incident-time { width: 46px; }
+  .incident-marker { left: 54px; }
+  .incident-rail-base,
+  .incident-rail-fill,
+  .incident-playhead { left: 72px; }
   .incident-summary { grid-template-columns: 1fr; }
   .creds-list > div { grid-template-columns: 80px 1fr; gap: 10px; }
   .project-action { flex: 1 1 auto; justify-content: center; }
