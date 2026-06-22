@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef } from "react"
+import { useScrollScrub } from "@/lib/use-scroll-scrub"
 
 /**
  * Incident Replay — a single SentinelSOL detection, scrubbed by scroll.
@@ -87,67 +88,7 @@ const STATE: Record<Phase, { label: string; tone: number }> = {
 
 export function IncidentReplay() {
   const ref = useRef<HTMLDivElement>(null)
-  const [active, setActive] = useState(0)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    const reduced =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-
-    if (reduced) {
-      el.style.setProperty("--p", "1")
-      setActive(STEPS.length - 1)
-      return
-    }
-
-    // Geometry is cached on mount / resize / reflow so the scroll handler only
-    // reads window.scrollY (no per-frame getBoundingClientRect -> no layout
-    // thrash). Updating directly in the scroll event is frame-paced by the
-    // browser and avoids requestAnimationFrame (which some embedded/background
-    // renderers pause).
-    let docTop = 0
-    let height = 0
-    let vh = 0
-    const measure = () => {
-      const r = el.getBoundingClientRect()
-      docTop = r.top + window.scrollY
-      height = r.height
-      vh = window.innerHeight
-    }
-    const update = () => {
-      const elTop = docTop - window.scrollY
-      // progress: 0 when the card top sits at 82% of the viewport (entering from
-      // below), 1 when the card bottom reaches 40% of the viewport (scrolled up).
-      const enter = vh * 0.82
-      const exitTop = 0.4 * vh - height
-      const denom = enter - exitTop || 1
-      const p = Math.max(0, Math.min(1, (enter - elTop) / denom))
-      el.style.setProperty("--p", p.toFixed(4))
-      const idx = Math.max(0, Math.min(STEPS.length - 1, Math.floor(p * STEPS.length)))
-      setActive((prev) => (prev === idx ? prev : idx))
-    }
-    const onResize = () => {
-      measure()
-      update()
-    }
-
-    measure()
-    update()
-    window.addEventListener("scroll", update, { passive: true })
-    window.addEventListener("resize", onResize)
-    // Re-measure when layout shifts (e.g. the dashboard image finishes loading).
-    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(onResize) : null
-    ro?.observe(document.body)
-
-    return () => {
-      window.removeEventListener("scroll", update)
-      window.removeEventListener("resize", onResize)
-      ro?.disconnect()
-    }
-  }, [])
+  const active = useScrollScrub(ref, STEPS.length)
 
   const current = STEPS[active]
   const state = STATE[current.phase]

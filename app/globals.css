@@ -1166,6 +1166,97 @@ html {
   color: rgba(230, 241, 255, 0.55);
 }
 
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* ARCHITECTURE REVEAL — scroll-scrubbed data flow (AutoSRE / GridCast)         */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.arch-flow {
+  position: relative;
+  z-index: 2;
+  padding: 22px 18px 18px;
+}
+
+.arch-rail-base,
+.arch-rail-fill {
+  position: absolute;
+  left: 38px;
+  top: 38px;
+  bottom: 34px;
+  width: 1px;
+  z-index: 0;
+}
+.arch-rail-base { background: rgba(var(--mode-rgb), 0.16); }
+.arch-rail-fill {
+  transform-origin: top center;
+  transform: scaleY(var(--p, 0));
+  background: linear-gradient(to bottom, rgba(var(--mode-rgb), 0.75), rgba(var(--mode-rgb), 0.32));
+  box-shadow: 0 0 8px rgba(var(--mode-rgb), 0.28);
+}
+
+.arch-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 16px;
+  align-items: start;
+  padding-bottom: 22px;
+}
+.arch-stage:last-child { padding-bottom: 0; }
+
+.arch-node {
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 5px;
+  border: 1px solid rgba(var(--mode-rgb), 0.3);
+  background: #05070a;
+  color: rgba(var(--mode-rgb), 0.5);
+  z-index: 1;
+  transition: border-color 260ms ease, color 260ms ease, box-shadow 260ms ease, background 260ms ease;
+}
+
+.arch-body { padding-top: 5px; }
+.arch-label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(230, 241, 255, 0.62);
+  transition: color 260ms ease;
+}
+.arch-desc {
+  margin-top: 5px;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: rgba(170, 182, 195, 0.55);
+  transition: color 260ms ease;
+}
+
+.arch-stage[data-state="future"] { opacity: 0.4; }
+.arch-stage[data-state="past"] .arch-node {
+  border-color: rgba(var(--mode-rgb), 0.5);
+  color: rgba(var(--mode-rgb), 0.72);
+  background: rgba(var(--mode-rgb), 0.06);
+}
+.arch-stage[data-state="past"] .arch-label { color: rgba(230, 241, 255, 0.7); }
+.arch-stage[data-state="active"] .arch-node {
+  border-color: rgb(var(--mode-rgb));
+  color: rgb(var(--mode-rgb));
+  background: rgba(var(--mode-rgb), 0.1);
+  box-shadow: 0 0 12px rgba(var(--mode-rgb), 0.4);
+}
+.arch-stage[data-state="active"] .arch-label { color: #e6f1ff; }
+.arch-stage[data-state="active"] .arch-desc { color: rgba(170, 182, 195, 0.85); }
+
+.arch-readout {
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--mode-rgb));
+}
+.arch-readout-dim { color: rgba(var(--mode-rgb), 0.4); }
+
 .incident-summary {
   position: relative;
   z-index: 2;

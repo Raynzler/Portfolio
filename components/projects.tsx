@@ -15,7 +15,9 @@ import {
   RotateCcw,
   Server,
   ShieldCheck,
+  TrendingUp,
   Trophy,
+  Workflow,
   type LucideIcon,
 } from "lucide-react"
 import Link from "next/link"
@@ -23,6 +25,7 @@ import { motion, AnimatePresence, useInView } from "framer-motion"
 import { useRef, useState } from "react"
 import { fadeUp, staggerContainer, staggerItem, duration, ease } from "@/lib/motion"
 import { IncidentReplay } from "@/components/incident-replay"
+import { ArchitectureReveal, type ArchStage } from "@/components/architecture-reveal"
 
 interface PipelineNode {
   label: string
@@ -63,6 +66,7 @@ interface Project {
   pipeline?: PipelineNode[]
   metrics?: Metric[]
   notes?: ArchitectureNote[]
+  architecture?: ArchStage[]
   caseStudy?: CaseStudy
 }
 
@@ -142,6 +146,13 @@ const projects: Project[] = [
         body: "The whole stack comes up with one Docker Compose command. Deploys run through GitHub Actions.",
       },
     ],
+    architecture: [
+      { label: "Metric", icon: Activity, body: "RED metrics on every request, scraped by the Prometheus client against a 50ms p95 budget." },
+      { label: "Alert", icon: BellRing, body: "The budget breaches; Alertmanager fires, grouped and deduplicated by severity." },
+      { label: "Automation", icon: Workflow, body: "The alert drives a recovery playbook instead of paging a human." },
+      { label: "Recovery", icon: RotateCcw, body: "The stateless service restarts under a concurrency cap and a circuit breaker." },
+      { label: "Healthy", icon: ShieldCheck, body: "Liveness and readiness pass; the service rejoins rotation. No one woken." },
+    ],
     tradeoffs: [
       "FastAPI over Flask for async support and OpenAPI generation",
       "50ms p95 budget chosen based on downstream service SLOs",
@@ -202,6 +213,12 @@ const projects: Project[] = [
         title: "Full-stack",
         body: "Flask REST inference backend with a React + D3 geospatial visualisation frontend.",
       },
+    ],
+    architecture: [
+      { label: "Dataset", icon: Database, body: "70 years of IMD daily-max temperature grids, 1951 to 2021, partitioned by region." },
+      { label: "Training", icon: Cpu, body: "28 LSTM models, one per region and IMD season, tuned with Optuna TPE per subset." },
+      { label: "Forecast", icon: TrendingUp, body: "A 14-step input window predicts a 7-day temperature horizon per cell." },
+      { label: "Output", icon: MapIcon, body: "A Flask inference API serves a React and D3 heatwave map." },
     ],
     tradeoffs: [
       "Region × season model partitioning over single global model for interpretability",
@@ -340,43 +357,6 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
             { title: "Revenue-aware", body: "Jito bundle acceptance becomes an operating signal, not an epoch post-mortem." },
           ]}
         />
-      </div>
-    </motion.div>
-  )
-}
-
-function ProjectArchitecture({
-  pipeline,
-  metrics,
-  notes,
-  inView,
-}: {
-  pipeline: PipelineNode[]
-  metrics: Metric[]
-  notes: ArchitectureNote[]
-  inView: boolean
-}) {
-  return (
-    <motion.div
-      className="mb-8"
-      initial={{ opacity: 0, y: 6 }}
-      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
-      transition={{ duration: duration.reveal, ease: ease.outSoft }}
-    >
-      <div className="sentinel-visual sentinel-visual-architecture">
-        <div className="sentinel-visual-bar">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="h-4 w-4 text-[rgba(var(--mode-rgb),0.54)]" />
-            <span className="font-mono text-xs text-[rgba(230,241,255,0.76)]">
-              Architecture Overview
-            </span>
-          </div>
-          <span className="subsystem-label">PIPELINE</span>
-        </div>
-
-        <PipelineMap nodes={pipeline} />
-        <MetricRail metrics={metrics} />
-        <ArchitectureNotes notes={notes} />
       </div>
     </motion.div>
   )
@@ -604,12 +584,12 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
                 <SentinelOperationalAssets inView={isInView} />
                 <IncidentReplay />
               </>
-            ) : project.pipeline && project.metrics && project.notes ? (
-              <ProjectArchitecture
-                pipeline={project.pipeline}
+            ) : project.architecture ? (
+              <ArchitectureReveal
+                title={`${project.title} · Architecture`}
+                flow="DATA FLOW"
+                stages={project.architecture}
                 metrics={project.metrics}
-                notes={project.notes}
-                inView={isInView}
               />
             ) : null}
           </div>
