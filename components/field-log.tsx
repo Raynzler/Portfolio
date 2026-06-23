@@ -3,6 +3,7 @@
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
+import { SectionSep } from "@/components/section-sep"
 
 /**
  * Field Log — a deliberately un-navigated archive. There is no nav link to it;
@@ -99,7 +100,7 @@ export function FieldLog() {
 
   return (
     <section id="fieldlog" ref={ref} data-zone-archive="true">
-      <div className="section-sep" />
+      <SectionSep />
 
       <div className="py-24">
         <div className="max-w-5xl mx-auto px-6">

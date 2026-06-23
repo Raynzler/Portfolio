@@ -140,7 +140,6 @@ export function SystemAtmosphere() {
         <div className="traffic-layer traffic-layer-c" />
         <div className="trace-highway trace-highway-a" />
         <div className="trace-highway trace-highway-b" />
-        <div className="ambient-reflection" />
         <div className="scanline-texture" />
       </div>
 

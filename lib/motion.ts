@@ -12,8 +12,6 @@ export const ease = {
   inOut:       [0.4,  0.0,  0.2,  1.0 ] as const,
   /** Sharp operational snap — panel edges, trace lines */
   sharp:       [0.25, 0.1,  0.25, 1.0 ] as const,
-  /** Slight anticipation — nav trace, interactive accents */
-  anticipate:  [0.34, 1.56, 0.64, 1.0 ] as const,
 }
 
 /** Viewport reveal — 4px travel, clean fade. Low motion distance = premium feel. */

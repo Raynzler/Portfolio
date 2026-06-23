@@ -5,6 +5,7 @@ import { Download, FileText, ShieldCheck } from "lucide-react"
 import { motion, useInView } from "framer-motion"
 import { useEffect, useRef, useState } from "react"
 import { fadeUp, staggerContainer, staggerItem, duration } from "@/lib/motion"
+import { SectionSep } from "@/components/section-sep"
 
 const resumeHref = "/Hamza-Shaikh-CV.pdf"
 
@@ -45,7 +46,7 @@ export function CvSection() {
 
   return (
     <section id="cv" ref={ref}>
-      <div className="section-sep" />
+      <SectionSep />
 
       <div className="py-24">
         <div className="max-w-5xl mx-auto px-6">

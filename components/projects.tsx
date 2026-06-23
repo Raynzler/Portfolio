@@ -26,6 +26,7 @@ import { useRef, useState } from "react"
 import { fadeUp, staggerContainer, staggerItem, duration, ease } from "@/lib/motion"
 import { IncidentReplay } from "@/components/incident-replay"
 import { ArchitectureReveal, type ArchStage } from "@/components/architecture-reveal"
+import { SectionSep } from "@/components/section-sep"
 
 interface PipelineNode {
   label: string
@@ -680,7 +681,7 @@ export function Projects() {
   return (
     <section id="projects">
       {/* Section separator */}
-      <div className="section-sep" />
+      <SectionSep />
 
       <div className="py-24">
         <div className="max-w-5xl mx-auto px-6">

@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
+import { SectionSep } from "@/components/section-sep"
 
 const links = [
   {
@@ -50,7 +51,7 @@ export function Contact() {
 
   return (
     <section id="contact" ref={ref}>
-      <div className="section-sep" />
+      <SectionSep />
 
       <div className="py-24">
         <div className="max-w-5xl mx-auto px-6">

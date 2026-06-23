@@ -3,6 +3,7 @@
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
+import { SectionSep } from "@/components/section-sep"
 
 const toolCategories = [
   { name: "Infrastructure", items: ["Docker", "Kubernetes", "Terraform", "Linux"] },
@@ -27,7 +28,7 @@ export function Tools() {
 
   return (
     <section id="stack" ref={sectionRef}>
-      <div className="section-sep" />
+      <SectionSep />
 
       <div className="py-24">
         <div className="max-w-5xl mx-auto px-6">
