@@ -13,6 +13,15 @@ import { useEffect, useState, type RefObject } from "react"
  * pause it) and framer's useScroll. Honors prefers-reduced-motion by pinning to
  * the final state. Only the active index is React state, and it changes at most
  * `count` times.
+ *
+ * Exit-safe by construction. The section is NEVER pinned and the scroll listener
+ * is passive, so it cannot intercept, jack, or consume scroll. Progress is read
+ * from the card's natural position in the viewport, so the page always flows
+ * normally: the story completes while the card is still in view, then the card
+ * scrolls away on its own (progress clamps at 1 and the final state holds). The
+ * card occupies only its own height of scroll — no spacers, no extra distance.
+ * Do NOT convert this to position:sticky or a wheel/touch handler with
+ * preventDefault; that would trap the user, which this is built to never do.
  */
 export function useScrollScrub(
   ref: RefObject<HTMLElement | null>,
