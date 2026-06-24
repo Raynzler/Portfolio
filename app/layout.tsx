@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { DynamicFavicon } from '@/components/dynamic-favicon'
+import { SmoothScroller } from '@/components/smooth-scroller'
 import { SCROLL, Z_INDEX } from '@/lib/constants'
 import './globals.css'
 
@@ -62,6 +63,7 @@ export default function RootLayout({
       style={{ scrollPaddingTop: `${SCROLL.headerOffset}px` }}
     >
       <body className="font-sans antialiased min-h-screen" style={{ backgroundColor: '#05070A' }}>
+        <SmoothScroller />
         <DynamicFavicon />
         {children}
 

@@ -6,6 +6,7 @@ import type { MouseEvent } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { duration, ease } from "@/lib/motion"
 import { SCROLL, Z_INDEX } from "@/lib/constants"
+import { scrollState } from "@/lib/scroll-state"
 
 const NAV_LINKS = [
   { id: "home", label: "HOME" },
@@ -95,9 +96,16 @@ export function Header() {
     const el = document.getElementById(id)
     if (!el) return
     event.preventDefault()
-    const top = el.getBoundingClientRect().top + window.scrollY - SCROLL.headerOffset
     window.history.pushState(null, "", `#${id}`)
-    window.scrollTo({ top, behavior: "smooth" })
+    // Route through Lenis when smooth scroll is active so nav stays consistent;
+    // fall back to native smooth scroll otherwise.
+    const lenis = scrollState.lenis
+    if (lenis) {
+      lenis.scrollTo(el, { offset: -SCROLL.headerOffset })
+    } else {
+      const top = el.getBoundingClientRect().top + window.scrollY - SCROLL.headerOffset
+      window.scrollTo({ top, behavior: "smooth" })
+    }
   }
 
   return (
