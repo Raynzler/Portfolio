@@ -12,15 +12,15 @@ const experiences = [
     role: "DevOps Intern, sole infrastructure owner",
     period: "Jun – Aug 2023",
     description:
-      "Only engineer responsible for the production stack while the company scaled.",
+      "Sole infrastructure engineer in a 10-person team, behind a storefront running roughly 2,500 orders a month.",
     achievements: [
-      "EC2 to ECS/Fargate migration with zero-downtime cutover",
-      "GitHub Actions gated deploys with automated rollback on health check failure",
-      "BullMQ/Redis async queue for order processing",
-      "CloudWatch + ALB observability stack",
-      "25% OpEx reduction through right-sizing and reserved capacity",
+      "Migrated production from EC2 to ECS/Fargate; dynamic task provisioning cut AWS spend 27%, $230 to $168 a month",
+      "Built the AWS network and access layer: VPC subnets, routing, security groups, S3, and least-privilege IAM scoped separately for founders, developers and logistics staff",
+      "Root-caused a three-day chatbot outage to a whitespace character intermittently injected into the integration URL",
+      "GitHub Actions pipelines gating main-branch deploys with rollback, supporting weekly releases",
+      "Moved fulfilment off the synchronous checkout path with a BullMQ-on-Redis queue",
     ],
-    outcome: "Stack still in production.",
+    outcome: null,
   },
   {
     company: "CMP Infotech",
@@ -40,15 +40,24 @@ const education = [
   {
     institution: "RPTU Kaiserslautern-Landau",
     degree: "M.Sc. Computer Science",
-    focus: "Distributed Systems",
-    period: "Oct 2025 – 2027",
+    focus: "Distributed Systems · Software Engineering",
+    period: "Oct 2025 – Expected 2027",
     location: "Germany",
+  },
+  {
+    // Stated rather than left as an unexplained gap — German employers read
+    // these closely, and the CV accounts for it explicitly.
+    institution: "Career Break & M.Sc. Admissions",
+    degree: "Graduate applications and German student visa process",
+    focus: "Intake deferred to Oct 2025",
+    period: "Jun 2024 – Sep 2025",
+    location: "Dammam",
   },
   {
     institution: "Xavier Institute of Engineering",
     degree: "B.E. Information Technology",
-    focus: "CGPA 8.69/10",
-    period: "2020 – 2024",
+    focus: "CGPA 8.69/10 (German equivalent 1.6)",
+    period: "Aug 2020 – Jun 2024",
     location: "Mumbai",
   },
 ]

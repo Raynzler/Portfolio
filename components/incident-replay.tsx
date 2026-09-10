@@ -32,7 +32,7 @@ const STEPS: Step[] = [
     t: "T+00:00",
     phase: "BASELINE",
     title: "Vote Credit Velocity",
-    detail: "Per-slot vote-credit accrual tracked against a 72h rolling mean. Nominal.",
+    detail: "Per-slot vote-credit accrual tracked against a rolling one-hour mean. Nominal.",
   },
   {
     t: "T+00:06",
@@ -68,7 +68,7 @@ const STEPS: Step[] = [
     t: "T+02:00",
     phase: "RESPOND",
     title: "Operator Investigation",
-    detail: "Check Jito block-engine bundle acceptance and peer set; correlate with the epoch boundary.",
+    detail: "Check peer set and slot progression; correlate with the epoch boundary.",
   },
   {
     t: "T+06:30",

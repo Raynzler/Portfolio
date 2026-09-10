@@ -168,7 +168,7 @@ export function SystemAtmosphere() {
             <dl className="creds-list">
               <div>
                 <dt>IDENTITY</dt>
-                <dd>Hamza Shaikh · Backend / Infrastructure / SRE</dd>
+                <dd>Hamza Shaikh · Site Reliability / DevOps / Cloud Infrastructure</dd>
               </div>
               <div>
                 <dt>EDUCATION</dt>
@@ -180,11 +180,11 @@ export function SystemAtmosphere() {
               </div>
               <div>
                 <dt>OWNERSHIP</dt>
-                <dd>Former sole DevOps owner · production stack, 3+ yrs</dd>
+                <dd>Former sole DevOps owner · production stack</dd>
               </div>
               <div>
                 <dt>CORE STACK</dt>
-                <dd>Go · Python · AWS · Kubernetes · Prometheus</dd>
+                <dd>Go · Python · AWS · Docker · Prometheus</dd>
               </div>
             </dl>
             <p className="creds-foot">click anywhere or press esc to dismiss</p>

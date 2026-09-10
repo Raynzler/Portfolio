@@ -79,15 +79,15 @@ const projects: Project[] = [
     status: "live",
     url: "https://sentinelsol-sre.vercel.app",
     repo: "https://github.com/Raynzler/SentinelSOL",
-    tagline: "Out-of-band observability for Solana/Jito validators.",
+    tagline: "Out-of-band observability for Solana validators.",
     description:
-      "Go daemons collect ShredStream latency and Vote Credit velocity. PromQL + 3-sigma Z-Score against rolling baseline. Alertmanager routes to Telegram before delinquency. No sidecar, no cloud dependency.",
+      "A Go daemon polls the validator's Solana JSON-RPC out of process and exports vote-credit accrual and slot progression to Prometheus. 3-sigma Z-score over a rolling one-hour baseline, routed through Alertmanager to Telegram.",
     stack: ["Go", "Prometheus", "PromQL", "Alertmanager", "Telegram API", "Docker Compose"],
     deployment: "Docker Compose, bare-metal",
     award: "Winner, Superteam Germany / neosfer Ideathon Frankfurt 2026. $250 USD.",
     tradeoffs: [
       "Out-of-band monitoring over sidecar injection to avoid validator resource contention",
-      "3-sigma threshold tuned empirically against 72-hour rolling baseline",
+      "3-sigma over a rolling one-hour mean and standard deviation, learned from the validator's own history rather than a fixed threshold",
       "Telegram over PagerDuty for cost and latency in crypto ops context",
     ],
     caseStudy: {
@@ -95,16 +95,16 @@ const projects: Project[] = [
         "A validator's rewards slow the moment vote credits drop, but stock dashboards only surface delinquency after it has already cost an epoch. There was no early, out-of-band signal an operator could act on.",
       decisions: [
         "Poll the RPC out-of-band instead of injecting a sidecar; monitoring must never compete with the validator for the hot path.",
-        "Detect anomalies with a 3σ Z-score over a rolling 72h baseline rather than a static threshold, so it adapts to each validator's normal.",
+        "Detect anomalies with a 3σ Z-score over a rolling one-hour baseline rather than a static threshold, so it adapts to each validator's normal.",
         "Page over Telegram: zero cost, sub-second delivery, and where the crypto-ops conversation already happens.",
       ],
       lessons: [
-        "Vote-credit velocity is a leading indicator; ShredStream latency alone lags the actual revenue impact.",
+        "Vote-credit velocity is the leading indicator; slot progression alone lags the actual impact.",
         "A baseline that re-learns is the hard part. A fixed threshold either pages constantly or never fires.",
       ],
       failureModes: [
         "RPC unreachable: the daemon has to alert on its own silence, or an outage reads as calm.",
-        "Cold start: the first 72h have no baseline, so thresholds stay wide until enough history accrues.",
+        "Cold start: the first hour has no baseline, so thresholds stay wide until enough history accrues.",
         "Epoch boundaries cause legitimate velocity dips that must be excluded from paging.",
       ],
     },
@@ -116,9 +116,9 @@ const projects: Project[] = [
     status: "active",
     url: "https://auto-sre.vercel.app",
     repo: "https://github.com/Raynzler/Auto-SRE",
-    tagline: "FastAPI service instrumented with RED metrics and threshold-driven recovery.",
+    tagline: "Chaos engineering platform: inject failure into live services and prove the resilience patterns hold.",
     description:
-      "RED metrics via the Prometheus client against a 50ms p95 latency budget. Alerting thresholds drive automated recovery for stateless services. FastAPI serves the API, Docker Compose runs the stack, GitHub Actions handles CI/CD.",
+      "Injects latency, errors, CPU burn and memory pressure into live services through a REST control plane. Experiments are bounded, time-limited and self-reverting. RED metrics via ASGI middleware against a p95 500ms SLO, alerting at 750ms.",
     stack: ["Python", "FastAPI", "Prometheus", "Docker", "Docker Compose", "GitHub Actions"],
     deployment: "Docker Compose + GitHub Actions CI/CD",
     award: null,
@@ -126,10 +126,10 @@ const projects: Project[] = [
       { label: "FastAPI service · RED metrics", icon: Server },
       { label: "Prometheus scrape + recording rules", icon: Activity },
       { label: "Alertmanager thresholds", icon: BellRing },
-      { label: "Automated recovery playbook", icon: RotateCcw },
+      { label: "Runbook-linked alert · human responder", icon: RotateCcw },
     ],
     metrics: [
-      { value: "50ms", label: "p95 latency budget" },
+      { value: "500ms", label: "p95 latency SLO" },
       { value: "RED", label: "rate · errors · duration" },
       { value: "CI/CD", label: "GitHub Actions gated" },
     ],
@@ -140,7 +140,7 @@ const projects: Project[] = [
       },
       {
         title: "Health-checked",
-        body: "Liveness and readiness probes so rolling restarts don't drop traffic.",
+        body: "Readiness returns 503 while a downstream dependency's circuit breaker is open.",
       },
       {
         title: "Reproducible",
@@ -148,32 +148,32 @@ const projects: Project[] = [
       },
     ],
     architecture: [
-      { label: "Metric", icon: Activity, body: "RED metrics on every request, scraped by the Prometheus client against a 50ms p95 budget." },
+      { label: "Metric", icon: Activity, body: "RED metrics on every request through ASGI middleware, against a p95 500ms SLO." },
       { label: "Alert", icon: BellRing, body: "The budget breaches; Alertmanager fires, grouped and deduplicated by severity." },
-      { label: "Automation", icon: Workflow, body: "The alert drives a recovery playbook instead of paging a human." },
-      { label: "Recovery", icon: RotateCcw, body: "The stateless service restarts under a concurrency cap and a circuit breaker." },
-      { label: "Healthy", icon: ShieldCheck, body: "Liveness and readiness pass; the service rejoins rotation. No one woken." },
+      { label: "Bound", icon: Workflow, body: "Every experiment is capped at two layers, time-limited and self-reverting; the control plane is exempt from injection." },
+      { label: "Recovery", icon: RotateCcw, body: "Per-client token-bucket rate limiting returns 429 with Retry-After; a three-state circuit breaker sheds load from a failing dependency." },
+      { label: "Healthy", icon: ShieldCheck, body: "Readiness returns 503 while a dependency's breaker is open. Auto-remediation is deliberately out of scope." },
     ],
     tradeoffs: [
       "FastAPI over Flask for async support and OpenAPI generation",
-      "50ms p95 budget chosen based on downstream service SLOs",
-      "Automated recovery limited to stateless services to avoid data corruption",
+      "p95 500ms SLO with a 750ms alert threshold, defined as Prometheus rules",
+      "Auto-remediation deliberately out of scope, so failures stay observable rather than being masked by a restart",
     ],
     caseStudy: {
       problem:
-        "Stateless services fail in boring, repetitive ways. Waking a human for a restart that a runbook could perform is wasted MTTR, but automating recovery carelessly is how you turn one incident into ten.",
+        "You cannot claim a system is resilient until you have watched it fail. The hard part is injecting real failure into a live service without the experiment itself becoming the outage.",
       decisions: [
         "Instrument RED metrics on every request so the signal is request-shaped, not host-shaped.",
-        "Derive the 50ms p95 budget from downstream SLOs rather than picking a round number.",
-        "Scope automated recovery to stateless services only; anything holding state stays human-gated.",
+        "Define the p95 500ms SLO and its 750ms alert threshold as Prometheus rules, unit-tested to assert every alert carries severity and a runbook link.",
+        "Keep remediation human: the platform observes and notifies, so a failure stays visible instead of being masked by an automatic restart.",
       ],
       lessons: [
-        "Automated recovery is only safe with a hard blast-radius limit; the limit matters more than the automation.",
+        "Blast radius is the whole design. Bounds at two layers, and an abort path that can never be made unreachable.",
         "Any action that can loop needs a circuit breaker, or the recovery becomes the incident.",
       ],
       failureModes: [
-        "Recovery loop: a service still failing its health check after restart must escalate to a human, not retry forever.",
-        "Thundering restart: concurrent recoveries need a concurrency cap so the platform doesn't bounce everything at once.",
+        "An experiment outliving its window: bounds are enforced at module and per-request layers, and every experiment self-reverts.",
+        "An experiment that outlives its window: bounds are enforced at two layers and the control plane is exempt from injection so the abort path stays reachable.",
       ],
     },
   },
@@ -253,7 +253,7 @@ const statusColors = {
 } as const
 
 const sentinelPipeline: PipelineNode[] = [
-  { label: "Jito-Solana RPC", icon: RadioTower },
+  { label: "Solana JSON-RPC", icon: RadioTower },
   { label: "Go OOB daemon", icon: Server },
   { label: "Prometheus / PromQL", icon: Activity },
   { label: "Alertmanager → Telegram", icon: BellRing },
@@ -324,7 +324,7 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
         <div className="sentinel-graph-frame">
           <img
             src="/sentinelsol/graphs.png"
-            alt="SentinelSOL telemetry dashboard showing node slot progression, vote credits, ShredStream ingestion latency, and Jito block engine bundle metrics."
+            alt="SentinelSOL Grafana dashboard showing node slot progression and absolute vote credits from the Go telemetry daemon."
             className="h-full w-full object-cover object-left-top"
           />
           <span className="dashboard-scan" aria-hidden="true" />
@@ -353,9 +353,9 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
 
         <ArchitectureNotes
           notes={[
-            { title: "Predictive", body: "ShredStream latency and vote-credit velocity move before delinquency." },
+            { title: "Predictive", body: "Vote-credit velocity moves before the node is marked delinquent." },
             { title: "Out-of-band", body: "Daemon polls independently, preserving validator hot-path resources." },
-            { title: "Revenue-aware", body: "Jito bundle acceptance becomes an operating signal, not an epoch post-mortem." },
+            { title: "Reproducible", body: "The whole telemetry stack comes up from one Docker Compose command, dashboards provisioned as code." },
           ]}
         />
       </div>

@@ -24,7 +24,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'Hamza Shaikh - SRE / Infrastructure Engineer',
   description:
-    'Backend and infrastructure engineer. I keep production systems observable, quick to recover, and cheap to run. M.Sc. Computer Science (Distributed Systems and Software Engineering), RPTU Kaiserslautern.',
+    'Site reliability and infrastructure engineer. I keep production systems observable, quick to recover, and cheap to run. M.Sc. Computer Science (Distributed Systems and Software Engineering), RPTU Kaiserslautern.',
   generator: 'Next.js',
   keywords: [
     'SRE',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     'Distributed Systems',
     'Observability',
     'Prometheus',
-    'Kubernetes',
+    'Chaos Engineering',
     'Go',
     'Python',
   ],
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Hamza Shaikh - SRE / Infrastructure Engineer',
     description:
-      'Backend and infrastructure engineer. I keep production systems observable, quick to recover, and cheap to run.',
+      'Site reliability and infrastructure engineer. I keep production systems observable, quick to recover, and cheap to run.',
     type: 'website',
   },
   other: {

@@ -9,7 +9,7 @@ const proof = [
   { label: "AWARD · 2026", value: "Winner · Superteam Germany Solana Ideathon" },
   { label: "LIVE SYSTEM", value: "SentinelSOL · Solana validator observability" },
   { label: "M.SC.", value: "Distributed Systems · RPTU Kaiserslautern" },
-  { label: "PRODUCTION", value: "Sole DevOps owner · −25% cloud OpEx · live 3+ yrs" },
+  { label: "PRODUCTION", value: "Sole DevOps owner · −27% AWS spend · $230→$168/mo" },
 ]
 
 export function Landing() {
@@ -73,7 +73,7 @@ export function Landing() {
               lineHeight: "1.25",
             }}
           >
-            Backend and infrastructure engineer.
+            Site reliability and infrastructure engineer.
             <br />
             <span style={{ color: "var(--foreground-muted)", fontWeight: 300 }}>
               I keep production systems observable,
@@ -138,7 +138,7 @@ export function Landing() {
           >
             <MapPin className="w-3.5 h-3.5" style={{ color: "rgba(var(--mode-rgb), 0.35)" }} />
             <span className="font-mono text-xs tracking-wider" style={{ color: "var(--foreground-dim)" }}>
-              Frankfurt,DE · Dammam,KSA · Mumbai,IND
+              Kaiserslautern,DE · Dammam,KSA · Mumbai,IND
             </span>
           </motion.div>
 
@@ -160,7 +160,7 @@ export function Landing() {
               className="font-mono text-xs tracking-wider"
               style={{ color: "rgba(var(--mode-rgb), 0.5)" }}
             >
-              SIGNAL · available for infrastructure roles in Germany, Saudi Arabia, and Remote
+              SIGNAL · Werkstudent, internship and junior roles in Germany · 140 full / 280 half days work authorisation
             </span>
           </motion.div>
         </motion.div>

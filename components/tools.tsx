@@ -5,13 +5,17 @@ import { motion, useInView } from "framer-motion"
 import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
 import { SectionSep } from "@/components/section-sep"
 
+// Mirrors the CV's skill groups. Nothing appears here that isn't on the CV —
+// that is what makes the caption below the grid true.
 const toolCategories = [
-  { name: "Infrastructure", items: ["Docker", "Kubernetes", "Terraform", "Linux"] },
-  { name: "Observability",  items: ["Prometheus", "PromQL", "Grafana", "Alertmanager"] },
-  { name: "Cloud",          items: ["AWS", "GCP", "Azure", "OCI", "DigitalOcean"] },
+  { name: "Infrastructure", items: ["Docker", "Docker Compose", "Linux", "Terraform", "NGINX", "Kubernetes (foundational)"] },
+  { name: "Observability",  items: ["Prometheus", "PromQL", "Grafana", "Alertmanager", "RED metrics", "SLOs"] },
+  { name: "Cloud",          items: ["AWS", "Cloudflare", "DigitalOcean"] },
   { name: "Languages",      items: ["Go", "Python", "Bash", "C++"] },
-  { name: "Automation",     items: ["GitHub Actions", "CI/CD", "NGINX"] },
-  { name: "Storage",        items: ["Redis", "BullMQ", "MySQL", "SQLite"] },
+  { name: "Automation",     items: ["Git", "GitHub Actions", "CI/CD"] },
+  { name: "Security",       items: ["Trivy", "Bandit", "pip-audit", "govulncheck"] },
+  { name: "Storage & APIs", items: ["Redis", "BullMQ", "MySQL", "FastAPI"] },
+  { name: "Testing",        items: ["pytest", "chaos engineering"] },
 ]
 
 const certifications = [
