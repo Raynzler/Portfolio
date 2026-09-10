@@ -7,12 +7,29 @@ import { useEffect, useRef, useState } from "react"
 import { fadeUp, staggerContainer, staggerItem, duration } from "@/lib/motion"
 import { SectionSep } from "@/components/section-sep"
 
-// Single source of truth for the CV asset. The path is deliberately stable —
+// Single source of truth for the CV assets. Paths are deliberately stable —
 // updates replace the file in place rather than versioning the filename, so
 // links already shared on LinkedIn and in email keep resolving.
-const resumeFile = "Hamza_Shaikh_CV.pdf"
-const resumeHref = `/${resumeFile}`
-const resumeUpdated = "09 SEP 2026"
+const cvVariants = [
+  {
+    id: "standard",
+    label: "Standard",
+    file: "Hamza_Shaikh_CV.pdf",
+    updated: "09 SEP 2026",
+    hint: "Primary CV",
+  },
+  {
+    id: "int",
+    label: "International",
+    file: "Hamza_Shaikh_INT_CV.pdf",
+    updated: "09 SEP 2026",
+    hint: "International format",
+  },
+] as const
+
+type CvVariantId = (typeof cvVariants)[number]["id"]
+
+const hrefFor = (file: string) => `/${file}`
 
 const dossier = [
   ["Role", "Infrastructure · Reliability · SRE"],
@@ -76,21 +93,31 @@ const certifications = [
 export function CvSection() {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: "-60px 0px" })
-  const [pdfAvailable, setPdfAvailable] = useState<boolean | null>(null)
+  const [variantId, setVariantId] = useState<CvVariantId>("standard")
+  // Availability is cached per file: undefined = still probing, so switching
+  // back to an already-checked variant does not flash a loading state.
+  const [availability, setAvailability] = useState<Record<string, boolean>>({})
 
+  const variant = cvVariants.find((v) => v.id === variantId) ?? cvVariants[0]
+  const resumeFile = variant.file
+  const resumeHref = hrefFor(resumeFile)
+  const pdfAvailable = availability[resumeFile]
+
+  // Probes the selected variant, so a missing INT file disables its own
+  // download rather than the other one's.
   useEffect(() => {
     let isMounted = true
-    fetch(resumeHref, { method: "HEAD" })
-      .then((response) => {
-        if (isMounted) setPdfAvailable(response.ok)
-      })
-      .catch(() => {
-        if (isMounted) setPdfAvailable(false)
-      })
+    const file = variant.file
+    const record = (ok: boolean) => {
+      if (isMounted) setAvailability((prev) => ({ ...prev, [file]: ok }))
+    }
+    fetch(hrefFor(file), { method: "HEAD" })
+      .then((response) => record(response.ok))
+      .catch(() => record(false))
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [variant.file])
 
   const downloadDisabled = pdfAvailable === false
 
@@ -168,6 +195,40 @@ export function CvSection() {
                 </div>
               </div>
 
+              {/* Variant selector — one download path, two documents. */}
+              <p className="subsystem-label mb-3">EDITION</p>
+              <div
+                role="group"
+                aria-label="Select CV edition"
+                className="mb-4 grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-[rgba(var(--mode-rgb),0.16)] bg-[rgba(var(--mode-rgb),0.10)]"
+              >
+                {cvVariants.map((v) => {
+                  const active = v.id === variant.id
+                  return (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => setVariantId(v.id)}
+                      aria-pressed={active}
+                      title={v.hint}
+                      className={`flex flex-col items-center gap-0.5 px-3 py-2.5 font-mono text-[0.65rem] uppercase tracking-[0.14em] transition-colors ${
+                        active
+                          ? "bg-[rgba(var(--mode-rgb),0.14)] text-[rgba(230,241,255,0.92)]"
+                          : "bg-[var(--bg-panel)] text-[rgba(170,182,195,0.6)] hover:text-[rgba(230,241,255,0.8)]"
+                      }`}
+                      style={{ transitionDuration: `${duration.hover * 1000}ms` }}
+                    >
+                      <span>{v.label}</span>
+                      <span
+                        aria-hidden="true"
+                        className={`h-px w-6 transition-opacity ${active ? "opacity-100" : "opacity-0"}`}
+                        style={{ background: "var(--cyan-bright)" }}
+                      />
+                    </button>
+                  )
+                })}
+              </div>
+
               <Link
                 href={resumeHref}
                 download
@@ -177,11 +238,11 @@ export function CvSection() {
                 style={{ transitionDuration: `${duration.hover * 1000}ms` }}
               >
                 <Download className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.66)] transition-transform group-hover:-translate-y-0.5" />
-                Download PDF
+                {downloadDisabled ? "Unavailable" : `Download ${variant.label} PDF`}
               </Link>
 
               <p className="mt-3 text-center font-mono text-[0.6rem] uppercase tracking-[0.14em] text-[rgba(var(--mode-rgb),0.34)]">
-                Last updated · {resumeUpdated}
+                Last updated · {variant.updated}
               </p>
             </motion.div>
 
@@ -201,7 +262,10 @@ export function CvSection() {
                 <div className="mx-auto aspect-[8.5/11] max-h-[620px] w-full max-w-[440px] overflow-hidden rounded-[2px] border border-[rgba(var(--mode-rgb),0.14)] bg-[#F1F5F8] shadow-[0_0_36px_rgba(var(--mode-rgb),0.06)]">
                   {pdfAvailable ? (
                     <iframe
-                      title="CV PDF preview"
+                      // Keyed on the file so switching edition remounts the
+                      // viewer instead of leaving the previous PDF rendered.
+                      key={resumeFile}
+                      title={`${variant.label} CV preview`}
                       src={`${resumeHref}#toolbar=0&navpanes=0&scrollbar=0`}
                       className="h-full w-full bg-[#F1F5F8]"
                     />
