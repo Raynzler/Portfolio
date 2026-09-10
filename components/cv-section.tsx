@@ -12,7 +12,7 @@ import { SectionSep } from "@/components/section-sep"
 // links already shared on LinkedIn and in email keep resolving.
 const resumeFile = "Hamza_Shaikh_CV.pdf"
 const resumeHref = `/${resumeFile}`
-const resumeUpdated = "09 SEP 2026"
+const resumeUpdated = "10 SEP 2026"
 
 const dossier = [
   ["Role", "Site Reliability · DevOps · Cloud Infrastructure"],
