@@ -84,7 +84,7 @@ const projects: Project[] = [
       "Go daemons collect ShredStream latency and Vote Credit velocity. PromQL + 3-sigma Z-Score against rolling baseline. Alertmanager routes to Telegram before delinquency. No sidecar, no cloud dependency.",
     stack: ["Go", "Prometheus", "PromQL", "Alertmanager", "Telegram API", "Docker Compose"],
     deployment: "Docker Compose, bare-metal",
-    award: "3rd place, Superteam Germany / neosfer Ideathon Frankfurt 2026. $250 USD.",
+    award: "Winner, Superteam Germany / neosfer Ideathon Frankfurt 2026. $250 USD.",
     tradeoffs: [
       "Out-of-band monitoring over sidecar injection to avoid validator resource contention",
       "3-sigma threshold tuned empirically against 72-hour rolling baseline",

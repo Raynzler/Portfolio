@@ -176,7 +176,7 @@ export function SystemAtmosphere() {
               </div>
               <div>
                 <dt>AWARD</dt>
-                <dd>3rd place · Superteam Germany Solana Ideathon</dd>
+                <dd>Winner · Superteam Germany Solana Ideathon</dd>
               </div>
               <div>
                 <dt>OWNERSHIP</dt>

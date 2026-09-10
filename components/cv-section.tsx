@@ -260,7 +260,7 @@ export function CvSection() {
               <div className="space-y-4">
                 <div>
                   <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-                    3rd place · Superteam Germany / neosfer Solana Ideathon
+                    Winner · Superteam Germany / neosfer Solana Ideathon
                   </p>
                   <p className="mt-1 text-xs" style={{ color: "var(--foreground-dim)" }}>
                     Frankfurt 2026 · $250 · for SentinelSOL

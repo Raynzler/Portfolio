@@ -6,7 +6,7 @@ import { motion } from "framer-motion"
 import { staggerContainer, staggerItem } from "@/lib/motion"
 
 const proof = [
-  { label: "AWARD · 2026", value: "   · Superteam Germany Solana Ideathon" },
+  { label: "AWARD · 2026", value: "Winner · Superteam Germany Solana Ideathon" },
   { label: "LIVE SYSTEM", value: "SentinelSOL · Solana validator observability" },
   { label: "M.SC.", value: "Distributed Systems · RPTU Kaiserslautern" },
   { label: "PRODUCTION", value: "Sole DevOps owner · −25% cloud OpEx · live 3+ yrs" },
