@@ -7,7 +7,12 @@ import { useEffect, useRef, useState } from "react"
 import { fadeUp, staggerContainer, staggerItem, duration } from "@/lib/motion"
 import { SectionSep } from "@/components/section-sep"
 
-const resumeHref = "/Hamza-Shaikh-CV.pdf"
+// Single source of truth for the CV asset. The path is deliberately stable —
+// updates replace the file in place rather than versioning the filename, so
+// links already shared on LinkedIn and in email keep resolving.
+const resumeFile = "Hamza_Shaikh_CV.pdf"
+const resumeHref = `/${resumeFile}`
+const resumeUpdated = "09 SEP 2026"
 
 const dossier = [
   ["Role", "Infrastructure · Reliability · SRE"],
@@ -174,6 +179,10 @@ export function CvSection() {
                 <Download className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.66)] transition-transform group-hover:-translate-y-0.5" />
                 Download PDF
               </Link>
+
+              <p className="mt-3 text-center font-mono text-[0.6rem] uppercase tracking-[0.14em] text-[rgba(var(--mode-rgb),0.34)]">
+                Last updated · {resumeUpdated}
+              </p>
             </motion.div>
 
             <motion.div variants={staggerItem} className="tron-panel document-viewer rounded-sm">
@@ -181,7 +190,7 @@ export function CvSection() {
                 <div className="flex items-center gap-3">
                   <FileText className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.5)]" />
                   <span className="font-mono text-xs text-[rgba(170,182,195,0.7)]">
-                    Hamza-Shaikh-CV.pdf
+                    {resumeFile}
                   </span>
                 </div>
                 <span className="subsystem-label">VERIFIED</span>
