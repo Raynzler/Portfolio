@@ -50,7 +50,7 @@ const education = [
 const experience = [
   {
     role: "DevOps Engineering Intern · Sole Infrastructure Owner",
-    org: "Patil Kaki · Shark Tank India B2C startup",
+    org: "Patil Kaki · Shark Tank India D2C food brand",
     period: "Jun – Aug 2023",
     points: [
       "Migrated production from EC2 to ECS/Fargate as the sole infrastructure engineer in a 10-person team.",
@@ -129,7 +129,7 @@ export function CvSection() {
                   </h2>
                   <p className="mt-2 text-xs leading-relaxed text-[rgba(170,182,195,0.72)]">
                     Infrastructure and reliability engineer. Sole DevOps owner at a Shark Tank India
-                    B2C startup, now doing a distributed systems master&apos;s at RPTU. Shipped
+                    D2C food brand, now doing a distributed systems master&apos;s at RPTU. Shipped
                     SentinelSOL, building AutoSRE.
                   </p>
                 </div>

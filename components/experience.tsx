@@ -8,7 +8,7 @@ import { SectionSep } from "@/components/section-sep"
 const experiences = [
   {
     company: "Patil Kaki",
-    note: "Shark Tank India B2C Startup",
+    note: "Shark Tank India D2C food brand",
     role: "DevOps Intern, sole infrastructure owner",
     period: "Jun – Aug 2023",
     description:
@@ -50,7 +50,7 @@ const education = [
     institution: "Career Break & M.Sc. Admissions",
     degree: "Graduate applications and German student visa process",
     focus: "Intake deferred to Oct 2025",
-    period: "Jun 2024 – Sep 2025",
+    period: "Jul 2024 – Sep 2025",
     location: "Dammam",
   },
   {
