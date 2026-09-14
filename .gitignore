@@ -30,3 +30,7 @@ next-env.d.ts
 
 # this project uses pnpm; a stray npm install must not re-introduce a second lockfile
 package-lock.json
+
+# internal working notes, never publish to a public repo
+CV-AUDIT.md
+PROJECT-SITE-AUDIT-PROMPTS.md
