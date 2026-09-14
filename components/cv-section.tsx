@@ -35,8 +35,8 @@ const education = [
     school: "RPTU Kaiserslautern-Landau",
     place: "Kaiserslautern, Germany",
     degree: "M.Sc. Computer Science",
-    detail: "Major: Distributed Systems · Minor: Software Engineering",
-    period: "Oct 2025 – 2027",
+    detail: "Specialisation 1: Distributed Systems · 2: Software Engineering",
+    period: "Oct 2025 – Expected 2027",
   },
   {
     school: "Xavier Institute of Engineering",
