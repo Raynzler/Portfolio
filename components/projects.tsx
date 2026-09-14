@@ -79,22 +79,22 @@ const projects: Project[] = [
     status: "live",
     url: "https://sentinelsol-sre.vercel.app",
     repo: "https://github.com/Raynzler/SentinelSOL",
-    tagline: "Out-of-band observability for Solana validators.",
+    tagline: "Separate-process telemetry and anomaly detection for Solana validators.",
     description:
       "A Go daemon polls the validator's Solana JSON-RPC out of process and exports vote-credit accrual and slot progression to Prometheus. 3-sigma Z-score over a rolling one-hour baseline, routed through Alertmanager to Telegram.",
     stack: ["Go", "Prometheus", "PromQL", "Alertmanager", "Telegram API", "Docker Compose"],
     deployment: "Docker Compose, bare-metal",
     award: "Winner, Superteam Germany / neosfer Ideathon Frankfurt 2026. $250 USD.",
     tradeoffs: [
-      "Out-of-band monitoring over sidecar injection to avoid validator resource contention",
+      "A separate process with a configurable RPC endpoint, rather than a sidecar, so it can be moved to an isolated host without touching the validator",
       "3-sigma over a rolling one-hour mean and standard deviation, learned from the validator's own history rather than a fixed threshold",
       "Telegram over PagerDuty for cost and latency in crypto ops context",
     ],
     caseStudy: {
       problem:
-        "A validator's rewards slow the moment vote credits drop, but stock dashboards only surface delinquency after it has already cost an epoch. There was no early, out-of-band signal an operator could act on.",
+        "A validator's rewards slow the moment vote credits drop, but stock dashboards only surface delinquency after it has already cost an epoch. There was no early signal an operator could act on.",
       decisions: [
-        "Poll the RPC out-of-band instead of injecting a sidecar; monitoring must never compete with the validator for the hot path.",
+        "Poll the RPC from a separate process instead of injecting a sidecar, so the collector can be relocated to its own host without redeploying the validator.",
         "Detect anomalies with a 3σ Z-score over a rolling one-hour baseline rather than a static threshold, so it adapts to each validator's normal.",
         "Page over Telegram: zero cost, sub-second delivery, and where the crypto-ops conversation already happens.",
       ],
@@ -254,7 +254,7 @@ const statusColors = {
 
 const sentinelPipeline: PipelineNode[] = [
   { label: "Solana JSON-RPC", icon: RadioTower },
-  { label: "Go OOB daemon", icon: Server },
+  { label: "Go telemetry daemon", icon: Server },
   { label: "Prometheus / PromQL", icon: Activity },
   { label: "Alertmanager → Telegram", icon: BellRing },
 ]
@@ -332,7 +332,7 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
         <MetricRail
           metrics={[
             { value: "3σ", label: "Z-score anomaly window" },
-            { value: "OOB", label: "zero hot-path impact" },
+            { value: "10s", label: "poll + scrape interval" },
             { value: "5s", label: "refresh cadence" },
           ]}
         />
@@ -354,7 +354,7 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
         <ArchitectureNotes
           notes={[
             { title: "Predictive", body: "Vote-credit velocity moves before the node is marked delinquent." },
-            { title: "Out-of-band", body: "Daemon polls independently, preserving validator hot-path resources." },
+            { title: "Decoupled", body: "Runs as its own process against a configurable RPC endpoint, deployable on an isolated host." },
             { title: "Reproducible", body: "The whole telemetry stack comes up from one Docker Compose command, dashboards provisioned as code." },
           ]}
         />
