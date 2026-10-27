@@ -173,8 +173,7 @@ const projects: Project[] = [
         "Any action that can loop needs a circuit breaker, or the recovery becomes the incident.",
       ],
       failureModes: [
-        "An experiment outliving its window: bounds are enforced at module and per-request layers, and every experiment self-reverts.",
-        "An experiment that outlives its window: bounds are enforced at two layers and the control plane is exempt from injection so the abort path stays reachable.",
+        "An experiment that outlives its window: bounds are enforced at module and per-request layers, every experiment self-reverts, and the control plane is exempt from injection so the abort path stays reachable.",
       ],
     },
   },
@@ -327,7 +326,7 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
               SentinelSOL Telemetry
             </span>
           </div>
-          <span className="subsystem-label">LIVE GRAPH</span>
+          <span className="subsystem-label">SNAPSHOT</span>
         </div>
         <div className="sentinel-graph-frame">
           <img

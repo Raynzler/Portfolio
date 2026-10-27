@@ -199,7 +199,7 @@ export function CvSection() {
                     {resumeFile}
                   </span>
                 </div>
-                <span className="subsystem-label">VERIFIED</span>
+                <span className="subsystem-label">PDF</span>
               </div>
 
               <div className="relative overflow-hidden p-4 sm:p-6">
