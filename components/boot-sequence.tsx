@@ -66,6 +66,10 @@ declare global {
 const subscribeNothing = () => () => {}
 
 function bootPending() {
+  // A deep link (/#cv, /#contact, ...) is someone heading for one section:
+  // land them on it straight away, without the boot.
+  const target = window.location.hash.slice(1)
+  if (target && document.getElementById(target)) return false
   try {
     return !sessionStorage.getItem(BOOT.storageKey)
   } catch {
@@ -141,7 +145,9 @@ export function BootSequence() {
     window.addEventListener("keydown", skip)
     window.addEventListener("click", skip)
 
-    const startDelay = reducedRef.current ? 120 : 320
+    // Paced to read as a quick operator session, ~2.1s end to end, so the
+    // portfolio is never more than a beat away (see BOOT.totalMs).
+    const startDelay = 120
     const begin = window.setTimeout(() => setPhase(1), startDelay)
 
     return () => {
@@ -161,13 +167,13 @@ export function BootSequence() {
       setWhoami(WHOAMI)
       timers.push(window.setTimeout(() => setPhase(2), 220))
     } else {
-      const lead = 120
-      const per = 82
+      const lead = 50
+      const per = 32
       for (let i = 1; i <= WHOAMI.length; i += 1) {
         timers.push(window.setTimeout(() => setWhoami(WHOAMI.slice(0, i)), lead + i * per))
       }
       const typedAt = lead + WHOAMI.length * per
-      timers.push(window.setTimeout(() => setPhase(2), typedAt + 360))
+      timers.push(window.setTimeout(() => setPhase(2), typedAt + 120))
     }
 
     return () => timers.forEach(window.clearTimeout)
@@ -179,8 +185,8 @@ export function BootSequence() {
     const reduced = reducedRef.current
     const timers: number[] = []
 
-    timers.push(window.setTimeout(() => setShowHamza(true), reduced ? 80 : 210))
-    timers.push(window.setTimeout(() => setPhase(3), reduced ? 320 : 880))
+    timers.push(window.setTimeout(() => setShowHamza(true), 80))
+    timers.push(window.setTimeout(() => setPhase(3), reduced ? 320 : 260))
 
     return () => timers.forEach(window.clearTimeout)
   }, [phase, visible])
@@ -195,13 +201,13 @@ export function BootSequence() {
       setCmd(seq.cmd)
       timers.push(window.setTimeout(() => setPhase(4), 220))
     } else {
-      const lead = 150
-      const per = 46
+      const lead = 60
+      const per = 14
       for (let i = 1; i <= seq.cmd.length; i += 1) {
         timers.push(window.setTimeout(() => setCmd(seq.cmd.slice(0, i)), lead + i * per))
       }
       const typedAt = lead + seq.cmd.length * per
-      timers.push(window.setTimeout(() => setPhase(4), typedAt + 330))
+      timers.push(window.setTimeout(() => setPhase(4), typedAt + 110))
     }
 
     return () => timers.forEach(window.clearTimeout)
@@ -218,7 +224,7 @@ export function BootSequence() {
       if (!reduced) playInterfaceTone()
     }
 
-    const duration = reduced ? 300 : 1500
+    const duration = reduced ? 300 : 560
     const startTs = performance.now()
     let raf = 0
 
@@ -230,7 +236,7 @@ export function BootSequence() {
         raf = requestAnimationFrame(tick)
       } else {
         setProgress(100)
-        progressHoldRef.current = window.setTimeout(() => setPhase(5), reduced ? 160 : 240)
+        progressHoldRef.current = window.setTimeout(() => setPhase(5), reduced ? 160 : 100)
       }
     }
 
@@ -245,7 +251,7 @@ export function BootSequence() {
   useEffect(() => {
     if (!visible || phase !== 5) return
     const reduced = reducedRef.current
-    const hold = window.setTimeout(() => setPhase(6), reduced ? 320 : 580)
+    const hold = window.setTimeout(() => setPhase(6), reduced ? 320 : 240)
     return () => window.clearTimeout(hold)
   }, [phase, visible])
 
@@ -366,6 +372,18 @@ export function BootSequence() {
               </div>
             </motion.div>
           </div>
+
+          {/* Skip hint — the skip handler above takes any key, click or tap.
+              Pointer and touch wording swap in CSS (globals.css). */}
+          <motion.p
+            className="boot-skip-hint subsystem-label"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.4, ease: "easeOut" }}
+          >
+            <span className="boot-skip-pointer">Press any key or click to skip</span>
+            <span className="boot-skip-touch">Tap to skip</span>
+          </motion.p>
         </motion.div>
       )}
     </AnimatePresence>

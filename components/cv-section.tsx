@@ -12,7 +12,7 @@ import { useLiveAttribute } from "@/lib/grid-runtime"
 // updates replace the file in place rather than versioning the filename, so
 // links already shared on LinkedIn and in email keep resolving.
 const resumeFile = "Hamza_Shaikh_CV.pdf"
-const resumeHref = `/${resumeFile}`
+export const resumeHref = `/${resumeFile}`
 const resumeUpdated = "10 SEP 2026"
 
 const dossier = [

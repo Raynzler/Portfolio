@@ -38,6 +38,8 @@ export const TRAIL = {
 
 export const BOOT = {
   storageKey: 'grid_boot_seen',
-  totalMs: 5200,
+  // First-visit boot, start to fade (was ~5.8s; paced down so the portfolio
+  // and CV are never more than a beat away).
+  totalMs: 2100,
   skipFadeDuration: 320,
 } as const

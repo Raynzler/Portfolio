@@ -1,6 +1,6 @@
 "use client"
 
-import { MapPin, ArrowDown, ExternalLink } from "lucide-react"
+import { MapPin, ArrowDown, Download, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useEffect, useRef } from "react"
@@ -16,6 +16,7 @@ import {
 } from "@/lib/motion"
 import { BOOT } from "@/lib/constants"
 import { bringGridOnline, useGridOnline, useLiveAttribute } from "@/lib/grid-runtime"
+import { resumeHref } from "@/components/cv-section"
 
 const proof = [
   { label: "AWARD · 2026", value: "Winner · Superteam Germany Solana Ideathon" },
@@ -170,6 +171,16 @@ export function Landing() {
             >
               GitHub
               <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
+            {/* Straight to the PDF: the same file and download attribute as
+                the CV section, so a recruiter can grab it from the first screen. */}
+            <Link
+              href={resumeHref}
+              download
+              className="hero-cta hero-cta-ghost inline-flex items-center gap-2 rounded-sm px-4 py-2.5 font-mono text-xs uppercase tracking-[0.14em]"
+            >
+              Download CV
+              <Download className="h-3.5 w-3.5" />
             </Link>
           </motion.div>
 

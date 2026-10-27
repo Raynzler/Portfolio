@@ -14,7 +14,12 @@ const COMMANDS: Record<string, string> = {
   disc: "IDENTITY DISC / data secured",
   tron: "TRON / he fights for the users",
   portal: "I/O TOWER / connection open",
+  transform: "TRANSFORM / grid geometry reconfigured",
 }
+
+// Accent triplets for the Flynn/CLU handoff sweep (match --mode-rgb).
+const FLYNN_RGB = "79, 223, 255"
+const CLU_RGB = "255, 138, 61"
 
 const ZONE_IDS = ["home", "projects", "experience", "stack", "cv", "fieldlog", "contact"]
 
@@ -32,6 +37,7 @@ const FLOOR_LANES = [
 export function SystemAtmosphere() {
   const [egg, setEgg] = useState<string | null>(null)
   const [creds, setCreds] = useState(false)
+  const planeRef = useRef<HTMLDivElement>(null)
   const floorRef = useRef<HTMLDivElement>(null)
   const transitRef = useRef<HTMLDivElement>(null)
 
@@ -71,10 +77,22 @@ export function SystemAtmosphere() {
     // register late. This is the "moving through systems" cue: signal up on
     // PROJECTS, archive feel on FIELD LOG, calm shutdown on CONTACT. EXPERIENCE
     // warmth is the CLU pass. Each change sends one faint transit sweep through
-    // the Grid in the direction of travel, with a short traffic surge.
-    const transit = (down: boolean) => {
+    // the Grid in the direction of travel, with a short traffic surge. Crossing
+    // into or out of EXPERIENCE is the Flynn/CLU handoff: that sweep leads with
+    // the incoming mode's colour and trails the outgoing one.
+    const transit = (fromZone: string, toZone: string, down: boolean) => {
       const sweep = transitRef.current
       if (!sweep || document.hidden || prefersReducedMotion()) return
+      const handoff = !forcedClu && (fromZone === "experience") !== (toZone === "experience")
+      if (handoff) {
+        const incoming = toZone === "experience" ? CLU_RGB : FLYNN_RGB
+        const outgoing = toZone === "experience" ? FLYNN_RGB : CLU_RGB
+        sweep.style.setProperty("--sweep-top", down ? outgoing : incoming)
+        sweep.style.setProperty("--sweep-bottom", down ? incoming : outgoing)
+      } else {
+        sweep.style.removeProperty("--sweep-top")
+        sweep.style.removeProperty("--sweep-bottom")
+      }
       const [from, to] = down ? ["-30vh", "104vh"] : ["104vh", "-30vh"]
       sweep.animate(
         [
@@ -83,9 +101,30 @@ export function SystemAtmosphere() {
           { opacity: 1, offset: 0.7 },
           { transform: `translate3d(0, ${to}, 0)`, opacity: 0 },
         ],
-        { duration: 1500, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
+        { duration: handoff ? 1800 : 1500, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
       )
-      surgeSignal(0.45)
+      surgeSignal(handoff ? 0.6 : 0.45)
+    }
+
+    // "transform": the floor folds up into a wall in two mechanical stages,
+    // holds, then lays back down. It animates the individual `rotate`
+    // property, which composes with each plane's own rotateX, so the run loop
+    // and scroll travel carry on underneath. Reduced motion: message only.
+    let folding: Animation | undefined
+    const reconfigure = () => {
+      if (document.hidden || prefersReducedMotion() || folding?.playState === "running") return
+      const keyframes: Keyframe[] = [
+        { rotate: "x 0deg", easing: "cubic-bezier(0.3, 0, 0.2, 1)" },
+        { rotate: "x -38deg", offset: 0.22, easing: "ease-in-out" },
+        { rotate: "x -34deg", offset: 0.3, easing: "cubic-bezier(0.3, 0, 0.2, 1)" },
+        { rotate: "x -66deg", offset: 0.48, easing: "ease-in-out" },
+        { rotate: "x -63deg", offset: 0.56 },
+        { rotate: "x -63deg", offset: 0.72, easing: "cubic-bezier(0.6, 0, 0.3, 1)" },
+        { rotate: "x 0deg" },
+      ]
+      folding = planeRef.current?.animate(keyframes, { duration: 1800 })
+      floorRef.current?.animate(keyframes, { duration: 1800 })
+      surgeSignal(0.8)
     }
 
     const line = SCROLL.activationFraction * 100
@@ -106,10 +145,11 @@ export function SystemAtmosphere() {
           }
         }
         if (!next || next === zone) return
-        const from = ZONE_IDS.indexOf(zone)
+        const previous = zone
+        const from = ZONE_IDS.indexOf(previous)
         zone = next
         root.dataset.zone = next
-        if (from !== -1) transit(ZONE_IDS.indexOf(next) > from)
+        if (from !== -1) transit(previous, next, ZONE_IDS.indexOf(next) > from)
       },
       { rootMargin: `-${line}% 0px -${99 - line}% 0px`, threshold: 0 }
     )
@@ -157,6 +197,7 @@ export function SystemAtmosphere() {
         for (const [command, response] of Object.entries(COMMANDS)) {
           if (buffer.endsWith(command)) showEgg(response)
         }
+        if (buffer.endsWith("transform")) reconfigure()
         // Recruiter command palette — type "credentials" or "whois" to surface
         // a fast credential read-out. Hidden by design; no UI advertises it.
         if (buffer.endsWith("credentials") || buffer.endsWith("whois")) {
@@ -181,7 +222,7 @@ export function SystemAtmosphere() {
       <div className="system-atmosphere" aria-hidden="true">
         <div className="grid-field" />
         <div className="grid-horizon">
-          <div className="grid-horizon-plane" />
+          <div className="grid-horizon-plane" ref={planeRef} />
           <div className="grid-floor" ref={floorRef}>
             {FLOOR_LANES.map((trail) => (
               <span

@@ -476,6 +476,9 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
   const [showNotes, setShowNotes] = useState(false)
   const archRef = useRef<HTMLDivElement>(null)
   const notesRef = useRef<HTMLDivElement>(null)
+  // The case study sits far below the panel top, so its toggle gets its own
+  // one-time cue when it is actually reached (see [data-cue] in globals.css).
+  const notesReached = useInView(notesRef, { once: true, margin: "-20% 0px" })
   const hasArch = project.id === "sentinelsol" || !!project.pipeline
 
   const goToArchitecture = () => {
@@ -614,7 +617,12 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
 
           {/* Engineering notes — expandable case study */}
           {project.caseStudy && (
-            <div className="mb-8" ref={notesRef} style={{ scrollMarginTop: "96px" }}>
+            <div
+              className="mb-8"
+              ref={notesRef}
+              style={{ scrollMarginTop: "96px" }}
+              data-cue={powered && notesReached ? "on" : undefined}
+            >
               <button
                 type="button"
                 onClick={() => setShowNotes((v) => !v)}
