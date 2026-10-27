@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Z_INDEX } from "@/lib/constants"
+import { useEffect, useRef, useState, type CSSProperties } from "react"
+import { SCROLL, Z_INDEX } from "@/lib/constants"
+import { coupleToSignal, prefersReducedMotion, surgeSignal } from "@/lib/grid-runtime"
 
 const COMMANDS: Record<string, string> = {
   whoami: "hamza / infrastructure operator",
@@ -17,9 +18,27 @@ const COMMANDS: Record<string, string> = {
 
 const ZONE_IDS = ["home", "projects", "experience", "stack", "cv", "fieldlog", "contact"]
 
+// Traffic riding the perspective floor. `lane` counts grid lines from the
+// centre (the floor's background is centred to match), so trails ride the
+// lines. "in" runs toward the viewer, "out" recedes to the horizon.
+const FLOOR_LANES = [
+  { lane: -7, dir: "in", tone: "cyan", duration: 7.5, delay: -2 },
+  { lane: -3, dir: "out", tone: "cyan", duration: 10, delay: -6.5 },
+  { lane: 2, dir: "in", tone: "cyan", duration: 6.5, delay: -4 },
+  { lane: 5, dir: "out", tone: "ember", duration: 12, delay: -1 },
+  { lane: 9, dir: "in", tone: "cyan", duration: 8.5, delay: -7.5 },
+] as const
+
 export function SystemAtmosphere() {
   const [egg, setEgg] = useState<string | null>(null)
   const [creds, setCreds] = useState(false)
+  const floorRef = useRef<HTMLDivElement>(null)
+  const transitRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!floorRef.current) return
+    return coupleToSignal(floorRef.current, "floor-", 0.7)
+  }, [])
 
   useEffect(() => {
     const root = document.documentElement
@@ -45,25 +64,54 @@ export function SystemAtmosphere() {
 
     if (experience && observer) observer.observe(experience)
 
-    // Section atmosphere states — set data-zone to whichever section is most in
-    // view, so the background can shift subtly per zone (see globals.css). This
-    // is the "moving through systems" cue: signal up on PROJECTS, archive feel
-    // on FIELD LOG, calm shutdown on CONTACT. EXPERIENCE warmth is the CLU pass.
-    const ratios = new Map<string, number>()
+    // Section atmosphere states — data-zone is whichever section crosses a thin
+    // band on the nav's activation line, so the background can shift subtly per
+    // zone (see globals.css). A band, not intersection ratios: a section taller
+    // than the viewport (PROJECTS) can never reach a high ratio, so it used to
+    // register late. This is the "moving through systems" cue: signal up on
+    // PROJECTS, archive feel on FIELD LOG, calm shutdown on CONTACT. EXPERIENCE
+    // warmth is the CLU pass. Each change sends one faint transit sweep through
+    // the Grid in the direction of travel, with a short traffic surge.
+    const transit = (down: boolean) => {
+      const sweep = transitRef.current
+      if (!sweep || document.hidden || prefersReducedMotion()) return
+      const [from, to] = down ? ["-30vh", "104vh"] : ["104vh", "-30vh"]
+      sweep.animate(
+        [
+          { transform: `translate3d(0, ${from}, 0)`, opacity: 0 },
+          { opacity: 1, offset: 0.25 },
+          { opacity: 1, offset: 0.7 },
+          { transform: `translate3d(0, ${to}, 0)`, opacity: 0 },
+        ],
+        { duration: 1500, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
+      )
+      surgeSignal(0.45)
+    }
+
+    const line = SCROLL.activationFraction * 100
+    const crossing = new Map<string, number>()
+    let zone = ""
     const zoneObserver = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) ratios.set(entry.target.id, entry.intersectionRatio)
-        let best = ""
-        let bestRatio = 0
-        for (const [id, ratio] of ratios) {
-          if (ratio > bestRatio) {
-            bestRatio = ratio
-            best = id
+        for (const entry of entries) {
+          if (entry.isIntersecting) crossing.set(entry.target.id, entry.intersectionRect.height)
+          else crossing.delete(entry.target.id)
+        }
+        let next = zone
+        let best = -1
+        for (const [id, height] of crossing) {
+          if (height >= best) {
+            best = height
+            next = id
           }
         }
-        if (best) root.dataset.zone = best
+        if (!next || next === zone) return
+        const from = ZONE_IDS.indexOf(zone)
+        zone = next
+        root.dataset.zone = next
+        if (from !== -1) transit(ZONE_IDS.indexOf(next) > from)
       },
-      { threshold: [0, 0.25, 0.5, 0.75, 1] }
+      { rootMargin: `-${line}% 0px -${99 - line}% 0px`, threshold: 0 }
     )
     for (const id of ZONE_IDS) {
       const el = document.getElementById(id)
@@ -134,7 +182,26 @@ export function SystemAtmosphere() {
         <div className="grid-field" />
         <div className="grid-horizon">
           <div className="grid-horizon-plane" />
+          <div className="grid-floor" ref={floorRef}>
+            {FLOOR_LANES.map((trail) => (
+              <span
+                key={trail.lane}
+                className="floor-trail"
+                data-dir={trail.dir}
+                data-tone={trail.tone}
+                style={
+                  {
+                    "--lane": trail.lane,
+                    animationDuration: `${trail.duration}s`,
+                    animationDelay: `${trail.delay}s`,
+                  } as CSSProperties
+                }
+              />
+            ))}
+          </div>
         </div>
+        <div className="grid-horizon-glow" />
+        <div className="zone-transit" ref={transitRef} />
         <div className="traffic-layer traffic-layer-a" />
         <div className="traffic-layer traffic-layer-b" />
         <div className="traffic-layer traffic-layer-c" />

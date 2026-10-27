@@ -98,10 +98,11 @@ export function Header() {
     event.preventDefault()
     window.history.pushState(null, "", `#${id}`)
     // Route through Lenis when smooth scroll is active so nav stays consistent;
-    // fall back to native smooth scroll otherwise.
+    // fall back to native smooth scroll otherwise. Lenis already honours the
+    // scroll-padding-top on <html> (SCROLL.headerOffset), so no extra offset.
     const lenis = scrollState.lenis
     if (lenis) {
-      lenis.scrollTo(el, { offset: -SCROLL.headerOffset })
+      lenis.scrollTo(el)
     } else {
       const top = el.getBoundingClientRect().top + window.scrollY - SCROLL.headerOffset
       window.scrollTo({ top, behavior: "smooth" })

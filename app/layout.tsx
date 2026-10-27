@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { DynamicFavicon } from '@/components/dynamic-favicon'
 import { SmoothScroller } from '@/components/smooth-scroller'
 import { IdentityCursor } from '@/components/identity-cursor'
+import { MotionPreferences } from '@/components/motion-preferences'
 import { SCROLL, Z_INDEX } from '@/lib/constants'
 import './globals.css'
 
@@ -61,13 +62,15 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} bg-background`}
-      style={{ scrollPaddingTop: `${SCROLL.headerOffset}px` }}
+      // The page colour lives on <html> (painted as the canvas). <body> stays
+      // transparent: an opaque body paints over the z-index:-1 Grid layers.
+      style={{ scrollPaddingTop: `${SCROLL.headerOffset}px`, backgroundColor: '#05070A' }}
     >
-      <body className="font-sans antialiased min-h-screen" style={{ backgroundColor: '#05070A' }}>
+      <body className="font-sans antialiased min-h-screen">
         <SmoothScroller />
         <IdentityCursor />
         <DynamicFavicon />
-        {children}
+        <MotionPreferences>{children}</MotionPreferences>
 
         <footer className="pointer-events-none fixed bottom-5 right-6" style={{ zIndex: Z_INDEX.footer }}>
           <span className="end-of-line">

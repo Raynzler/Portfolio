@@ -4,8 +4,9 @@ import Link from "next/link"
 import { Award, Briefcase, Download, FileText, GraduationCap, ShieldCheck } from "lucide-react"
 import { motion, useInView } from "framer-motion"
 import { useEffect, useRef, useState } from "react"
-import { fadeUp, staggerContainer, staggerItem, duration } from "@/lib/motion"
+import { fadeUp, ruleDraw, staggerContainer, staggerItem, duration } from "@/lib/motion"
 import { SectionSep } from "@/components/section-sep"
+import { useLiveAttribute } from "@/lib/grid-runtime"
 
 // Single source of truth for the CV asset. The path is deliberately stable —
 // updates replace the file in place rather than versioning the filename, so
@@ -76,6 +77,7 @@ const certifications = [
 export function CvSection() {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: "-60px 0px" })
+  useLiveAttribute(ref)
   // undefined while the probe is in flight, so the panel can distinguish
   // "still checking" from "confirmed missing".
   const [pdfAvailable, setPdfAvailable] = useState<boolean | undefined>(undefined)
@@ -108,7 +110,10 @@ export function CvSection() {
             className="flex items-center gap-4 mb-16"
           >
             <span className="subsystem-label">DOSSIER</span>
-            <span className="h-px flex-1 max-w-[180px] bg-[linear-gradient(to_right,rgba(var(--mode-rgb),0.16),transparent)]" />
+            <motion.span
+              variants={ruleDraw}
+              className="h-px flex-1 max-w-[180px] origin-left bg-[linear-gradient(to_right,rgba(var(--mode-rgb),0.16),transparent)]"
+            />
             <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
               Curriculum Vitae
             </span>
@@ -174,7 +179,7 @@ export function CvSection() {
                 download
                 aria-disabled={downloadDisabled}
                 tabIndex={downloadDisabled ? -1 : undefined}
-                className={`group inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[rgba(var(--mode-rgb),0.20)] bg-[rgba(var(--mode-rgb),0.045)] px-4 py-3 font-mono text-xs uppercase tracking-[0.14em] text-[rgba(230,241,255,0.82)] transition-colors hover:border-[rgba(var(--mode-rgb),0.40)] hover:bg-[rgba(var(--mode-rgb),0.075)]${downloadDisabled ? " pointer-events-none opacity-60" : ""}`}
+                className={`cta-sheen group inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[rgba(var(--mode-rgb),0.20)] bg-[rgba(var(--mode-rgb),0.045)] px-4 py-3 font-mono text-xs uppercase tracking-[0.14em] text-[rgba(230,241,255,0.82)] transition-colors hover:border-[rgba(var(--mode-rgb),0.40)] hover:bg-[rgba(var(--mode-rgb),0.075)]${downloadDisabled ? " pointer-events-none opacity-60" : ""}`}
                 style={{ transitionDuration: `${duration.hover * 1000}ms` }}
               >
                 <Download className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.66)] transition-transform group-hover:-translate-y-0.5" />

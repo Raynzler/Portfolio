@@ -2,26 +2,30 @@
 
 import { useEffect } from "react"
 import { scrollState } from "@/lib/scroll-state"
+import { pauseWhileHidden, tickSignal } from "@/lib/grid-runtime"
 
 /**
- * Lenis smooth-scroll foundation. Renders nothing; all work runs client-side in
- * an effect, and Lenis is loaded with a dynamic import so it never touches the
- * server bundle (Vercel SSR-safe).
+ * Lenis smooth-scroll foundation, and the one frame loop the site runs.
+ * Renders nothing; all work runs client-side in an effect, and Lenis is loaded
+ * with a dynamic import so it never touches the server bundle (Vercel SSR-safe).
  *
  * - Honors prefers-reduced-motion: leaves native scroll untouched.
  * - smoothTouch stays off (Lenis default), so mobile keeps native touch scroll.
  * - Runs its own rAF loop and tears it down + destroys Lenis on cleanup.
- * - Publishes the instance + scroll velocity to lib/scroll-state for the Grid
- *   shader and nav routing. The narrative scrubbers read window.scrollY, which
+ * - Publishes the instance + scroll velocity to lib/scroll-state for nav
+ *   routing, and feeds velocity to the Grid runtime's signal from the same
+ *   frame (no second loop). The narrative scrubbers read window.scrollY, which
  *   Lenis updates natively, so the Zero-Friction Exit math is unaffected.
+ * - Holds continuous CSS animation while the tab is hidden.
  */
 export function SmoothScroller() {
   useEffect(() => {
     if (typeof window === "undefined") return
+    const stopPausing = pauseWhileHidden()
     const reduce =
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (reduce) return
+    if (reduce) return stopPausing
 
     let rafId = 0
     let cancelled = false
@@ -47,6 +51,8 @@ export function SmoothScroller() {
 
         const raf = (time: number) => {
           lenis.raf(time)
+          // Read the live value: Lenis zeroes velocity when a scroll settles.
+          tickSignal(lenis.velocity)
           rafId = requestAnimationFrame(raf)
         }
         rafId = requestAnimationFrame(raf)
@@ -61,6 +67,7 @@ export function SmoothScroller() {
       if (lenisInstance) lenisInstance.destroy()
       scrollState.lenis = null
       scrollState.velocity = 0
+      stopPausing()
     }
   }, [])
 

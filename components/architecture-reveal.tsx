@@ -3,6 +3,7 @@
 import { useRef } from "react"
 import type { LucideIcon } from "lucide-react"
 import { useScrollScrub } from "@/lib/use-scroll-scrub"
+import { useLiveAttribute } from "@/lib/grid-runtime"
 
 /**
  * Architecture Reveal — a system explained as a scrubbed data flow, not a card
@@ -12,7 +13,9 @@ import { useScrollScrub } from "@/lib/use-scroll-scrub"
  * so every stage carries one line of what actually happens there.
  *
  * Same scrub mechanism as the incident replay (see useScrollScrub): CSS-var
- * driven, no rAF, no full-width transforms, cannot overflow.
+ * driven, no rAF, no full-width transforms, cannot overflow. The node that
+ * receives the signal pings once, and the metric rail only lights when the
+ * flow reaches its last stage: outputs follow the data, not the scroll.
  */
 export interface ArchStage {
   label: string
@@ -33,16 +36,22 @@ export function ArchitectureReveal({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const active = useScrollScrub(ref, stages.length)
+  useLiveAttribute(ref)
 
   return (
-    <div className="sentinel-visual arch-reveal mb-8" ref={ref}>
+    <div
+      className="sentinel-visual arch-reveal mb-8"
+      ref={ref}
+      data-complete={active === stages.length - 1 ? "true" : "false"}
+    >
       <div className="sentinel-visual-bar">
         <div className="flex items-center gap-3">
           <span className="incident-pip" aria-hidden="true" />
           <span className="font-mono text-xs text-[rgba(230,241,255,0.78)]">{title}</span>
         </div>
         <span className="arch-readout font-mono">
-          <span className="arch-readout-dim">{flow} ·</span> {stages[active].label}
+          <span className="arch-readout-dim">{flow} ·</span>{" "}
+          <span key={active} className="arch-readout-value">{stages[active].label}</span>
         </span>
       </div>
 
@@ -57,6 +66,7 @@ export function ArchitectureReveal({
             <li key={stage.label} className="arch-stage" data-state={state}>
               <span className="arch-node" aria-hidden="true">
                 <Icon className="h-4 w-4" />
+                {state === "active" && <span key={active} className="arch-ping" />}
               </span>
               <div className="arch-body">
                 <span className="arch-label">{stage.label}</span>

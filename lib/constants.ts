@@ -5,7 +5,9 @@
 
 export const Z_INDEX = {
   atmosphere: -1,
-  lightcycle: 0,
+  // Same layer as the atmosphere (it renders later, so it paints on top):
+  // traffic stays behind all page content, positioned or not.
+  lightcycle: -1,
   content: 1,
   footer: 40,
   header: 50,

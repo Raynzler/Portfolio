@@ -4,7 +4,7 @@ import { Mail, Github, Linkedin, Twitter, Send } from "lucide-react"
 import Link from "next/link"
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
-import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
+import { fadeUp, ruleDraw, staggerContainer, staggerItem } from "@/lib/motion"
 import { SectionSep } from "@/components/section-sep"
 
 const links = [
@@ -66,8 +66,9 @@ export function Contact() {
             <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.45)" }}>
               RELAY
             </span>
-            <span
-              className="h-px"
+            <motion.span
+              variants={ruleDraw}
+              className="h-px origin-left"
               style={{
                 width: "120px",
                 background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",

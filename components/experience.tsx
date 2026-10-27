@@ -2,7 +2,7 @@
 
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
-import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
+import { fadeUp, ruleDraw, staggerContainer, staggerItem } from "@/lib/motion"
 import { SectionSep } from "@/components/section-sep"
 
 const experiences = [
@@ -68,8 +68,9 @@ function SectionLabel({ subsystem, title }: { subsystem: string; title: string }
       <span className="subsystem-label">
         {subsystem}
       </span>
-      <span
-        className="h-px flex-1"
+      <motion.span
+        variants={ruleDraw}
+        className="h-px flex-1 origin-left"
         style={{
           background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",
           maxWidth: "160px",
@@ -101,8 +102,11 @@ function ExperienceBlock({
       custom={index}
     >
       <div
-        className="tron-panel rounded-sm p-6"
+        className="tron-panel relative rounded-sm p-6"
+        data-power={isInView ? "on" : "off"}
       >
+        <span className="panel-power" aria-hidden="true" />
+
         {/* Header row */}
         <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-2 mb-4">
           <div>

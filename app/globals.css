@@ -123,11 +123,15 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
+  html {
     background-color: var(--background);
-    /* 220ms intentional — perceptible mode switch, slower than panel hover (160ms) */
-    transition: background-color 220ms ease;
+  }
+  /* Transparent on purpose: <html> paints the page colour as the canvas, and
+     an opaque body would cover the z-index:-1 Grid layers (atmosphere, floor,
+     traffic), which sit between the two. */
+  body {
+    @apply text-foreground;
+    background-color: transparent;
   }
 }
 
@@ -170,13 +174,13 @@ html.lenis body { height: auto; }
 }
 
 /* ─── Scroll anchor offset (fixed header) ────────────────────────────────── */
-[id] { scroll-margin-top: 80px; }
+/* One source: scroll-padding-top on <html> (SCROLL.headerOffset, layout.tsx),
+   which native anchors and Lenis both honour. A scroll-margin on [id] doubled
+   it, and an explicit Lenis offset tripled it: nav landed 240px down, not 80. */
 
 /* ─── Compositing hints — only on actively animating elements ─────────────── */
-.trail-drift-a,
-.trail-drift-b,
-.trail-flare,
-.trail-head,
+.lc-trail,
+.floor-trail,
 .system-atmosphere .traffic-layer::before,
 .system-atmosphere .traffic-layer::after,
 .system-atmosphere .trace-highway::before,
@@ -196,57 +200,88 @@ html.lenis body { height: auto; }
   50%       { opacity: 0.45; transform: scale(0.82); }
 }
 
-/* ─── Lightcycle trail system ─────────────────────────────────────────────── */
-@keyframes trail-sweep {
-  0%   { transform: translate3d(-30vw, 0, 0); }
-  100% { transform: translate3d(140vw, 0, 0); }
+/* ─── Lightcycle traffic — depth-tiered routes (LightcycleGrid) ──────────── */
+/* Translate by the trail's own width (-100%) so a trail of any length enters
+   and leaves fully offscreen: no head popping in at the edge. */
+@keyframes lc-run {
+  from { transform: translate3d(-100%, 0, 0); }
+  to   { transform: translate3d(100vw, 0, 0); }
 }
 
-@keyframes trail-sweep-reverse {
-  0%   { transform: translate3d(140vw, 0, 0); }
-  100% { transform: translate3d(-30vw, 0, 0); }
+@keyframes lc-run-reverse {
+  from { transform: translate3d(100vw, 0, 0); }
+  to   { transform: translate3d(-100%, 0, 0); }
 }
 
-@keyframes trail-drift {
-  0%, 100% { transform: translateY(0); }
-  38%      { transform: translateY(-3px); }
-  62%      { transform: translateY(2px); }
+/* Drift uses the individual `translate` property, so it composes with the run
+   transform on the same element instead of overriding it. */
+@keyframes lc-drift-a {
+  0%, 100% { translate: 0 0; }
+  38%      { translate: 0 -3px; }
+  62%      { translate: 0 2px; }
 }
 
-@keyframes trail-drift-alt {
-  0%, 100% { transform: translateY(0); }
-  28%      { transform: translateY(2px); }
-  72%      { transform: translateY(-2px); }
+@keyframes lc-drift-b {
+  0%, 100% { translate: 0 0; }
+  28%      { translate: 0 2px; }
+  72%      { translate: 0 -2px; }
 }
 
-.trail-drift-a { animation: trail-drift 8.2s ease-in-out infinite; }
-.trail-drift-b { animation: trail-drift-alt 11.4s ease-in-out infinite; }
+.lc-root { transition: opacity 900ms ease; }
 
-@keyframes trail-flare {
-  0%, 82%, 100% { opacity: 1; }
-  88% { opacity: 1.6; }
-  92% { opacity: 1.1; }
+.lc-lane {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transition: opacity 700ms ease;
 }
 
-.trail-drift-a.trail-flare {
-  animation: trail-drift 8.2s ease-in-out infinite, trail-flare 4.6s ease-in-out infinite 2s;
+/* The CLU pass shifts the traffic mix: ember rises, cyan recedes. */
+.lc-lane[data-tone="cyan"]  { opacity: calc(1 - 0.45 * var(--clu-intensity)); }
+.lc-lane[data-tone="ember"] { opacity: calc(0.62 + 0.38 * var(--clu-intensity)); }
+
+/* Brightest at the head, fading along the wake: direction reads at a glance.
+   --signal (scroll velocity, 0..1) lifts intensity a touch while moving. */
+.lc-trail {
+  --lc-rgb: 79, 223, 255;
+  --lc-o: 0.52;
+  position: relative;
+  height: 1px;
+  border-radius: 1px;
+  opacity: calc(var(--lc-o) * (0.88 + 0.4 * var(--signal, 0)));
+  background: linear-gradient(to right, transparent, rgba(var(--lc-rgb), 0.16) 40%, rgba(var(--lc-rgb), 0.9));
 }
-.trail-drift-b.trail-flare {
-  animation: trail-drift-alt 11.4s ease-in-out infinite, trail-flare 4.6s ease-in-out infinite 2s;
-}
-.trail-flare:not(.trail-drift-a):not(.trail-drift-b) {
-  animation: trail-flare 4.6s ease-in-out infinite 2s;
+
+[data-tone="ember"] > .lc-trail {
+  --lc-rgb: 255, 138, 61;
+  background: linear-gradient(to left, transparent, rgba(var(--lc-rgb), 0.16) 40%, rgba(var(--lc-rgb), 0.9));
 }
 
 /* Lightcycle head — bright leading point so trails read as vehicles, not gradients */
-.trail-head {
+.lc-head {
   position: absolute;
   top: 50%;
-  width: 4px;
-  height: 4px;
+  right: -1px;
+  width: 3px;
+  height: 3px;
   border-radius: 9999px;
   transform: translateY(-50%);
+  background: rgb(190, 245, 255);
+  box-shadow: 0 0 5px 1px rgba(var(--lc-rgb), 0.65);
 }
+
+[data-tone="ember"] > .lc-trail .lc-head {
+  right: auto;
+  left: -1px;
+  background: rgb(255, 196, 140);
+}
+
+/* Depth: far is thin, dim and small-headed; near is rare, thicker, brighter. */
+.lc-far > .lc-trail  { --lc-o: 0.3; }
+.lc-far .lc-head     { width: 2px; height: 2px; box-shadow: 0 0 3px rgba(var(--lc-rgb), 0.5); }
+.lc-near > .lc-trail { --lc-o: 0.7; height: 2px; }
+.lc-near .lc-head    { width: 4px; height: 4px; box-shadow: 0 0 8px 2px rgba(var(--lc-rgb), 0.55); }
 
 /* Boot cursor blink */
 @keyframes grid-drift {
@@ -407,7 +442,9 @@ html.lenis body { height: auto; }
   transform: translateX(-50%);
   perspective: 340px;
   perspective-origin: 50% 0%;
-  opacity: 0.5;
+  /* Tuned once the floor became visible (see the body note in @layer base):
+     present at the bottom of the view, never louder than the content. */
+  opacity: 0.36;
   pointer-events: none;
   /* The child plane is 3D-transformed (rotateX). `overflow:hidden` on a distant
      ancestor does NOT reliably clip 3D descendants in WebKit, so the ~4769px
@@ -423,20 +460,126 @@ html.lenis body { height: auto; }
   position: absolute;
   left: -50%;
   right: -50%;
-  bottom: 0;
+  /* 64px of floor past the rotation axis (still on the container's bottom
+     edge): the run loop pulls the plane up to 64px away from the viewer, and
+     without this spare cell the near edge lifted off the bottom of the view. */
+  bottom: -64px;
   height: 200%;
-  transform-origin: 50% 100%;
+  transform-origin: 50% calc(100% - 64px);
   transform: rotateX(74deg) translateY(-64px);
   background-image:
     linear-gradient(to right, rgba(var(--mode-rgb), 0.55) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(var(--mode-rgb), 0.55) 1px, transparent 1px);
   background-size: 64px 64px;
-  animation: grid-horizon-run 7.5s linear infinite;
+  /* Centred so grid lines sit at 50% - 32px + n·64px, where .floor-trail
+     lanes are placed: floor traffic rides the lines. */
+  background-position: 50% 0;
+  animation: grid-horizon-run 11s linear infinite;
 }
 
 @keyframes grid-horizon-run {
   from { transform: rotateX(74deg) translateY(-64px); }
   to   { transform: rotateX(74deg) translateY(0); }
+}
+
+/* Moving through the Grid: scrolling the page drives the floor toward the
+   viewer, one 64px cell per iteration (28 across the page), and back again on
+   the way up. `translate` composes with the idle run's `transform`; the vector
+   is the floor's own +Y axis after rotateX(74deg): 64·(cos 74°, sin 74°).
+   Compositor-driven where scroll timelines exist; elsewhere the idle run
+   carries on alone. */
+@keyframes grid-floor-advance {
+  from { translate: 0 0 0; }
+  to   { translate: 0 17.64px 61.52px; }
+}
+
+@supports (animation-timeline: scroll()) {
+  .grid-horizon-plane {
+    animation-name: grid-horizon-run, grid-floor-advance;
+    animation-duration: 11s, auto;
+    animation-timing-function: linear, linear;
+    animation-iteration-count: infinite, 28;
+    animation-fill-mode: none, both;
+    animation-timeline: auto, scroll(root block);
+  }
+}
+
+/* ─── Floor traffic — lightcycles riding the perspective floor ─────────── */
+/* A static twin of the floor plane (same box, same rotation, no run loop, so
+   trails never jump when the loop wraps). Trails travel the plane's own Y
+   axis, so perspective foreshortens and accelerates them for free. */
+.grid-floor {
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  bottom: 0;
+  height: 200%;
+  transform-origin: 50% 100%;
+  transform: rotateX(74deg);
+  opacity: calc(0.8 + 0.2 * var(--signal, 0));
+}
+
+.floor-trail {
+  --rgb: 79, 223, 255;
+  position: absolute;
+  top: 0;
+  left: calc(50% - 32px + var(--lane) * 64px);
+  width: 2px;
+  height: 20vh;
+  margin-left: -0.5px;
+  background: linear-gradient(to bottom, transparent, rgba(var(--rgb), 0.8));
+  animation: floor-in 8s linear infinite;
+}
+
+.floor-trail[data-dir="out"] {
+  background: linear-gradient(to top, transparent, rgba(var(--rgb), 0.8));
+  animation-name: floor-out;
+}
+
+.floor-trail[data-tone="ember"] { --rgb: 255, 138, 61; }
+
+@keyframes floor-in {
+  from { transform: translate3d(0, -22vh, 0); }
+  to   { transform: translate3d(0, 92vh, 0); }
+}
+
+@keyframes floor-out {
+  from { transform: translate3d(0, 92vh, 0); }
+  to   { transform: translate3d(0, -22vh, 0); }
+}
+
+/* Horizon — a faint haze where the floor recedes into the distance, a little
+   brighter while the page is moving. */
+.grid-horizon-glow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22vh;
+  height: 22vh;
+  pointer-events: none;
+  background: radial-gradient(55% 50% at 50% 55%, rgba(var(--mode-rgb), 0.05), transparent 100%);
+  opacity: calc(0.7 + 0.6 * var(--signal, 0));
+  transition: opacity 900ms ease;
+}
+
+/* Zone transit — one faint band sweeps the Grid when a new section takes the
+   screen, in the direction of travel (animated by SystemAtmosphere). */
+.zone-transit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 30vh;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(var(--mode-rgb), 0.028) 42%,
+    rgba(var(--mode-rgb), 0.06) 50%,
+    rgba(var(--mode-rgb), 0.028) 58%,
+    transparent
+  );
 }
 
 .traffic-layer,
@@ -453,7 +596,9 @@ html.lenis body { height: auto; }
   position: absolute;
   display: block;
   background: linear-gradient(to right, transparent, rgba(var(--mode-rgb), 0.62), transparent);
-  filter: drop-shadow(0 0 5px rgba(var(--mode-rgb), 0.28));
+  /* box-shadow is painted once into the layer; a drop-shadow filter would be
+     re-applied by the compositor on every frame of the run. */
+  box-shadow: 0 0 6px rgba(var(--mode-rgb), 0.2);
 }
 
 .traffic-layer-a {
@@ -562,7 +707,8 @@ html.lenis body { height: auto; }
     transparent 4px,
     rgba(var(--mode-rgb), 0.025) 5px
   );
-  mix-blend-mode: screen;
+  /* No mix-blend-mode: a full-screen blend layer is re-composited whenever
+     anything beneath it moves, and at this alpha it looks the same. */
 }
 
 .boot-grid {
@@ -938,6 +1084,11 @@ html.lenis body { height: auto; }
 }
 
 @media (max-width: 720px) {
+  /* Small screens put more of the page over the Grid; dim it a step. */
+  .system-atmosphere {
+    opacity: 0.82;
+  }
+
   .sentinel-assets {
     grid-template-columns: 1fr;
   }
@@ -1414,12 +1565,12 @@ html[data-zone="projects"] .trace-highway { opacity: 0.68; }
 html[data-zone="fieldlog"] .grid-field { opacity: 0.024; }
 html[data-zone="fieldlog"] .traffic-layer,
 html[data-zone="fieldlog"] .trace-highway { opacity: 0.32; }
-html[data-zone="fieldlog"] .grid-horizon { opacity: 0.34; }
+html[data-zone="fieldlog"] .grid-horizon { opacity: 0.24; }
 
 html[data-zone="contact"] .grid-field { opacity: 0.03; }
 html[data-zone="contact"] .traffic-layer,
 html[data-zone="contact"] .trace-highway { opacity: 0.26; }
-html[data-zone="contact"] .grid-horizon { opacity: 0.3; }
+html[data-zone="contact"] .grid-horizon { opacity: 0.2; }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* PROJECT ACTIONS — explicit, obvious click targets                           */
@@ -1577,3 +1728,393 @@ html.identity-cursor-on * { cursor: none !important; }
 html.identity-cursor-on input,
 html.identity-cursor-on textarea,
 html.identity-cursor-on select { cursor: auto !important; }
+
+/* Zone tuning for the new layers (the original zone rules sit further up) */
+/* The hero carries its own 64px grid; keep the 72px field from doubling it. */
+html[data-zone="home"] .grid-field { opacity: 0.03; }
+html[data-zone="projects"] .grid-horizon { opacity: 0.42; }
+html[data-zone="stack"] .grid-field { opacity: 0.044; }
+html[data-zone="stack"] .lc-root { opacity: 0.82; }
+html[data-zone="cv"] .grid-field { opacity: 0.036; }
+html[data-zone="cv"] .traffic-layer,
+html[data-zone="cv"] .trace-highway { opacity: 0.4; }
+html[data-zone="cv"] .grid-horizon { opacity: 0.28; }
+html[data-zone="cv"] .lc-root { opacity: 0.66; }
+html[data-zone="contact"] .lc-root { opacity: 0.5; }
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* GRID POWER STATES — standby until the boot hands off (lib/grid-runtime)     */
+/* Must follow every zone rule: same specificity, so order decides.            */
+/* ─────────────────────────────────────────────────────────────────────────── */
+html:not([data-grid="online"]) .grid-field,
+html:not([data-grid="online"]) .grid-horizon,
+html:not([data-grid="online"]) .grid-horizon-glow,
+html:not([data-grid="online"]) .traffic-layer,
+html:not([data-grid="online"]) .trace-highway,
+html:not([data-grid="online"]) .lc-root { opacity: 0; }
+
+/* First power-up only (data-grid-boot lives ~2.6s): the Grid lights in depth
+   order — floor, horizon, field, distant routes, then lightcycle traffic. */
+html[data-grid-boot] .grid-horizon      { transition: opacity 1600ms cubic-bezier(0.22, 1, 0.36, 1) 80ms; }
+html[data-grid-boot] .grid-horizon-glow { transition: opacity 1400ms ease 260ms; }
+html[data-grid-boot] .grid-field        { transition: opacity 1400ms ease 380ms; }
+html[data-grid-boot] .traffic-layer,
+html[data-grid-boot] .trace-highway     { transition: opacity 1400ms ease 600ms; }
+html[data-grid-boot] .lc-root           { transition: opacity 1600ms ease 760ms; }
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* HERO — system coming online (Landing; framer drives the text sequence)      */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.proof-ignite {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  transform-origin: left center;
+  pointer-events: none;
+  background: linear-gradient(to right, rgba(var(--mode-rgb), 0.8), rgba(var(--mode-rgb), 0.12));
+}
+
+/* The availability dot pings twice as the hero finishes coming online. */
+.signal-dot { position: relative; }
+.signal-dot::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 9999px;
+  border: 1px solid rgba(var(--mode-rgb), 0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-grid="online"] .signal-dot::after {
+  animation: ping-ring 1600ms cubic-bezier(0.22, 1, 0.36, 1) 1250ms 2 backwards;
+}
+
+@keyframes ping-ring {
+  0%   { transform: scale(0.7); opacity: 0.9; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* ─── Sheen — one light pass across primary actions ───────────────────── */
+/* The transition lives only on the hover rule, so the sheen sweeps in on
+   hover and resets instantly (unseen) on leave, never sweeping backwards. */
+.cta-sheen {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.cta-sheen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(var(--mode-rgb), 0.16) 50%, transparent 65%);
+  transform: translateX(-101%);
+}
+@media (hover: hover) {
+  .cta-sheen:hover::before {
+    transform: translateX(101%);
+    transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+/* The hero's primary action gets one pass as it comes online. */
+html[data-grid="online"] .hero-cta-primary.cta-sheen::before {
+  animation: cta-sweep 1100ms cubic-bezier(0.22, 1, 0.36, 1) 1150ms backwards;
+}
+@keyframes cta-sweep {
+  from { transform: translateX(-101%); }
+  to   { transform: translateX(101%); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* PANEL POWER-ON — panels activate as they enter view (data-power)            */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.panel-power {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.panel-power::before,
+.panel-power::after {
+  content: "";
+  position: absolute;
+  opacity: 0;
+}
+/* Top edge trace */
+.panel-power::before {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  transform-origin: left center;
+  background: linear-gradient(to right, rgba(var(--mode-rgb), 0.08), rgba(var(--mode-rgb), 0.9) 72%, rgba(var(--mode-rgb), 0.12));
+}
+/* Left edge trace */
+.panel-power::after {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  transform-origin: center top;
+  background: linear-gradient(to bottom, rgba(var(--mode-rgb), 0.9), rgba(var(--mode-rgb), 0.05) 70%, transparent);
+}
+[data-power="on"] > .panel-power::before { animation: power-trace-x 1000ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both; }
+[data-power="on"] > .panel-power::after  { animation: power-trace-y 1300ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both; }
+
+@keyframes power-trace-x {
+  0%   { transform: scaleX(0); opacity: 1; }
+  55%  { opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+@keyframes power-trace-y {
+  0%   { transform: scaleY(0); opacity: 0.9; }
+  60%  { opacity: 0.7; }
+  100% { transform: scaleY(1); opacity: 0; }
+}
+
+/* Activation dots: dark until power-on, ignite in order, then settle into the
+   existing tactical pulse (ignite ends on the pulse's first frame). */
+.project-module[data-power="off"] .activation-dots span {
+  animation: none;
+  opacity: 0.1;
+  box-shadow: none;
+}
+.project-module[data-power="on"] .activation-dots span {
+  animation:
+    dot-ignite 560ms ease-out var(--d, 0s) both,
+    tactical-pulse 3.7s ease-in-out calc(var(--d, 0s) + 560ms) infinite;
+}
+@keyframes dot-ignite {
+  0%   { opacity: 0.1;  transform: scale(0.6); }
+  45%  { opacity: 1;    transform: scale(1.25); }
+  100% { opacity: 0.22; transform: scale(0.88); }
+}
+
+/* Status badge and sector readout report in after the dots. */
+.project-status,
+.sector-readout { transition: opacity 600ms ease; }
+.project-module[data-power="off"] .project-status { opacity: 0.3; }
+.project-module[data-power="off"] .sector-readout { opacity: 0; }
+.project-module[data-power="on"] .project-status { transition-delay: 480ms; }
+.project-module[data-power="on"] .sector-readout { transition-delay: 700ms; }
+
+/* Actions run a one-time systems check along their top edge, in order. The
+   keyframes end on the resting state (collapsed), so hover is unaffected. */
+.project-module[data-power="on"] .project-action::after {
+  animation: action-check 760ms cubic-bezier(0.25, 0.1, 0.25, 1) 620ms backwards;
+}
+.project-module[data-power="on"] .project-action:nth-child(2)::after { animation-delay: 710ms; }
+.project-module[data-power="on"] .project-action:nth-child(3)::after { animation-delay: 800ms; }
+.project-module[data-power="on"] .project-action:nth-child(4)::after { animation-delay: 890ms; }
+@keyframes action-check {
+  0%   { transform: scaleX(0); opacity: 1; }
+  45%  { transform: scaleX(1); opacity: 1; }
+  85%  { transform: scaleX(1); opacity: 0; }
+  100% { transform: scaleX(0); opacity: 0; }
+}
+
+/* ─── SentinelSOL pipeline — nodes come online, then packets flow ────────── */
+.sentinel-assets[data-power="off"] .architecture-node { border-color: rgba(var(--mode-rgb), 0.03); }
+.sentinel-assets[data-power="off"] .architecture-node svg { opacity: 0.2; }
+.sentinel-assets[data-power="on"] .architecture-node {
+  animation: node-online 640ms ease calc(240ms + var(--i, 0) * 160ms) backwards;
+}
+.sentinel-assets[data-power="on"] .architecture-node svg {
+  animation: node-icon-online 640ms ease calc(240ms + var(--i, 0) * 160ms) backwards;
+}
+@keyframes node-online { from { border-color: rgba(var(--mode-rgb), 0.03); } }
+@keyframes node-icon-online { from { opacity: 0.2; } }
+
+/* A packet hops each connector in turn: RPC → daemon → Prometheus → alert. */
+.architecture-node i::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 0;
+  width: 3px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgb(var(--mode-rgb));
+  box-shadow: 0 0 6px rgba(var(--mode-rgb), 0.8);
+  opacity: 0;
+}
+.sentinel-assets[data-power="on"] .architecture-node i::after {
+  animation: packet-hop 2.4s cubic-bezier(0.45, 0, 0.55, 1) calc(1.2s + var(--i, 0) * 0.6s) infinite;
+}
+@keyframes packet-hop {
+  0%   { transform: translateY(-3px); opacity: 0; }
+  12%  { opacity: 1; }
+  40%  { transform: translateY(11px); opacity: 0; }
+  100% { transform: translateY(11px); opacity: 0; }
+}
+
+/* Metric rail lights left to right once the dashboard is reached. */
+.sentinel-assets[data-power="off"] .sentinel-metric-rail span { color: rgba(170, 182, 195, 0.3); }
+.sentinel-assets[data-power="off"] .sentinel-metric-rail b { color: rgba(var(--mode-rgb), 0.3); }
+.sentinel-assets[data-power="on"] .sentinel-metric-rail span { animation: metric-label-online 700ms ease 700ms backwards; }
+.sentinel-assets[data-power="on"] .sentinel-metric-rail b { animation: metric-value-online 900ms ease 700ms backwards; }
+.sentinel-assets[data-power="on"] .sentinel-metric-rail span:nth-child(2),
+.sentinel-assets[data-power="on"] .sentinel-metric-rail span:nth-child(2) b { animation-delay: 820ms; }
+.sentinel-assets[data-power="on"] .sentinel-metric-rail span:nth-child(3),
+.sentinel-assets[data-power="on"] .sentinel-metric-rail span:nth-child(3) b { animation-delay: 940ms; }
+@keyframes metric-label-online { from { color: rgba(170, 182, 195, 0.3); } }
+@keyframes metric-value-online {
+  0%  { color: rgba(var(--mode-rgb), 0.3); text-shadow: none; }
+  40% { text-shadow: 0 0 10px rgba(var(--mode-rgb), 0.5); }
+}
+
+/* ─── Incident replay — playhead ping, clock tick, signal on the rail ────── */
+.incident-ping {
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  border: 1px solid rgba(var(--mode-rgb), 0.75);
+  opacity: 0;
+  pointer-events: none;
+  animation: ping-ring 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.incident-clock { animation: readout-tick 480ms ease-out both; }
+@keyframes readout-tick { from { opacity: 0.3; } }
+
+/* A brighter band travels down the filled part of each scrubbed rail. It
+   lives inside the scaled fill, so it only ever shows where signal has
+   reached. */
+.incident-rail-fill,
+.arch-rail-fill { overflow: hidden; }
+.incident-rail-fill::after,
+.arch-rail-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 38%, rgba(255, 255, 255, 0.55) 50%, transparent 62%);
+  animation: rail-signal 2.8s linear infinite;
+}
+@keyframes rail-signal {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(100%); }
+}
+
+/* ─── Architecture reveal — receiving node pings, outputs follow the data ── */
+.arch-node { position: relative; }
+.arch-ping {
+  position: absolute;
+  inset: -4px;
+  border-radius: 7px;
+  border: 1px solid rgba(var(--mode-rgb), 0.7);
+  opacity: 0;
+  pointer-events: none;
+  animation: ping-square 1000ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ping-square {
+  0%   { transform: scale(0.85); opacity: 0.85; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+.arch-readout-value { animation: readout-tick 420ms ease-out both; }
+.arch-reveal .sentinel-metric-rail b { transition: color 500ms ease, text-shadow 500ms ease; }
+.arch-reveal[data-complete="false"] .sentinel-metric-rail b { color: rgba(var(--mode-rgb), 0.45); }
+.arch-reveal[data-complete="true"] .sentinel-metric-rail b { text-shadow: 0 0 10px rgba(var(--mode-rgb), 0.28); }
+
+/* ─── Section separator — packets carry the hand-off to both ends ───────── */
+.section-sep-packet {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 72px;
+  height: 1px;
+  margin-left: -36px;
+  opacity: 0;
+  background: linear-gradient(to right, transparent, rgba(var(--mode-rgb), 0.9), transparent);
+}
+.section-sep[data-on] .section-sep-packet {
+  animation: sep-packet 1700ms cubic-bezier(0.22, 1, 0.36, 1) 150ms both;
+}
+.section-sep-packet[data-dir="left"]  { --to: -46vw; }
+.section-sep-packet[data-dir="right"] { --to: 46vw; }
+@keyframes sep-packet {
+  0%   { transform: translateX(0); opacity: 0; }
+  14%  { opacity: 1; }
+  100% { transform: translateX(var(--to)); opacity: 0; }
+}
+
+/* ─── Navigation and links — small, purposeful hover states ─────────────── */
+/* A faint pre-trace under a hovered nav item, on the active trace's line. */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -7px;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, rgba(var(--mode-rgb), 0.45), transparent);
+  opacity: 0;
+  transform: scaleX(0);
+  transition: transform 220ms cubic-bezier(0.25, 0.1, 0.25, 1), opacity 220ms ease;
+}
+@media (hover: hover) {
+  .nav-link:not([data-active="true"]):hover::after { opacity: 1; transform: scaleX(1); }
+}
+
+/* Contact rows: a signal bar rises on the left edge. */
+.contact-link { position: relative; }
+.contact-link::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  pointer-events: none;
+  background: rgb(var(--mode-rgb));
+  box-shadow: 0 0 6px rgba(var(--mode-rgb), 0.5);
+  transform: scaleY(0);
+  transition: transform 200ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.contact-link:focus-visible::before { transform: scaleY(1); }
+@media (hover: hover) {
+  .contact-link:hover::before { transform: scaleY(1); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* PAUSING — nothing animates unseen                                            */
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Continuous in-panel animation holds while its panel is offscreen. */
+[data-live="off"] :is(.activation-dots span, .tactical-dot, .incident-pip, .status-dot, .signal-dot, .dashboard-scan, .document-scan),
+[data-live="off"] :is(.incident-rail-fill, .arch-rail-fill, .architecture-node i)::after {
+  animation-play-state: paused !important;
+}
+
+/* Everything holds while the tab is hidden. */
+html[data-motion="paused"] *,
+html[data-motion="paused"] *::before,
+html[data-motion="paused"] *::after {
+  animation-play-state: paused !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* REDUCED MOTION — a calm, static Grid                                         */
+/* The global block above already collapses durations; this removes the       */
+/* moving layers outright and holds the floor at rest.                          */
+/* ─────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .lc-root,
+  .grid-floor,
+  .zone-transit,
+  .traffic-layer,
+  .trace-highway,
+  .section-sep-packet,
+  .dashboard-scan,
+  .document-scan,
+  .incident-rail-fill::after,
+  .arch-rail-fill::after {
+    display: none;
+  }
+
+  .grid-horizon-plane,
+  .grid-field {
+    animation: none !important;
+  }
+}

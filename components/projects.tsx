@@ -22,8 +22,9 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { motion, AnimatePresence, useInView } from "framer-motion"
-import { useRef, useState } from "react"
-import { fadeUp, staggerContainer, staggerItem, duration, ease } from "@/lib/motion"
+import { useRef, useState, type CSSProperties } from "react"
+import { fadeUp, staggerContainer, staggerItem, duration, ease, ruleDraw } from "@/lib/motion"
+import { useGridOnline, useLiveAttribute } from "@/lib/grid-runtime"
 import { IncidentReplay } from "@/components/incident-replay"
 import { ArchitectureReveal, type ArchStage } from "@/components/architecture-reveal"
 import { SectionSep } from "@/components/section-sep"
@@ -263,7 +264,7 @@ function PipelineMap({ nodes }: { nodes: PipelineNode[] }) {
   return (
     <div className="architecture-map">
       {nodes.map(({ label, icon: Icon }, index) => (
-        <div key={label} className="architecture-node">
+        <div key={label} className="architecture-node" style={{ "--i": index } as CSSProperties}>
           <Icon className="h-4 w-4 text-[rgba(var(--mode-rgb),0.58)]" />
           <span>{label}</span>
           {index < nodes.length - 1 && <i aria-hidden="true" />}
@@ -300,9 +301,16 @@ function ArchitectureNotes({ notes }: { notes: ArchitectureNote[] }) {
 }
 
 function SentinelOperationalAssets({ inView }: { inView: boolean }) {
+  // Powers on when the assets themselves are reached, not when the panel top
+  // is: metrics light and the pipeline starts carrying packets in view.
+  const ref = useRef<HTMLDivElement>(null)
+  const reached = useInView(ref, { once: true, margin: "-15% 0px" })
+
   return (
     <motion.div
+      ref={ref}
       className="sentinel-assets mb-8"
+      data-power={inView && reached ? "on" : "off"}
       initial={{ opacity: 0, y: 6 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 6 }}
       transition={{ duration: duration.reveal, ease: ease.outSoft }}
@@ -424,7 +432,7 @@ function ProjectActions({
         href={project.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="project-action project-action-primary"
+        className="project-action project-action-primary cta-sheen"
       >
         <ExternalLink aria-hidden="true" />
         <span>Live System</span>
@@ -459,6 +467,11 @@ function ProjectActions({
 function ProjectPanel({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: "-60px 0px" })
+  // A panel powers on once it is in view and the Grid is online, so nothing
+  // activates unseen behind the boot overlay (e.g. a reload mid-page).
+  const online = useGridOnline()
+  const powered = isInView && online
+  useLiveAttribute(ref)
   const sc = statusColors[project.status as keyof typeof statusColors] ?? statusColors.shipped
   const [showNotes, setShowNotes] = useState(false)
   const archRef = useRef<HTMLDivElement>(null)
@@ -480,14 +493,18 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
       ref={ref}
       variants={fadeUp}
       initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
+      animate={powered ? "visible" : "hidden"}
       style={{ transitionDelay: `${index * 0.05}s` }}
     >
       {/* ── Panel container ────────────────────────────────────────────── */}
       <div
         className="tron-panel project-module rounded-sm overflow-hidden"
         style={{ padding: "0" }}
+        data-power={powered ? "on" : "off"}
       >
+        {/* Power-on trace along the top and left edges, once */}
+        <span className="panel-power" aria-hidden="true" />
+
         {/* Panel top bar */}
         <div
           className="flex items-center justify-between px-6 py-3 border-b"
@@ -498,9 +515,9 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
               {project.subsystem}
             </span>
             <span className="activation-dots" aria-hidden="true">
-              <span style={{ animationDelay: `${index * 0.2}s` }} />
-              <span style={{ animationDelay: `${index * 0.2 + 0.35}s` }} />
-              <span style={{ animationDelay: `${index * 0.2 + 0.7}s` }} />
+              <span style={{ "--d": "0.35s" } as CSSProperties} />
+              <span style={{ "--d": "0.49s" } as CSSProperties} />
+              <span style={{ "--d": "0.63s" } as CSSProperties} />
             </span>
             <span
               className="w-px h-3 block"
@@ -511,11 +528,11 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             </h3>
             {/* Status badge */}
             <span
-              className="flex items-center gap-1.5 font-mono text-xs px-2 py-0.5 rounded-sm"
+              className="project-status flex items-center gap-1.5 font-mono text-xs px-2 py-0.5 rounded-sm"
               style={{ background: sc.bg, color: sc.text }}
             >
               <span
-                className="w-1 h-1 rounded-full"
+                className="status-dot w-1 h-1 rounded-full"
                 style={{
                   background: sc.dot,
                   ...(project.status === "live"
@@ -529,7 +546,7 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
 
           {/* Status indicator — primary actions live in the body action bar below */}
           <span
-            className="hidden sm:flex items-center gap-2 font-mono text-[0.6rem] tracking-[0.14em] uppercase"
+            className="sector-readout hidden sm:flex items-center gap-2 font-mono text-[0.6rem] tracking-[0.14em] uppercase"
             style={{ color: "rgba(var(--mode-rgb), 0.4)" }}
             aria-hidden="true"
           >
@@ -582,7 +599,7 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
           <div ref={archRef} style={{ scrollMarginTop: "96px" }}>
             {project.id === "sentinelsol" ? (
               <>
-                <SentinelOperationalAssets inView={isInView} />
+                <SentinelOperationalAssets inView={powered} />
                 <IncidentReplay />
               </>
             ) : project.architecture ? (
@@ -638,7 +655,7 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
             <motion.ul
               variants={staggerContainer(0.05)}
               initial="hidden"
-              animate={isInView ? "visible" : "hidden"}
+              animate={powered ? "visible" : "hidden"}
               className="space-y-2"
             >
               {project.tradeoffs.map((tradeoff, idx) => (
@@ -696,8 +713,9 @@ export function Projects() {
             <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.45)" }}>
               OBSERVE
             </span>
-            <span
-              className="h-px flex-1"
+            <motion.span
+              variants={ruleDraw}
+              className="h-px flex-1 origin-left"
               style={{
                 background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",
                 maxWidth: "200px",

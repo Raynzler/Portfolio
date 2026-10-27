@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { BOOT, Z_INDEX } from "@/lib/constants"
+import { bringGridOnline } from "@/lib/grid-runtime"
 
 const WHOAMI = "whoami"
 const PROGRESS_CELLS = 16
@@ -60,6 +61,19 @@ declare global {
   }
 }
 
+// sessionStorage never changes under us mid-render, so there is nothing to
+// subscribe to; useSyncExternalStore is used for its client/server split.
+const subscribeNothing = () => () => {}
+
+function bootPending() {
+  try {
+    return !sessionStorage.getItem(BOOT.storageKey)
+  } catch {
+    // sessionStorage may be unavailable (private mode); boot simply replays.
+    return true
+  }
+}
+
 /**
  * Boot phases — each maps to a discrete beat of a believable terminal session:
  *  0  empty prompt, cursor blinking            > _
@@ -68,18 +82,22 @@ declare global {
  *  3  typing the operator's startup command    > bin/<cmd>_
  *  4  command running: status + init progress  SYSTEM INITIALIZING [▓▓░░] 42%
  *  5  initialization complete                  100%  READY
- *  6  fade out into the portfolio
+ *  6  fade out into the portfolio; the Grid comes online underneath
  */
 export function BootSequence() {
-  const [visible, setVisible] = useState(false)
+  // Read on the client only (the server snapshot is false), so the overlay
+  // never renders during hydration.
+  const pending = useSyncExternalStore(subscribeNothing, bootPending, () => false)
+  const [finished, setFinished] = useState(false)
+  const visible = pending && !finished
   const [phase, setPhase] = useState(0)
   const [whoami, setWhoami] = useState("")
   const [showHamza, setShowHamza] = useState(false)
   const [cmd, setCmd] = useState("")
   const [progress, setProgress] = useState(0)
   // Random startup routine, chosen once per mount on the client. The overlay
-  // never renders during hydration (visible starts false and only flips inside
-  // an effect), so the client-only randomness cannot cause a hydration mismatch.
+  // never renders during hydration (the server snapshot keeps it hidden), so
+  // the client-only randomness cannot cause a hydration mismatch.
   const [seq] = useState(pickSequence)
 
   const skipRef = useRef(false)
@@ -95,15 +113,20 @@ export function BootSequence() {
     }
   }
 
-  // Mount: gate on sessionStorage, reveal the overlay, wire skip, kick the chain.
+  // Repeat visit (or the boot has just finished): the Grid comes online with
+  // the page. Reads storage live rather than `pending`, which is still the
+  // server snapshot during the hydration pass.
   useEffect(() => {
-    if (typeof sessionStorage !== "undefined" && sessionStorage.getItem(BOOT.storageKey)) return
+    if (!bootPending()) bringGridOnline()
+  }, [pending])
+
+  // Overlay shown: wire skip, kick the chain.
+  useEffect(() => {
+    if (!visible) return
 
     reducedRef.current =
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
-
-    setVisible(true)
 
     const skip = () => {
       if (skipRef.current) return
@@ -126,7 +149,7 @@ export function BootSequence() {
       window.removeEventListener("click", skip)
       window.clearTimeout(begin)
     }
-  }, [seq])
+  }, [visible, seq])
 
   // Phase 1 — type `whoami`, then ENTER (advance to the printed identity).
   useEffect(() => {
@@ -226,12 +249,14 @@ export function BootSequence() {
     return () => window.clearTimeout(hold)
   }, [phase, visible])
 
-  // Phase 6 — fade complete: unmount the overlay and remember we have booted.
+  // Phase 6 — the overlay fades and the Grid powers up beneath it, so the hero
+  // comes online as the terminal clears. Then unmount and remember the boot.
   useEffect(() => {
     if (!visible || phase !== 6) return
+    bringGridOnline()
     const done = window.setTimeout(() => {
-      setVisible(false)
       markSeen()
+      setFinished(true)
     }, BOOT.skipFadeDuration)
     return () => window.clearTimeout(done)
   }, [phase, visible])
@@ -249,6 +274,7 @@ export function BootSequence() {
           style={{ zIndex: Z_INDEX.boot }}
           initial={{ opacity: 1 }}
           animate={{ opacity: fading ? 0 : 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
           aria-hidden="true"
         >

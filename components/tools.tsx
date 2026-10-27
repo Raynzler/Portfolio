@@ -2,7 +2,7 @@
 
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
-import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
+import { fadeUp, ruleDraw, staggerContainer, staggerItem } from "@/lib/motion"
 import { SectionSep } from "@/components/section-sep"
 
 // Mirrors the CV's skill groups. Nothing appears here that isn't on the CV —
@@ -47,8 +47,9 @@ export function Tools() {
             <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.45)" }}>
               IO
             </span>
-            <span
-              className="h-px flex-1"
+            <motion.span
+              variants={ruleDraw}
+              className="h-px flex-1 origin-left"
               style={{
                 background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",
                 maxWidth: "160px",
@@ -116,8 +117,9 @@ export function Tools() {
               <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.4)" }}>
                 SIGNAL
               </span>
-              <span
-                className="h-px"
+              <motion.span
+                variants={ruleDraw}
+                className="h-px origin-left"
                 style={{
                   width: "80px",
                   background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",

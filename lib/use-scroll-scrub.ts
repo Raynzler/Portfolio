@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, type RefObject } from "react"
+import { usePrefersReducedMotion } from "@/lib/grid-runtime"
 
 /**
  * Scroll scrubber — drives a 0..1 progress value as the target travels through
@@ -31,18 +32,16 @@ export function useScrollScrub(
   const enter = options?.enter ?? 0.82
   const exit = options?.exit ?? 0.4
   const [active, setActive] = useState(0)
+  // Reduced motion pins to the final state. Read as render state (false on the
+  // server) so the pinned index needs no state update inside the effect.
+  const reduced = usePrefersReducedMotion()
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
 
-    const reduced =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-
     if (reduced) {
       el.style.setProperty("--p", "1")
-      setActive(count - 1)
       return
     }
 
@@ -82,7 +81,7 @@ export function useScrollScrub(
       window.removeEventListener("resize", onResize)
       ro?.disconnect()
     }
-  }, [ref, count, enter, exit])
+  }, [ref, count, enter, exit, reduced])
 
-  return active
+  return reduced ? count - 1 : active
 }

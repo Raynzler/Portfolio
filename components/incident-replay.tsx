@@ -2,6 +2,7 @@
 
 import { useRef } from "react"
 import { useScrollScrub } from "@/lib/use-scroll-scrub"
+import { useLiveAttribute } from "@/lib/grid-runtime"
 
 /**
  * Incident Replay — a single SentinelSOL detection, scrubbed by scroll.
@@ -16,7 +17,9 @@ import { useScrollScrub } from "@/lib/use-scroll-scrub"
  * variable (--p) that drives the rail fill (scaleY) and playhead (top) with no
  * React re-render; only the active-step index is state, and it changes at most
  * 8 times. Everything is opacity / scaleY / top% inside the card, so it cannot
- * overflow the viewport.
+ * overflow the viewport. Each step change re-keys two tiny decorations: a ping
+ * ring off the playhead and a tick on the clock readout. A signal band runs
+ * down the filled rail while the card is in view (CSS, paused offscreen).
  */
 type Phase = "BASELINE" | "DETECT" | "ALERT" | "RESPOND" | "RESOLVED"
 
@@ -89,6 +92,7 @@ const STATE: Record<Phase, { label: string; tone: number }> = {
 export function IncidentReplay() {
   const ref = useRef<HTMLDivElement>(null)
   const active = useScrollScrub(ref, STEPS.length)
+  useLiveAttribute(ref)
 
   const current = STEPS[active]
   const state = STATE[current.phase]
@@ -112,7 +116,7 @@ export function IncidentReplay() {
             <span className="incident-status-dot" />
             {state.label}
           </span>
-          <span className="incident-clock font-mono tabular-nums">{current.t}</span>
+          <span key={current.t} className="incident-clock font-mono tabular-nums">{current.t}</span>
         </div>
       </div>
 
@@ -122,7 +126,9 @@ export function IncidentReplay() {
       >
         <div className="incident-rail-base" aria-hidden="true" />
         <div className="incident-rail-fill" aria-hidden="true" />
-        <div className="incident-playhead" aria-hidden="true" />
+        <div className="incident-playhead" aria-hidden="true">
+          <span key={active} className="incident-ping" />
+        </div>
 
         {STEPS.map((step, i) => {
           const stepState = i < active ? "past" : i === active ? "active" : "future"

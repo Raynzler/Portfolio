@@ -3,7 +3,19 @@
 import { MapPin, ArrowDown, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { staggerContainer, staggerItem } from "@/lib/motion"
+import { useEffect, useRef } from "react"
+import {
+  ease,
+  heroItem,
+  heroSequence,
+  heroSubline,
+  proofCell,
+  proofIgnite,
+  proofRail,
+  proofText,
+} from "@/lib/motion"
+import { BOOT } from "@/lib/constants"
+import { bringGridOnline, useGridOnline, useLiveAttribute } from "@/lib/grid-runtime"
 
 const proof = [
   { label: "AWARD · 2026", value: "Winner · Superteam Germany Solana Ideathon" },
@@ -13,10 +25,28 @@ const proof = [
 ]
 
 export function Landing() {
-  return (
-    <section id="home" className="relative min-h-[88vh] flex items-center overflow-hidden">
+  // The hero waits for the Grid to come online: as the boot overlay fades on a
+  // first visit, straight away on a repeat visit.
+  const online = useGridOnline()
+  const sectionRef = useRef<HTMLElement>(null)
+  useLiveAttribute(sectionRef)
 
-      {/* ── Atmospheric grid overlay ───────────────────────────────────── */}
+  // Safety net: never leave the hero dark if the boot hand-off is missed.
+  useEffect(() => {
+    const fallback = window.setTimeout(bringGridOnline, BOOT.totalMs + 2500)
+    return () => window.clearTimeout(fallback)
+  }, [])
+
+  return (
+    <section
+      id="home"
+      ref={sectionRef}
+      className="relative min-h-[88vh] flex items-center overflow-hidden"
+    >
+
+      {/* ── Atmospheric grid overlay — masked out toward the bottom edge so
+          it blends into the next section. A mask rather than an opaque fade
+          band, which would cut across the perspective floor behind it. ── */}
       <div
         className="grid-overlay absolute inset-0 pointer-events-none"
         style={{
@@ -26,24 +56,21 @@ export function Landing() {
             linear-gradient(90deg, rgba(var(--mode-rgb), 1) 1px, transparent 1px)
           `,
           backgroundSize: "64px 64px",
+          maskImage: "linear-gradient(to bottom, #000 calc(100% - 8rem), transparent)",
+          WebkitMaskImage: "linear-gradient(to bottom, #000 calc(100% - 8rem), transparent)",
         }}
       />
 
-      {/* ── Bottom edge fade — blends into next section ───────────────── */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
-        style={{
-          background: "linear-gradient(to bottom, transparent, var(--background))",
-        }}
-      />
-
-      {/* ── Left edge accent line ──────────────────────────────────────── */}
-      <div
-        className="absolute left-0 top-0 bottom-0 w-px pointer-events-none"
+      {/* ── Left edge accent line — powers up top to bottom ────────────── */}
+      <motion.div
+        className="absolute left-0 top-0 bottom-0 w-px pointer-events-none origin-top"
         style={{
           background:
             "linear-gradient(to bottom, transparent 0%, rgba(var(--mode-rgb), 0.22) 30%, rgba(var(--mode-rgb), 0.34) 60%, transparent 100%)",
         }}
+        initial={{ scaleY: 0, opacity: 0 }}
+        animate={online ? { scaleY: 1, opacity: 1 } : undefined}
+        transition={{ duration: 1.2, ease: ease.outSoft }}
       />
 
       <div className="relative max-w-5xl mx-auto px-6 pt-28 pb-12 w-full">
@@ -52,12 +79,12 @@ export function Landing() {
         {/* ── Main identity block ────────────────────────────────────────── */}
         <motion.div
           className="max-w-2xl"
-          variants={staggerContainer(0.07, 0.1)}
+          variants={heroSequence}
           initial="hidden"
-          animate="visible"
+          animate={online ? "visible" : "hidden"}
         >
           <motion.p
-            variants={staggerItem}
+            variants={heroItem}
             className="font-mono text-xs mb-5 tracking-widest uppercase"
             style={{ color: "rgba(var(--mode-rgb), 0.55)" }}
           >
@@ -65,7 +92,7 @@ export function Landing() {
           </motion.p>
 
           <motion.h1
-            variants={staggerItem}
+            variants={heroItem}
             className="text-3xl md:text-4xl font-light leading-tight mb-6 text-balance"
             style={{
               color: "var(--foreground)",
@@ -75,15 +102,15 @@ export function Landing() {
           >
             Site reliability and infrastructure engineer.
             <br />
-            <span style={{ color: "var(--foreground-muted)", fontWeight: 300 }}>
+            <motion.span variants={heroSubline} style={{ color: "var(--foreground-muted)", fontWeight: 300 }}>
               I keep production systems observable,
               <br />
               quick to recover, and cheap to run.
-            </span>
+            </motion.span>
           </motion.h1>
 
           <motion.p
-            variants={staggerItem}
+            variants={heroItem}
             className="text-sm leading-relaxed mb-8 max-w-xl"
             style={{ color: "var(--foreground-dim)" }}
           >
@@ -93,7 +120,7 @@ export function Landing() {
 
           {/* ── Proof rail — credibility above the fold ───────────────────── */}
           <motion.div
-            variants={staggerItem}
+            variants={proofRail}
             className="grid grid-cols-2 sm:grid-cols-4 gap-px rounded-sm overflow-hidden mb-8"
             style={{
               background: "rgba(var(--mode-rgb), 0.10)",
@@ -101,22 +128,36 @@ export function Landing() {
             }}
           >
             {proof.map((item) => (
-              <div key={item.label} className="px-4 py-3" style={{ background: "var(--bg-panel)" }}>
-                <p className="subsystem-label mb-1.5" style={{ color: "rgba(var(--mode-rgb), 0.5)" }}>
+              <motion.div
+                key={item.label}
+                variants={proofCell}
+                className="relative px-4 py-3"
+                style={{ background: "var(--bg-panel)" }}
+              >
+                <motion.span className="proof-ignite" variants={proofIgnite} aria-hidden="true" />
+                <motion.p
+                  variants={proofText}
+                  className="subsystem-label mb-1.5"
+                  style={{ color: "rgba(var(--mode-rgb), 0.5)" }}
+                >
                   {item.label}
-                </p>
-                <p className="text-xs leading-snug" style={{ color: "var(--foreground)" }}>
+                </motion.p>
+                <motion.p
+                  variants={proofText}
+                  className="text-xs leading-snug"
+                  style={{ color: "var(--foreground)" }}
+                >
                   {item.value}
-                </p>
-              </div>
+                </motion.p>
+              </motion.div>
             ))}
           </motion.div>
 
           {/* ── Primary actions ───────────────────────────────────────────── */}
-          <motion.div variants={staggerItem} className="flex flex-wrap items-center gap-3 mb-10">
+          <motion.div variants={heroItem} className="flex flex-wrap items-center gap-3 mb-10">
             <Link
               href="#projects"
-              className="hero-cta hero-cta-primary inline-flex items-center gap-2 rounded-sm px-4 py-2.5 font-mono text-xs uppercase tracking-[0.14em]"
+              className="hero-cta hero-cta-primary cta-sheen inline-flex items-center gap-2 rounded-sm px-4 py-2.5 font-mono text-xs uppercase tracking-[0.14em]"
             >
               View Projects
               <ArrowDown className="h-3.5 w-3.5" />
@@ -133,7 +174,7 @@ export function Landing() {
           </motion.div>
 
           <motion.div
-            variants={staggerItem}
+            variants={heroItem}
             className="flex items-center gap-2 mb-6"
           >
             <MapPin className="w-3.5 h-3.5" style={{ color: "rgba(var(--mode-rgb), 0.35)" }} />
@@ -144,12 +185,12 @@ export function Landing() {
 
           {/* ── Availability signal ───────────────────────────────────── */}
           <motion.div
-            variants={staggerItem}
+            variants={heroItem}
             className="flex items-center gap-3"
           >
-            {/* Pulse dot */}
+            {/* Pulse dot — pings twice as the hero finishes coming online */}
             <span
-              className="w-1.5 h-1.5 rounded-full shrink-0"
+              className="signal-dot w-1.5 h-1.5 rounded-full shrink-0"
               style={{
                 backgroundColor: "rgb(var(--mode-rgb))",
                 animation: "pulse-dot 3.5s ease-in-out infinite",
@@ -172,7 +213,14 @@ export function Landing() {
         >
           {/* Top-left corner mark */}
           <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 24V1h23" stroke="rgba(var(--mode-rgb),0.18)" strokeWidth="1" />
+            <motion.path
+              d="M1 24V1h23"
+              stroke="rgba(var(--mode-rgb),0.18)"
+              strokeWidth="1"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={online ? { pathLength: 1, opacity: 1 } : undefined}
+              transition={{ duration: 0.9, delay: 0.6, ease: ease.outSoft }}
+            />
           </svg>
         </div>
       </div>
