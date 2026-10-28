@@ -9,7 +9,7 @@ const experiences = [
   {
     company: "Patil Kaki",
     note: "Shark Tank India D2C food brand",
-    role: "DevOps Intern, sole infrastructure owner",
+    role: "DevOps Engineering Intern, sole infrastructure owner",
     period: "Jun – Aug 2023",
     description:
       "Sole infrastructure engineer in a 10-person team, behind a storefront running roughly 2,500 orders a month.",
@@ -25,7 +25,7 @@ const experiences = [
   {
     company: "CMP Infotech",
     note: "Microsoft Partner",
-    role: "Java Intern",
+    role: "Java Development Intern",
     period: "Dec 2021 – Jan 2022",
     description: "Desktop application development in Java.",
     achievements: [

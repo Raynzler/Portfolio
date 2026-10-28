@@ -13,7 +13,7 @@ import { useLiveAttribute } from "@/lib/grid-runtime"
 // links already shared on LinkedIn and in email keep resolving.
 const resumeFile = "Hamza_Shaikh_CV.pdf"
 export const resumeHref = `/${resumeFile}`
-const resumeUpdated = "10 SEP 2026"
+const resumeUpdated = "13 SEP 2026"
 
 const dossier = [
   ["Role", "Site Reliability · DevOps · Cloud Infrastructure"],
