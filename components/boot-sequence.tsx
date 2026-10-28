@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { BOOT, Z_INDEX } from "@/lib/constants"
-import { bringGridOnline } from "@/lib/grid-runtime"
+import { bringGridOnline, usePrefersReducedMotion } from "@/lib/grid-runtime"
 
 const WHOAMI = "whoami"
 const PROGRESS_CELLS = 16
@@ -94,6 +94,7 @@ export function BootSequence() {
   const pending = useSyncExternalStore(subscribeNothing, bootPending, () => false)
   const [finished, setFinished] = useState(false)
   const visible = pending && !finished
+  const reducedMotion = usePrefersReducedMotion()
   const [phase, setPhase] = useState(0)
   const [whoami, setWhoami] = useState("")
   const [showHamza, setShowHamza] = useState(false)
@@ -276,114 +277,140 @@ export function BootSequence() {
       {visible && (
         <motion.div
           key="boot"
-          className="fixed inset-0 overflow-hidden bg-[#05070A]"
-          style={{ zIndex: Z_INDEX.boot }}
+          className="fixed inset-0 overflow-hidden"
+          // Clicks reach the page as soon as the hand-off starts.
+          style={{ zIndex: Z_INDEX.boot, pointerEvents: fading ? "none" : undefined }}
           initial={{ opacity: 1 }}
-          animate={{ opacity: fading ? 0 : 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
           aria-hidden="true"
         >
+          {/* Backdrop and terminal clear first; the progress line stays and
+              drops into the Grid horizon as the Grid powers up beneath. */}
           <motion.div
-            className="absolute inset-0 boot-grid"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: initializing ? 0.05 : 0.012 }}
-            transition={{ duration: 0.62, ease: "easeOut" }}
+            className="absolute inset-0 bg-[#05070A]"
+            initial={false}
+            animate={{ opacity: fading ? 0 : 1 }}
+            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
           />
-          <div className="scanline-texture opacity-60" />
 
+          <motion.div
+            className="absolute inset-0"
+            initial={false}
+            animate={{ opacity: fading ? 0 : 1 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            <motion.div
+              className="absolute inset-0 boot-grid"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: initializing ? 0.05 : 0.012 }}
+              transition={{ duration: 0.62, ease: "easeOut" }}
+            />
+            <div className="scanline-texture opacity-60" />
+
+            <div className="absolute left-1/2 top-1/2 w-[min(82vw,560px)] -translate-x-1/2 -translate-y-1/2">
+              <div className="font-mono text-sm leading-[1.9] text-[rgba(230,241,255,0.85)]">
+                {/* Line 1 — the whoami prompt */}
+                <div className="flex items-center min-h-[1.9em]">
+                  <span className="mr-2 text-[rgba(var(--mode-rgb),0.55)]">&gt;</span>
+                  <span>{whoami}</span>
+                  {phase <= 1 && <span className="boot-cursor" />}
+                </div>
+
+                {/* Line 2 — printed identity */}
+                {phase >= 2 && (
+                  <div className="flex items-center min-h-[1.9em]">
+                    <span className="text-[rgba(var(--mode-rgb),0.72)]">{showHamza ? "hamza" : ""}</span>
+                    {phase === 2 && <span className="boot-cursor" />}
+                  </div>
+                )}
+
+                {/* Line 3 — the operator startup command */}
+                {phase >= 3 && (
+                  <div className="flex items-center min-h-[1.9em]">
+                    <span className="mr-2 text-[rgba(var(--mode-rgb),0.55)]">&gt;</span>
+                    <span>{cmd}</span>
+                    {phase === 3 && <span className="boot-cursor" />}
+                  </div>
+                )}
+              </div>
+
+              {/* Initialization block */}
+              <motion.div
+                className="mt-6 font-mono text-sm"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: initializing ? 1 : 0, y: initializing ? 0 : 4 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <div className="subsystem-label mb-3" style={{ color: "rgba(var(--mode-rgb),0.6)" }}>
+                  {seq.status}
+                </div>
+
+                <div className="mb-2 text-[0.7rem] tracking-[0.22em] text-[rgba(230,241,255,0.5)]">
+                  SYSTEM INITIALIZING
+                </div>
+
+                <div className="boot-bar flex items-center gap-3">
+                  <span>
+                    <span style={{ color: "rgba(var(--mode-rgb),0.35)" }}>[</span>
+                    <span
+                      style={{
+                        color: "rgb(var(--mode-rgb))",
+                        textShadow: "0 0 8px rgba(var(--mode-rgb),0.5)",
+                      }}
+                    >
+                      {"█".repeat(filledCells)}
+                    </span>
+                    <span style={{ color: "rgba(var(--mode-rgb),0.16)" }}>
+                      {"░".repeat(PROGRESS_CELLS - filledCells)}
+                    </span>
+                    <span style={{ color: "rgba(var(--mode-rgb),0.35)" }}>]</span>
+                  </span>
+                  <span className="tabular-nums text-[rgba(230,241,255,0.7)]">{progress}%</span>
+                  {phase >= 5 && (
+                    <span
+                      className="tracking-[0.2em]"
+                      style={{
+                        color: "rgb(var(--mode-rgb))",
+                        textShadow: "0 0 10px rgba(var(--mode-rgb),0.45)",
+                      }}
+                    >
+                      READY
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Skip hint — the skip handler above takes any key, click or tap.
+                Pointer and touch wording swap in CSS (globals.css). */}
+            <motion.p
+              className="boot-skip-hint subsystem-label"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.4, ease: "easeOut" }}
+            >
+              <span className="boot-skip-pointer">Press any key or click to skip</span>
+              <span className="boot-skip-touch">Tap to skip</span>
+            </motion.p>
+          </motion.div>
+
+          {/* Progress line. On hand-off it drops from centre to the Grid's
+              horizon and dissolves there, so the terminal becomes the Grid. */}
           <motion.div
             className="absolute left-0 right-0 top-1/2 h-px bg-[linear-gradient(to_right,transparent,rgba(var(--mode-rgb),0.55),transparent)] shadow-[0_0_14px_rgba(var(--mode-rgb),0.24)]"
             initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: initializing ? 1 : 0, opacity: initializing ? 1 : 0 }}
-            transition={{ duration: 0.54, ease: [0.25, 0.1, 0.25, 1] }}
+            animate={
+              fading
+                ? { scaleX: 1, opacity: [1, 1, 0], y: reducedMotion ? 0 : "13vh" }
+                : { scaleX: initializing ? 1 : 0, opacity: initializing ? 1 : 0 }
+            }
+            transition={
+              fading
+                ? { duration: 0.8, ease: [0.22, 1, 0.36, 1], opacity: { duration: 0.8, times: [0, 0.6, 1] } }
+                : { duration: 0.54, ease: [0.25, 0.1, 0.25, 1] }
+            }
           />
-
-          <div className="absolute left-1/2 top-1/2 w-[min(82vw,560px)] -translate-x-1/2 -translate-y-1/2">
-            <div className="font-mono text-sm leading-[1.9] text-[rgba(230,241,255,0.85)]">
-              {/* Line 1 — the whoami prompt */}
-              <div className="flex items-center min-h-[1.9em]">
-                <span className="mr-2 text-[rgba(var(--mode-rgb),0.55)]">&gt;</span>
-                <span>{whoami}</span>
-                {phase <= 1 && <span className="boot-cursor" />}
-              </div>
-
-              {/* Line 2 — printed identity */}
-              {phase >= 2 && (
-                <div className="flex items-center min-h-[1.9em]">
-                  <span className="text-[rgba(var(--mode-rgb),0.72)]">{showHamza ? "hamza" : ""}</span>
-                  {phase === 2 && <span className="boot-cursor" />}
-                </div>
-              )}
-
-              {/* Line 3 — the operator startup command */}
-              {phase >= 3 && (
-                <div className="flex items-center min-h-[1.9em]">
-                  <span className="mr-2 text-[rgba(var(--mode-rgb),0.55)]">&gt;</span>
-                  <span>{cmd}</span>
-                  {phase === 3 && <span className="boot-cursor" />}
-                </div>
-              )}
-            </div>
-
-            {/* Initialization block */}
-            <motion.div
-              className="mt-6 font-mono text-sm"
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: initializing ? 1 : 0, y: initializing ? 0 : 4 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <div className="subsystem-label mb-3" style={{ color: "rgba(var(--mode-rgb),0.6)" }}>
-                {seq.status}
-              </div>
-
-              <div className="mb-2 text-[0.7rem] tracking-[0.22em] text-[rgba(230,241,255,0.5)]">
-                SYSTEM INITIALIZING
-              </div>
-
-              <div className="boot-bar flex items-center gap-3">
-                <span>
-                  <span style={{ color: "rgba(var(--mode-rgb),0.35)" }}>[</span>
-                  <span
-                    style={{
-                      color: "rgb(var(--mode-rgb))",
-                      textShadow: "0 0 8px rgba(var(--mode-rgb),0.5)",
-                    }}
-                  >
-                    {"█".repeat(filledCells)}
-                  </span>
-                  <span style={{ color: "rgba(var(--mode-rgb),0.16)" }}>
-                    {"░".repeat(PROGRESS_CELLS - filledCells)}
-                  </span>
-                  <span style={{ color: "rgba(var(--mode-rgb),0.35)" }}>]</span>
-                </span>
-                <span className="tabular-nums text-[rgba(230,241,255,0.7)]">{progress}%</span>
-                {phase >= 5 && (
-                  <span
-                    className="tracking-[0.2em]"
-                    style={{
-                      color: "rgb(var(--mode-rgb))",
-                      textShadow: "0 0 10px rgba(var(--mode-rgb),0.45)",
-                    }}
-                  >
-                    READY
-                  </span>
-                )}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Skip hint — the skip handler above takes any key, click or tap.
-              Pointer and touch wording swap in CSS (globals.css). */}
-          <motion.p
-            className="boot-skip-hint subsystem-label"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.4, ease: "easeOut" }}
-          >
-            <span className="boot-skip-pointer">Press any key or click to skip</span>
-            <span className="boot-skip-touch">Tap to skip</span>
-          </motion.p>
         </motion.div>
       )}
     </AnimatePresence>

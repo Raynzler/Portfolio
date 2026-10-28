@@ -1834,7 +1834,8 @@ html:not([data-grid="online"]) .grid-horizon,
 html:not([data-grid="online"]) .grid-horizon-glow,
 html:not([data-grid="online"]) .traffic-layer,
 html:not([data-grid="online"]) .trace-highway,
-html:not([data-grid="online"]) .lc-root { opacity: 0; }
+html:not([data-grid="online"]) .lc-root,
+html:not([data-grid="online"]) .signal-path { opacity: 0; }
 
 /* First power-up only (data-grid-boot lives ~2.6s): the Grid lights in depth
    order — floor, horizon, field, distant routes, then lightcycle traffic. */
@@ -1844,6 +1845,7 @@ html[data-grid-boot] .grid-field        { transition: opacity 1400ms ease 380ms;
 html[data-grid-boot] .traffic-layer,
 html[data-grid-boot] .trace-highway     { transition: opacity 1400ms ease 600ms; }
 html[data-grid-boot] .lc-root           { transition: opacity 1600ms ease 760ms; }
+html[data-grid-boot] .signal-path       { transition: opacity 1400ms ease 950ms; }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* HERO — system coming online (Landing; framer drives the text sequence)      */
@@ -2159,6 +2161,138 @@ html[data-grid="online"] .hero-cta-primary.cta-sheen::before {
 .contact-link:focus-visible::before { transform: scaleY(1); }
 @media (hover: hover) {
   .contact-link:hover::before { transform: scaleY(1); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* SIGNAL PATH — one route through the evidence (SignalPath)                   */
+/* The component sets geometry inline in document coordinates; these rules    */
+/* only draw it. Ember through EXPERIENCE, the mode colour everywhere else.    */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.signal-path {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  transition: opacity 900ms ease;
+}
+.signal-path > * {
+  position: absolute;
+  display: block;
+}
+.signal-path [data-chapter] { --route-rgb: var(--mode-rgb); }
+.signal-path [data-chapter="experience"] { --route-rgb: 255, 138, 61; }
+
+/* The dim rail the signal runs along */
+.route-track {
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--mode-rgb), 0),
+    rgba(var(--mode-rgb), 0.12) 3%,
+    rgba(var(--mode-rgb), 0.12) 97%,
+    rgba(var(--mode-rgb), 0)
+  );
+}
+
+/* One lit stretch per chapter, filled to the head (scaleY, compositor-side);
+   a touch brighter while the page is moving. */
+.route-seg { width: 1px; }
+.route-seg-fill {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transform-origin: top center;
+  transform: scaleY(var(--route-p, 0));
+  background: rgb(var(--route-rgb));
+  box-shadow: 0 0 6px rgba(var(--route-rgb), 0.4);
+  opacity: calc(0.5 + 0.3 * var(--signal, 0));
+}
+
+/* Branches into panels, diagrams, the CV and CONTACT, lit as the head passes */
+.route-port {
+  height: 1px;
+  margin-top: -0.5px;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: linear-gradient(to right, rgba(var(--route-rgb), 0.85), rgba(var(--route-rgb), 0.3));
+  transition: transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.route-port[data-lit] { transform: scaleX(1); }
+.route-node {
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2px;
+  transform: rotate(45deg);
+  border: 1px solid rgba(var(--route-rgb), 0.45);
+  background: #05070a;
+  transition: background-color 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+}
+.route-node[data-lit] {
+  background: rgb(var(--route-rgb));
+  border-color: rgb(var(--route-rgb));
+  box-shadow: 0 0 8px rgba(var(--route-rgb), 0.6);
+}
+/* The delivery point at the CV reads a size up. */
+.route-node[data-kind="cv"] {
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3px;
+}
+
+/* The head: a signal point inside four brackets. At each chapter boundary
+   the brackets unlock, the frame turns 45° and they lock again (animated
+   from the component). Docked at the end, they close in. */
+.route-head {
+  top: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -6.5px;
+  will-change: transform;
+}
+.route-head[data-size="small"] {
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -4.5px;
+}
+.route-head::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 9999px;
+  background: rgb(var(--route-rgb));
+  box-shadow: 0 0 8px 2px rgba(var(--route-rgb), calc(0.45 + 0.4 * var(--signal, 0)));
+}
+.route-glyph {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.route-glyph > span {
+  position: absolute;
+  display: block;
+  width: 38%;
+  height: 38%;
+  border: 0 solid rgb(var(--route-rgb));
+  transition: translate 420ms cubic-bezier(0.22, 1, 0.36, 1), border-color 300ms ease;
+}
+.route-glyph > [data-c="tl"] { top: 0; left: 0; border-top-width: 1.5px; border-left-width: 1.5px; }
+.route-glyph > [data-c="tr"] { top: 0; right: 0; border-top-width: 1.5px; border-right-width: 1.5px; }
+.route-glyph > [data-c="br"] { bottom: 0; right: 0; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+.route-glyph > [data-c="bl"] { bottom: 0; left: 0; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+.route-head[data-docked] .route-glyph > [data-c="tl"] { translate: 1.5px 1.5px; }
+.route-head[data-docked] .route-glyph > [data-c="tr"] { translate: -1.5px 1.5px; }
+.route-head[data-docked] .route-glyph > [data-c="br"] { translate: -1.5px -1.5px; }
+.route-head[data-docked] .route-glyph > [data-c="bl"] { translate: 1.5px -1.5px; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* The route is drawn in full and still; no travelling head. */
+  .route-head { display: none; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */

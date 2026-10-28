@@ -41,5 +41,8 @@ export const BOOT = {
   // First-visit boot, start to fade (was ~5.8s; paced down so the portfolio
   // and CV are never more than a beat away).
   totalMs: 2100,
-  skipFadeDuration: 320,
+  // Hand-off: the backdrop clears in ~420ms while the progress line drops into
+  // the Grid horizon (~800ms); the overlay unmounts once the line is gone.
+  // Pointer events pass through from the start of the hand-off.
+  skipFadeDuration: 820,
 } as const
