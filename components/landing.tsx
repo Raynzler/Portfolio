@@ -174,10 +174,13 @@ export function Landing() {
               <ExternalLink className="h-3.5 w-3.5" />
             </Link>
             {/* Straight to the PDF: the same file and download attribute as
-                the CV section, so a recruiter can grab it from the first screen. */}
+                the CV section, so a recruiter can grab it from the first screen.
+                No prefetch: a file has no route payload, so Next's viewport
+                prefetch of it only ever 404s. */}
             <Link
               href={resumeHref}
               download
+              prefetch={false}
               className="hero-cta hero-cta-ghost inline-flex items-center gap-2 rounded-sm px-4 py-2.5 font-mono text-xs uppercase tracking-[0.14em]"
             >
               Download CV

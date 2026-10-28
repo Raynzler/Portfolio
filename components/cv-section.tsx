@@ -174,9 +174,11 @@ export function CvSection() {
                 </div>
               </div>
 
+              {/* No prefetch: a file has no route payload to prefetch (it 404s). */}
               <Link
                 href={resumeHref}
                 download
+                prefetch={false}
                 aria-disabled={downloadDisabled}
                 tabIndex={downloadDisabled ? -1 : undefined}
                 className={`cta-sheen group inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[rgba(var(--mode-rgb),0.20)] bg-[rgba(var(--mode-rgb),0.045)] px-4 py-3 font-mono text-xs uppercase tracking-[0.14em] text-[rgba(230,241,255,0.82)] transition-colors hover:border-[rgba(var(--mode-rgb),0.40)] hover:bg-[rgba(var(--mode-rgb),0.075)]${downloadDisabled ? " pointer-events-none opacity-60" : ""}`}
