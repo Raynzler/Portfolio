@@ -200,7 +200,7 @@ export function Landing() {
             variants={heroItem}
             className="flex items-center gap-3"
           >
-            {/* Pulse dot — pings twice as the hero finishes coming online */}
+            {/* Pulse dot — pings once as the hero finishes coming online */}
             <span
               className="signal-dot w-1.5 h-1.5 rounded-full shrink-0"
               style={{
@@ -231,7 +231,7 @@ export function Landing() {
               strokeWidth="1"
               initial={{ pathLength: 0, opacity: 0 }}
               animate={online ? { pathLength: 1, opacity: 1 } : undefined}
-              transition={{ duration: 0.9, delay: 0.6, ease: ease.outSoft }}
+              transition={{ duration: 0.8, delay: 0.4, ease: ease.outSoft }}
             />
           </svg>
         </div>

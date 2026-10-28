@@ -65,6 +65,12 @@ declare global {
 // subscribe to; useSyncExternalStore is used for its client/server split.
 const subscribeNothing = () => () => {}
 
+// Run `fn` at `offset` ms after the boot started (an absolute point on the
+// BOOT timeline), however late the calling effect ran.
+function afterBoot(startedAt: number, offset: number, fn: () => void) {
+  return window.setTimeout(fn, Math.max(0, startedAt + offset - performance.now()))
+}
+
 function bootPending() {
   // A deep link (/#cv, /#contact, ...) is someone heading for one section:
   // land them on it straight away, without the boot.
@@ -87,6 +93,10 @@ function bootPending() {
  *  4  command running: status + init progress  SYSTEM INITIALIZING [▓▓░░] 42%
  *  5  initialization complete                  100%  READY
  *  6  fade out into the portfolio; the Grid comes online underneath
+ *
+ * Timing lives in one place, BOOT.timeline (lib/constants): 6s from the first
+ * black frame to a finished, usable homepage. Any key, click or tap skips
+ * straight to phase 6.
  */
 export function BootSequence() {
   // Read on the client only (the server snapshot is false), so the overlay
@@ -108,7 +118,10 @@ export function BootSequence() {
   const skipRef = useRef(false)
   const tonePlayedRef = useRef(false)
   const reducedRef = useRef(false)
-  const progressHoldRef = useRef<number | undefined>(undefined)
+  // performance.now() at the overlay's first frame. Every beat is scheduled
+  // against it (not against the previous beat), so render latency between
+  // phases never accumulates and the boot lands on BOOT.totalMs.
+  const startRef = useRef(0)
 
   const markSeen = () => {
     try {
@@ -125,14 +138,16 @@ export function BootSequence() {
     if (!bootPending()) bringGridOnline()
   }, [pending])
 
-  // Overlay shown: wire skip, kick the chain.
+  // Overlay shown: start the clock, wire skip, kick the chain.
   useEffect(() => {
     if (!visible) return
 
+    startRef.current = performance.now()
     reducedRef.current =
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
+    // A skip goes straight to the hand-off, whatever the schedule says.
     const skip = () => {
       if (skipRef.current) return
       skipRef.current = true
@@ -146,10 +161,8 @@ export function BootSequence() {
     window.addEventListener("keydown", skip)
     window.addEventListener("click", skip)
 
-    // Paced to read as a quick operator session, ~2.1s end to end, so the
-    // portfolio is never more than a beat away (see BOOT.totalMs).
-    const startDelay = 120
-    const begin = window.setTimeout(() => setPhase(1), startDelay)
+    const t = reducedRef.current ? BOOT.reducedTimeline : BOOT.timeline
+    const begin = afterBoot(startRef.current, t.prompt, () => setPhase(1))
 
     return () => {
       window.removeEventListener("keydown", skip)
@@ -161,21 +174,20 @@ export function BootSequence() {
   // Phase 1 — type `whoami`, then ENTER (advance to the printed identity).
   useEffect(() => {
     if (!visible || phase !== 1) return
-    const reduced = reducedRef.current
+    const t = reducedRef.current ? BOOT.reducedTimeline : BOOT.timeline
+    const start = t.prompt
     const timers: number[] = []
 
-    if (reduced) {
+    if (reducedRef.current) {
       setWhoami(WHOAMI)
-      timers.push(window.setTimeout(() => setPhase(2), 220))
     } else {
-      const lead = 50
-      const per = 32
+      const lead = 100
+      const per = (t.whoami - lead - 260) / WHOAMI.length
       for (let i = 1; i <= WHOAMI.length; i += 1) {
-        timers.push(window.setTimeout(() => setWhoami(WHOAMI.slice(0, i)), lead + i * per))
+        timers.push(afterBoot(startRef.current, start + lead + i * per, () => setWhoami(WHOAMI.slice(0, i))))
       }
-      const typedAt = lead + WHOAMI.length * per
-      timers.push(window.setTimeout(() => setPhase(2), typedAt + 120))
     }
+    timers.push(afterBoot(startRef.current, start + t.whoami, () => setPhase(2)))
 
     return () => timers.forEach(window.clearTimeout)
   }, [phase, visible])
@@ -183,81 +195,88 @@ export function BootSequence() {
   // Phase 2 — cursor lands on the new line, then `hamza` prints; ENTER again.
   useEffect(() => {
     if (!visible || phase !== 2) return
-    const reduced = reducedRef.current
-    const timers: number[] = []
-
-    timers.push(window.setTimeout(() => setShowHamza(true), 80))
-    timers.push(window.setTimeout(() => setPhase(3), reduced ? 320 : 260))
-
+    const t = reducedRef.current ? BOOT.reducedTimeline : BOOT.timeline
+    const start = t.prompt + t.whoami
+    const timers = [
+      afterBoot(startRef.current, start + (reducedRef.current ? 80 : 180), () => setShowHamza(true)),
+      afterBoot(startRef.current, start + t.identity, () => setPhase(3)),
+    ]
     return () => timers.forEach(window.clearTimeout)
   }, [phase, visible])
 
-  // Phase 3 — type the random startup command, then run it.
+  // Phase 3 — type the random startup command, then run it. The command types
+  // inside a fixed window whatever its length, so the total never depends on
+  // which routine was picked.
   useEffect(() => {
     if (!visible || phase !== 3) return
-    const reduced = reducedRef.current
+    const t = reducedRef.current ? BOOT.reducedTimeline : BOOT.timeline
+    const start = t.prompt + t.whoami + t.identity
     const timers: number[] = []
 
-    if (reduced) {
+    if (reducedRef.current) {
       setCmd(seq.cmd)
-      timers.push(window.setTimeout(() => setPhase(4), 220))
     } else {
-      const lead = 60
-      const per = 14
+      const lead = 100
+      const per = (t.command - lead - 240) / seq.cmd.length
       for (let i = 1; i <= seq.cmd.length; i += 1) {
-        timers.push(window.setTimeout(() => setCmd(seq.cmd.slice(0, i)), lead + i * per))
+        timers.push(afterBoot(startRef.current, start + lead + i * per, () => setCmd(seq.cmd.slice(0, i))))
       }
-      const typedAt = lead + seq.cmd.length * per
-      timers.push(window.setTimeout(() => setPhase(4), typedAt + 110))
     }
+    timers.push(afterBoot(startRef.current, start + t.command, () => setPhase(4)))
 
     return () => timers.forEach(window.clearTimeout)
   }, [phase, visible, seq.cmd])
 
   // Phase 4 — initialization. Drive a non-linear progress curve: rapid start,
-  // slow middle, quick finish (p = t + 0.14·sin(2πt), monotonic over [0,1]).
+  // slow middle, quick finish (p = t + 0.14·sin(2πt), monotonic over [0,1]),
+  // then hold a beat at 100%.
   useEffect(() => {
     if (!visible || phase !== 4) return
     const reduced = reducedRef.current
+    const t = reduced ? BOOT.reducedTimeline : BOOT.timeline
+    const start = t.prompt + t.whoami + t.identity + t.command
 
     if (!tonePlayedRef.current) {
       tonePlayedRef.current = true
       if (!reduced) playInterfaceTone()
     }
 
-    const duration = reduced ? 300 : 560
-    const startTs = performance.now()
+    const duration = t.progress - (reduced ? 160 : 180)
+    const origin = startRef.current + start
     let raf = 0
+    let next = 0
 
     const tick = (now: number) => {
-      const t = Math.min(1, (now - startTs) / duration)
-      const eased = reduced ? t : t + 0.14 * Math.sin(2 * Math.PI * t)
+      const p = Math.min(1, Math.max(0, (now - origin) / duration))
+      const eased = reduced ? p : p + 0.14 * Math.sin(2 * Math.PI * p)
       setProgress(Math.max(0, Math.min(100, Math.round(eased * 100))))
-      if (t < 1) {
+      if (p < 1) {
         raf = requestAnimationFrame(tick)
       } else {
         setProgress(100)
-        progressHoldRef.current = window.setTimeout(() => setPhase(5), reduced ? 160 : 100)
+        next = afterBoot(startRef.current, start + t.progress, () => setPhase(5))
       }
     }
 
     raf = requestAnimationFrame(tick)
     return () => {
       cancelAnimationFrame(raf)
-      if (progressHoldRef.current) window.clearTimeout(progressHoldRef.current)
+      window.clearTimeout(next)
     }
   }, [phase, visible])
 
-  // Phase 5 — READY holds briefly, then hand off to the fade.
+  // Phase 5 — READY holds, then hand off on schedule.
   useEffect(() => {
     if (!visible || phase !== 5) return
-    const reduced = reducedRef.current
-    const hold = window.setTimeout(() => setPhase(6), reduced ? 320 : 240)
+    const t = reducedRef.current ? BOOT.reducedTimeline : BOOT.timeline
+    const handoffAt = t.prompt + t.whoami + t.identity + t.command + t.progress + t.ready
+    const hold = afterBoot(startRef.current, handoffAt, () => setPhase(6))
     return () => window.clearTimeout(hold)
   }, [phase, visible])
 
   // Phase 6 — the overlay fades and the Grid powers up beneath it, so the hero
   // comes online as the terminal clears. Then unmount and remember the boot.
+  // Relative timing on purpose: a skip enters here at any moment.
   useEffect(() => {
     if (!visible || phase !== 6) return
     bringGridOnline()

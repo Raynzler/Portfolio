@@ -1838,14 +1838,16 @@ html:not([data-grid="online"]) .lc-root,
 html:not([data-grid="online"]) .signal-path { opacity: 0; }
 
 /* First power-up only (data-grid-boot lives ~2.6s): the Grid lights in depth
-   order — floor, horizon, field, distant routes, then lightcycle traffic. */
-html[data-grid-boot] .grid-horizon      { transition: opacity 1600ms cubic-bezier(0.22, 1, 0.36, 1) 80ms; }
-html[data-grid-boot] .grid-horizon-glow { transition: opacity 1400ms ease 260ms; }
-html[data-grid-boot] .grid-field        { transition: opacity 1400ms ease 380ms; }
+   order — floor, horizon, field, distant routes, lightcycle traffic, then the
+   signal path — and is fully lit within the boot's hand-off beat
+   (BOOT.timeline.handoff, 1300ms), so the boot ends on a finished page. */
+html[data-grid-boot] .grid-horizon      { transition: opacity 1000ms cubic-bezier(0.22, 1, 0.36, 1); }
+html[data-grid-boot] .grid-horizon-glow { transition: opacity 900ms ease 150ms; }
+html[data-grid-boot] .grid-field        { transition: opacity 900ms ease 200ms; }
 html[data-grid-boot] .traffic-layer,
-html[data-grid-boot] .trace-highway     { transition: opacity 1400ms ease 600ms; }
-html[data-grid-boot] .lc-root           { transition: opacity 1600ms ease 760ms; }
-html[data-grid-boot] .signal-path       { transition: opacity 1400ms ease 950ms; }
+html[data-grid-boot] .trace-highway     { transition: opacity 900ms ease 300ms; }
+html[data-grid-boot] .lc-root           { transition: opacity 900ms ease 400ms; }
+html[data-grid-boot] .signal-path       { transition: opacity 800ms ease 500ms; }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* HERO — system coming online (Landing; framer drives the text sequence)      */
@@ -1861,7 +1863,7 @@ html[data-grid-boot] .signal-path       { transition: opacity 1400ms ease 950ms;
   background: linear-gradient(to right, rgba(var(--mode-rgb), 0.8), rgba(var(--mode-rgb), 0.12));
 }
 
-/* The availability dot pings twice as the hero finishes coming online. */
+/* The availability dot pings once as the hero finishes coming online. */
 .signal-dot { position: relative; }
 .signal-dot::after {
   content: "";
@@ -1873,7 +1875,7 @@ html[data-grid-boot] .signal-path       { transition: opacity 1400ms ease 950ms;
   pointer-events: none;
 }
 html[data-grid="online"] .signal-dot::after {
-  animation: ping-ring 1600ms cubic-bezier(0.22, 1, 0.36, 1) 1250ms 2 backwards;
+  animation: ping-ring 600ms cubic-bezier(0.22, 1, 0.36, 1) 700ms backwards;
 }
 
 @keyframes ping-ring {
@@ -1906,7 +1908,7 @@ html[data-grid="online"] .signal-dot::after {
 }
 /* The hero's primary action gets one pass as it comes online. */
 html[data-grid="online"] .hero-cta-primary.cta-sheen::before {
-  animation: cta-sweep 1100ms cubic-bezier(0.22, 1, 0.36, 1) 1150ms backwards;
+  animation: cta-sweep 600ms cubic-bezier(0.22, 1, 0.36, 1) 700ms backwards;
 }
 @keyframes cta-sweep {
   from { transform: translateX(-101%); }
@@ -2323,13 +2325,13 @@ html[data-grid="online"] .hero-cta-primary.cta-sheen::before {
   inset: 0;
   transform-style: preserve-3d;
   transform: rotateX(calc(62deg + var(--ty, 0) * 7deg)) rotateY(calc(var(--tx, 0) * 9deg));
-  transition: transform 1100ms cubic-bezier(0.22, 1, 0.36, 1), scale 1200ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 1100ms cubic-bezier(0.22, 1, 0.36, 1), scale 1000ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .identity-ring > span {
   position: absolute;
   display: block;
   border-radius: 9999px;
-  transition: opacity 900ms ease;
+  transition: opacity 700ms ease;
 }
 .ring-floor {
   inset: 6%;
@@ -2381,16 +2383,17 @@ html[data-grid="online"] .hero-cta-primary.cta-sheen::before {
 }
 
 /* Materialises with the Grid: layers resolve in depth order on the first
-   power-up, the disc settling from a slightly smaller scale. */
+   power-up, the disc settling from a slightly smaller scale, all within the
+   boot's hand-off beat (last layer: 560ms + 700ms). */
 html:not([data-grid="online"]) .identity-ring { scale: 0.82; }
 html:not([data-grid="online"]) .identity-ring > span { opacity: 0; }
-html[data-grid-boot] .ring-floor { transition-delay: 300ms; }
-html[data-grid-boot] .ring-rim[data-depth="back"] { transition-delay: 450ms; }
-html[data-grid-boot] .ring-rim[data-depth="mid"] { transition-delay: 560ms; }
-html[data-grid-boot] .ring-rim[data-depth="front"] { transition-delay: 670ms; }
-html[data-grid-boot] .ring-segments { transition-delay: 820ms; }
-html[data-grid-boot] .ring-inner { transition-delay: 940ms; }
-html[data-grid-boot] .ring-core { transition-delay: 1060ms; }
+html[data-grid-boot] .ring-floor { transition-delay: 0ms; }
+html[data-grid-boot] .ring-rim[data-depth="back"] { transition-delay: 100ms; }
+html[data-grid-boot] .ring-rim[data-depth="mid"] { transition-delay: 180ms; }
+html[data-grid-boot] .ring-rim[data-depth="front"] { transition-delay: 260ms; }
+html[data-grid-boot] .ring-segments { transition-delay: 360ms; }
+html[data-grid-boot] .ring-inner { transition-delay: 460ms; }
+html[data-grid-boot] .ring-core { transition-delay: 560ms; }
 
 /* Fades and shrinks a touch as the hero scrolls away (compositor-driven
    where scroll timelines exist; elsewhere it simply scrolls off). A root
