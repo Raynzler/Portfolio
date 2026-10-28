@@ -43,7 +43,9 @@ export const staggerItem = {
 /**
  * Hero power-on — the identity block comes online as the boot overlay clears.
  * A slower, more deliberate rhythm than section reveals: subsystems reporting
- * in one at a time. Still 6px travel max; opacity carries the effect.
+ * in one at a time. Still 6px travel max; opacity carries the effect. The
+ * whole sequence settles within ~1.3s, the boot's hand-off beat
+ * (BOOT.timeline.handoff), so the boot ends on a finished hero.
  */
 export const heroSequence = staggerContainer(0.085, 0.12)
 
@@ -68,7 +70,7 @@ export const proofRail = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.45, ease: ease.outSoft, staggerChildren: 0.11, delayChildren: 0.1 },
+    transition: { duration: 0.45, ease: ease.outSoft, staggerChildren: 0.08, delayChildren: 0.06 },
   },
 }
 
@@ -83,7 +85,7 @@ export const proofIgnite = {
   visible: {
     scaleX: [0, 1, 1],
     opacity: [0, 1, 0.35],
-    transition: { duration: 0.9, times: [0, 0.5, 1], ease: ease.sharp },
+    transition: { duration: 0.6, times: [0, 0.5, 1], ease: ease.sharp },
   },
 }
 

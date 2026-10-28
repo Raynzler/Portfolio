@@ -563,7 +563,9 @@ html.lenis body { height: auto; }
 }
 
 /* Zone transit — one faint band sweeps the Grid when a new section takes the
-   screen, in the direction of travel (animated by SystemAtmosphere). */
+   screen, in the direction of travel (animated by SystemAtmosphere). For the
+   Flynn/CLU handoff it sets --sweep-top / --sweep-bottom so the band leads
+   with the incoming mode's colour; otherwise both fall back to the mode. */
 .zone-transit {
   position: absolute;
   left: 0;
@@ -575,9 +577,10 @@ html.lenis body { height: auto; }
   background: linear-gradient(
     to bottom,
     transparent,
-    rgba(var(--mode-rgb), 0.028) 42%,
-    rgba(var(--mode-rgb), 0.06) 50%,
-    rgba(var(--mode-rgb), 0.028) 58%,
+    rgba(var(--sweep-top, var(--mode-rgb)), 0.03) 40%,
+    rgba(var(--sweep-top, var(--mode-rgb)), 0.055) 48%,
+    rgba(var(--sweep-bottom, var(--mode-rgb)), 0.06) 52%,
+    rgba(var(--sweep-bottom, var(--mode-rgb)), 0.03) 60%,
     transparent
   );
 }
@@ -744,6 +747,21 @@ html.lenis body { height: auto; }
   white-space: nowrap;
 }
 
+/* Skip hint at the foot of the boot overlay; the wording follows the input. */
+.boot-skip-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 7vh;
+  text-align: center;
+  color: rgba(var(--mode-rgb), 0.42);
+}
+.boot-skip-touch { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .boot-skip-pointer { display: none; }
+  .boot-skip-touch { display: inline; }
+}
+
 .nav-link {
   color: rgba(107, 118, 132, 0.92);
   text-decoration: none;
@@ -753,6 +771,14 @@ html.lenis body { height: auto; }
 .nav-link:hover,
 .nav-link[data-active="true"] {
   color: rgb(var(--mode-rgb));
+}
+
+/* Bigger hit area than the label: the mobile nav type is small (CV was a
+   17×23px target). Invisible, so the layout and look are unchanged. */
+.nav-link::before {
+  content: "";
+  position: absolute;
+  inset: -8px -4px;
 }
 
 .nav-link[data-active="true"] {
@@ -827,6 +853,10 @@ html.lenis body { height: auto; }
 }
 .hero-cta-ghost:hover svg {
   transform: translate(1px, -1px);
+}
+/* Download nudges like the CV section's download icon. */
+.hero-cta-ghost[download]:hover svg {
+  transform: translateY(-2px);
 }
 
 .stack-tag {
@@ -1087,6 +1117,24 @@ html.lenis body { height: auto; }
   /* Small screens put more of the page over the Grid; dim it a step. */
   .system-atmosphere {
     opacity: 0.82;
+  }
+
+  /* Motion budget on phones: the far traffic tier (barely visible at this
+     size) and the two outermost floor lanes are dropped, 17 → 10 movers. */
+  .lc-far,
+  .floor-trail:first-child,
+  .floor-trail:last-child {
+    display: none;
+  }
+
+  /* The fixed sign-off sat on top of content all the way down; on phones it
+     only appears at the end of the line, in CONTACT. */
+  .end-of-line {
+    opacity: 0;
+    transition: opacity 600ms ease;
+  }
+  html[data-zone="contact"] .end-of-line {
+    opacity: 1;
   }
 
   .sentinel-assets {
@@ -1445,6 +1493,41 @@ html.lenis body { height: auto; }
   color: rgb(var(--mode-rgb));
 }
 .engineering-notes-toggle svg { color: rgba(var(--mode-rgb), 0.7); }
+
+/* One-time cue when the toggle is first reached (data-cue, ProjectPanel):
+   a check along the top edge, a border pulse and a chevron nudge, so the
+   case study gets noticed without opening by itself. Keyframes end on the
+   resting state, so hover is untouched afterwards. */
+.engineering-notes-toggle { position: relative; overflow: hidden; }
+.engineering-notes-toggle::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, rgba(var(--mode-rgb), 0.65), transparent);
+  opacity: 0;
+  transform: scaleX(0);
+}
+[data-cue="on"] > .engineering-notes-toggle {
+  animation: notes-cue 1400ms ease 150ms backwards;
+}
+[data-cue="on"] > .engineering-notes-toggle::after {
+  animation: action-check 900ms cubic-bezier(0.25, 0.1, 0.25, 1) 150ms backwards;
+}
+[data-cue="on"] > .engineering-notes-toggle svg {
+  animation: notes-chevron 900ms cubic-bezier(0.22, 1, 0.36, 1) 320ms backwards;
+}
+@keyframes notes-cue {
+  0%, 100% { border-color: rgba(var(--mode-rgb), 0.12); }
+  35%      { border-color: rgba(var(--mode-rgb), 0.45); }
+}
+@keyframes notes-chevron {
+  0%, 100% { translate: 0 0; }
+  40%      { translate: 3px 0; }
+}
 .en-hint {
   margin-left: auto;
   color: rgba(170, 182, 195, 0.4);
@@ -1751,16 +1834,20 @@ html:not([data-grid="online"]) .grid-horizon,
 html:not([data-grid="online"]) .grid-horizon-glow,
 html:not([data-grid="online"]) .traffic-layer,
 html:not([data-grid="online"]) .trace-highway,
-html:not([data-grid="online"]) .lc-root { opacity: 0; }
+html:not([data-grid="online"]) .lc-root,
+html:not([data-grid="online"]) .signal-path { opacity: 0; }
 
 /* First power-up only (data-grid-boot lives ~2.6s): the Grid lights in depth
-   order — floor, horizon, field, distant routes, then lightcycle traffic. */
-html[data-grid-boot] .grid-horizon      { transition: opacity 1600ms cubic-bezier(0.22, 1, 0.36, 1) 80ms; }
-html[data-grid-boot] .grid-horizon-glow { transition: opacity 1400ms ease 260ms; }
-html[data-grid-boot] .grid-field        { transition: opacity 1400ms ease 380ms; }
+   order — floor, horizon, field, distant routes, lightcycle traffic, then the
+   signal path — and is fully lit within the boot's hand-off beat
+   (BOOT.timeline.handoff, 1300ms), so the boot ends on a finished page. */
+html[data-grid-boot] .grid-horizon      { transition: opacity 1000ms cubic-bezier(0.22, 1, 0.36, 1); }
+html[data-grid-boot] .grid-horizon-glow { transition: opacity 900ms ease 150ms; }
+html[data-grid-boot] .grid-field        { transition: opacity 900ms ease 200ms; }
 html[data-grid-boot] .traffic-layer,
-html[data-grid-boot] .trace-highway     { transition: opacity 1400ms ease 600ms; }
-html[data-grid-boot] .lc-root           { transition: opacity 1600ms ease 760ms; }
+html[data-grid-boot] .trace-highway     { transition: opacity 900ms ease 300ms; }
+html[data-grid-boot] .lc-root           { transition: opacity 900ms ease 400ms; }
+html[data-grid-boot] .signal-path       { transition: opacity 800ms ease 500ms; }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* HERO — system coming online (Landing; framer drives the text sequence)      */
@@ -1776,7 +1863,7 @@ html[data-grid-boot] .lc-root           { transition: opacity 1600ms ease 760ms;
   background: linear-gradient(to right, rgba(var(--mode-rgb), 0.8), rgba(var(--mode-rgb), 0.12));
 }
 
-/* The availability dot pings twice as the hero finishes coming online. */
+/* The availability dot pings once as the hero finishes coming online. */
 .signal-dot { position: relative; }
 .signal-dot::after {
   content: "";
@@ -1788,7 +1875,7 @@ html[data-grid-boot] .lc-root           { transition: opacity 1600ms ease 760ms;
   pointer-events: none;
 }
 html[data-grid="online"] .signal-dot::after {
-  animation: ping-ring 1600ms cubic-bezier(0.22, 1, 0.36, 1) 1250ms 2 backwards;
+  animation: ping-ring 600ms cubic-bezier(0.22, 1, 0.36, 1) 700ms backwards;
 }
 
 @keyframes ping-ring {
@@ -1821,7 +1908,7 @@ html[data-grid="online"] .signal-dot::after {
 }
 /* The hero's primary action gets one pass as it comes online. */
 html[data-grid="online"] .hero-cta-primary.cta-sheen::before {
-  animation: cta-sweep 1100ms cubic-bezier(0.22, 1, 0.36, 1) 1150ms backwards;
+  animation: cta-sweep 600ms cubic-bezier(0.22, 1, 0.36, 1) 700ms backwards;
 }
 @keyframes cta-sweep {
   from { transform: translateX(-101%); }
@@ -2079,10 +2166,267 @@ html[data-grid="online"] .hero-cta-primary.cta-sheen::before {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
+/* SIGNAL PATH — one route through the evidence (SignalPath)                   */
+/* The component sets geometry inline in document coordinates; these rules    */
+/* only draw it. Ember through EXPERIENCE, the mode colour everywhere else.    */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.signal-path {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  transition: opacity 900ms ease;
+}
+.signal-path > * {
+  position: absolute;
+  display: block;
+}
+.signal-path [data-chapter] { --route-rgb: var(--mode-rgb); }
+.signal-path [data-chapter="experience"] { --route-rgb: 255, 138, 61; }
+
+/* The dim rail the signal runs along */
+.route-track {
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--mode-rgb), 0),
+    rgba(var(--mode-rgb), 0.12) 3%,
+    rgba(var(--mode-rgb), 0.12) 97%,
+    rgba(var(--mode-rgb), 0)
+  );
+}
+
+/* One lit stretch per chapter, filled to the head (scaleY, compositor-side);
+   a touch brighter while the page is moving. */
+.route-seg { width: 1px; }
+.route-seg-fill {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transform-origin: top center;
+  transform: scaleY(var(--route-p, 0));
+  background: rgb(var(--route-rgb));
+  box-shadow: 0 0 6px rgba(var(--route-rgb), 0.4);
+  opacity: calc(0.5 + 0.3 * var(--signal, 0));
+}
+
+/* Branches into panels, diagrams, the CV and CONTACT, lit as the head passes */
+.route-port {
+  height: 1px;
+  margin-top: -0.5px;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: linear-gradient(to right, rgba(var(--route-rgb), 0.85), rgba(var(--route-rgb), 0.3));
+  transition: transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.route-port[data-lit] { transform: scaleX(1); }
+.route-node {
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2px;
+  transform: rotate(45deg);
+  border: 1px solid rgba(var(--route-rgb), 0.45);
+  background: #05070a;
+  transition: background-color 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+}
+.route-node[data-lit] {
+  background: rgb(var(--route-rgb));
+  border-color: rgb(var(--route-rgb));
+  box-shadow: 0 0 8px rgba(var(--route-rgb), 0.6);
+}
+/* The delivery point at the CV reads a size up. */
+.route-node[data-kind="cv"] {
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3px;
+}
+
+/* The head: a signal point inside four brackets. At each chapter boundary
+   the brackets unlock, the frame turns 45° and they lock again (animated
+   from the component). Docked at the end, they close in. */
+.route-head {
+  top: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -6.5px;
+  will-change: transform;
+}
+.route-head[data-size="small"] {
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -4.5px;
+}
+.route-head::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 9999px;
+  background: rgb(var(--route-rgb));
+  box-shadow: 0 0 8px 2px rgba(var(--route-rgb), calc(0.45 + 0.4 * var(--signal, 0)));
+}
+.route-glyph {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.route-glyph > span {
+  position: absolute;
+  display: block;
+  width: 38%;
+  height: 38%;
+  border: 0 solid rgb(var(--route-rgb));
+  transition: translate 420ms cubic-bezier(0.22, 1, 0.36, 1), border-color 300ms ease;
+}
+.route-glyph > [data-c="tl"] { top: 0; left: 0; border-top-width: 1.5px; border-left-width: 1.5px; }
+.route-glyph > [data-c="tr"] { top: 0; right: 0; border-top-width: 1.5px; border-right-width: 1.5px; }
+.route-glyph > [data-c="br"] { bottom: 0; right: 0; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+.route-glyph > [data-c="bl"] { bottom: 0; left: 0; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+.route-head[data-docked] .route-glyph > [data-c="tl"] { translate: 1.5px 1.5px; }
+.route-head[data-docked] .route-glyph > [data-c="tr"] { translate: -1.5px 1.5px; }
+.route-head[data-docked] .route-glyph > [data-c="br"] { translate: -1.5px -1.5px; }
+.route-head[data-docked] .route-glyph > [data-c="bl"] { translate: 1.5px -1.5px; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* The route is drawn in full and still; no travelling head. */
+  .route-head { display: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* IDENTITY RING — the hero's identity object (IdentityRing)                   */
+/* A disc in CSS 3D: rims stacked in Z for thickness, a dashed band, a         */
+/* counter-rotating arc and a core, floating over a pool of light. Desktop    */
+/* only, in the hero's empty right half; it never sits on text.               */
+/* ─────────────────────────────────────────────────────────────────────────── */
+.identity-stage {
+  position: absolute;
+  right: 4%;
+  top: 50%;
+  display: none;
+  width: 230px;
+  height: 230px;
+  margin-top: -115px;
+  perspective: 900px;
+  pointer-events: none;
+  animation: ring-float 7.5s ease-in-out infinite;
+}
+@media (min-width: 1024px) {
+  .identity-stage { display: block; }
+}
+
+/* Tilted over the Grid; leans a few degrees toward the cursor (--tx/--ty). */
+.identity-ring {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(calc(62deg + var(--ty, 0) * 7deg)) rotateY(calc(var(--tx, 0) * 9deg));
+  transition: transform 1100ms cubic-bezier(0.22, 1, 0.36, 1), scale 1000ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.identity-ring > span {
+  position: absolute;
+  display: block;
+  border-radius: 9999px;
+  transition: opacity 700ms ease;
+}
+.ring-floor {
+  inset: 6%;
+  transform: translateZ(-70px);
+  background: radial-gradient(closest-side, rgba(var(--mode-rgb), 0.16), rgba(var(--mode-rgb), 0.04) 60%, transparent);
+}
+.ring-rim {
+  inset: 0;
+  border: 1.5px solid rgba(var(--mode-rgb), 0.55);
+  box-shadow: 0 0 14px rgba(var(--mode-rgb), 0.18), inset 0 0 14px rgba(var(--mode-rgb), 0.12);
+}
+.ring-rim[data-depth="back"]  { transform: translateZ(-3px); opacity: 0.45; }
+.ring-rim[data-depth="mid"]   { transform: translateZ(0); opacity: 0.7; }
+.ring-rim[data-depth="front"] { transform: translateZ(3px); }
+.ring-segments {
+  inset: 9%;
+  transform: translateZ(1px);
+  background: repeating-conic-gradient(from 0deg, rgba(var(--mode-rgb), 0.75) 0deg 16deg, transparent 16deg 30deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  animation: ring-spin 28s linear infinite;
+}
+.ring-inner {
+  inset: 26%;
+  transform: translateZ(2px);
+  border: 1px solid rgba(var(--mode-rgb), 0.45);
+  border-top-color: transparent;
+  border-right-color: rgba(var(--mode-rgb), 0.15);
+  animation: ring-spin-reverse 19s linear infinite;
+}
+.ring-core {
+  inset: 42%;
+  transform: translateZ(4px);
+  background: radial-gradient(circle, rgba(var(--mode-rgb), 0.95) 0%, rgba(var(--mode-rgb), 0.35) 45%, transparent 70%);
+  box-shadow: 0 0 24px rgba(var(--mode-rgb), 0.35);
+  animation: ring-core-pulse 4.2s ease-in-out infinite;
+}
+/* Spins use the individual `rotate` property, so they compose with each
+   layer's translateZ; the "ring-spin" prefix is what the signal speeds up. */
+@keyframes ring-spin { to { rotate: 360deg; } }
+@keyframes ring-spin-reverse { to { rotate: -360deg; } }
+@keyframes ring-core-pulse {
+  0%, 100% { scale: 1; }
+  50%      { scale: 0.86; }
+}
+@keyframes ring-float {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -6px; }
+}
+
+/* Materialises with the Grid: layers resolve in depth order on the first
+   power-up, the disc settling from a slightly smaller scale, all within the
+   boot's hand-off beat (last layer: 560ms + 700ms). */
+html:not([data-grid="online"]) .identity-ring { scale: 0.82; }
+html:not([data-grid="online"]) .identity-ring > span { opacity: 0; }
+html[data-grid-boot] .ring-floor { transition-delay: 0ms; }
+html[data-grid-boot] .ring-rim[data-depth="back"] { transition-delay: 100ms; }
+html[data-grid-boot] .ring-rim[data-depth="mid"] { transition-delay: 180ms; }
+html[data-grid-boot] .ring-rim[data-depth="front"] { transition-delay: 260ms; }
+html[data-grid-boot] .ring-segments { transition-delay: 360ms; }
+html[data-grid-boot] .ring-inner { transition-delay: 460ms; }
+html[data-grid-boot] .ring-core { transition-delay: 560ms; }
+
+/* Fades and shrinks a touch as the hero scrolls away (compositor-driven
+   where scroll timelines exist; elsewhere it simply scrolls off). A root
+   scroll range, not view(): the hero clips its overflow, which makes it a
+   scroll container, so a view() timeline would track the hero and never move. */
+@supports (animation-timeline: scroll()) {
+  .identity-stage {
+    animation-name: ring-float, ring-exit;
+    animation-duration: 7.5s, auto;
+    animation-timing-function: ease-in-out, linear;
+    animation-iteration-count: infinite, 1;
+    animation-fill-mode: none, both;
+    animation-timeline: auto, scroll(root block);
+    animation-range: normal, 140px 560px;
+  }
+}
+@keyframes ring-exit {
+  to { opacity: 0; scale: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Static disc: no float, spin or fade-on-scroll. */
+  .identity-stage,
+  .ring-segments,
+  .ring-inner,
+  .ring-core { animation: none !important; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
 /* PAUSING — nothing animates unseen                                            */
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* Continuous in-panel animation holds while its panel is offscreen. */
-[data-live="off"] :is(.activation-dots span, .tactical-dot, .incident-pip, .status-dot, .signal-dot, .dashboard-scan, .document-scan),
+[data-live="off"] :is(.activation-dots span, .tactical-dot, .incident-pip, .status-dot, .signal-dot, .dashboard-scan, .document-scan, .ring-segments, .ring-inner, .ring-core),
 [data-live="off"] :is(.incident-rail-fill, .arch-rail-fill, .architecture-node i)::after {
   animation-play-state: paused !important;
 }

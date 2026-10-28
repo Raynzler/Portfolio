@@ -173,8 +173,7 @@ const projects: Project[] = [
         "Any action that can loop needs a circuit breaker, or the recovery becomes the incident.",
       ],
       failureModes: [
-        "An experiment outliving its window: bounds are enforced at module and per-request layers, and every experiment self-reverts.",
-        "An experiment that outlives its window: bounds are enforced at two layers and the control plane is exempt from injection so the abort path stays reachable.",
+        "An experiment that outlives its window: bounds are enforced at module and per-request layers, every experiment self-reverts, and the control plane is exempt from injection so the abort path stays reachable.",
       ],
     },
   },
@@ -327,7 +326,7 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
               SentinelSOL Telemetry
             </span>
           </div>
-          <span className="subsystem-label">LIVE GRAPH</span>
+          <span className="subsystem-label">SNAPSHOT</span>
         </div>
         <div className="sentinel-graph-frame">
           <img
@@ -476,6 +475,9 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
   const [showNotes, setShowNotes] = useState(false)
   const archRef = useRef<HTMLDivElement>(null)
   const notesRef = useRef<HTMLDivElement>(null)
+  // The case study sits far below the panel top, so its toggle gets its own
+  // one-time cue when it is actually reached (see [data-cue] in globals.css).
+  const notesReached = useInView(notesRef, { once: true, margin: "-20% 0px" })
   const hasArch = project.id === "sentinelsol" || !!project.pipeline
 
   const goToArchitecture = () => {
@@ -614,7 +616,12 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
 
           {/* Engineering notes — expandable case study */}
           {project.caseStudy && (
-            <div className="mb-8" ref={notesRef} style={{ scrollMarginTop: "96px" }}>
+            <div
+              className="mb-8"
+              ref={notesRef}
+              style={{ scrollMarginTop: "96px" }}
+              data-cue={powered && notesReached ? "on" : undefined}
+            >
               <button
                 type="button"
                 onClick={() => setShowNotes((v) => !v)}

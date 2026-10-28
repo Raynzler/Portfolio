@@ -23,6 +23,9 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
+  // Resolves the generated link-preview image (app/opengraph-image.tsx) to an
+  // absolute URL, which LinkedIn, Slack and X require.
+  metadataBase: new URL('https://shamza31.vercel.app'),
   title: 'Hamza Shaikh - SRE / Infrastructure Engineer',
   description:
     'Site reliability and infrastructure engineer. I keep production systems observable, quick to recover, and cheap to run. M.Sc. Computer Science (Distributed Systems and Software Engineering), RPTU Kaiserslautern.',
@@ -47,6 +50,10 @@ export const metadata: Metadata = {
     description:
       'Site reliability and infrastructure engineer. I keep production systems observable, quick to recover, and cheap to run.',
     type: 'website',
+  },
+  // Large image card so X shows the preview picture, not a small thumbnail.
+  twitter: {
+    card: 'summary_large_image',
   },
   other: {
     'x-system': 'ENCOM-OS-12',

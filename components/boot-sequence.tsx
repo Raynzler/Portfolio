@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { BOOT, Z_INDEX } from "@/lib/constants"
-import { bringGridOnline } from "@/lib/grid-runtime"
+import { bringGridOnline, usePrefersReducedMotion } from "@/lib/grid-runtime"
 
 const WHOAMI = "whoami"
 const PROGRESS_CELLS = 16
@@ -65,7 +65,17 @@ declare global {
 // subscribe to; useSyncExternalStore is used for its client/server split.
 const subscribeNothing = () => () => {}
 
+// Run `fn` at `offset` ms after the boot started (an absolute point on the
+// BOOT timeline), however late the calling effect ran.
+function afterBoot(startedAt: number, offset: number, fn: () => void) {
+  return window.setTimeout(fn, Math.max(0, startedAt + offset - performance.now()))
+}
+
 function bootPending() {
+  // A deep link (/#cv, /#contact, ...) is someone heading for one section:
+  // land them on it straight away, without the boot.
+  const target = window.location.hash.slice(1)
+  if (target && document.getElementById(target)) return false
   try {
     return !sessionStorage.getItem(BOOT.storageKey)
   } catch {
@@ -83,6 +93,10 @@ function bootPending() {
  *  4  command running: status + init progress  SYSTEM INITIALIZING [▓▓░░] 42%
  *  5  initialization complete                  100%  READY
  *  6  fade out into the portfolio; the Grid comes online underneath
+ *
+ * Timing lives in one place, BOOT.timeline (lib/constants): 6s from the first
+ * black frame to a finished, usable homepage. Any key, click or tap skips
+ * straight to phase 6.
  */
 export function BootSequence() {
   // Read on the client only (the server snapshot is false), so the overlay
@@ -90,6 +104,7 @@ export function BootSequence() {
   const pending = useSyncExternalStore(subscribeNothing, bootPending, () => false)
   const [finished, setFinished] = useState(false)
   const visible = pending && !finished
+  const reducedMotion = usePrefersReducedMotion()
   const [phase, setPhase] = useState(0)
   const [whoami, setWhoami] = useState("")
   const [showHamza, setShowHamza] = useState(false)
@@ -103,7 +118,10 @@ export function BootSequence() {
   const skipRef = useRef(false)
   const tonePlayedRef = useRef(false)
   const reducedRef = useRef(false)
-  const progressHoldRef = useRef<number | undefined>(undefined)
+  // performance.now() at the overlay's first frame. Every beat is scheduled
+  // against it (not against the previous beat), so render latency between
+  // phases never accumulates and the boot lands on BOOT.totalMs.
+  const startRef = useRef(0)
 
   const markSeen = () => {
     try {
@@ -120,14 +138,16 @@ export function BootSequence() {
     if (!bootPending()) bringGridOnline()
   }, [pending])
 
-  // Overlay shown: wire skip, kick the chain.
+  // Overlay shown: start the clock, wire skip, kick the chain.
   useEffect(() => {
     if (!visible) return
 
+    startRef.current = performance.now()
     reducedRef.current =
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
+    // A skip goes straight to the hand-off, whatever the schedule says.
     const skip = () => {
       if (skipRef.current) return
       skipRef.current = true
@@ -141,8 +161,8 @@ export function BootSequence() {
     window.addEventListener("keydown", skip)
     window.addEventListener("click", skip)
 
-    const startDelay = reducedRef.current ? 120 : 320
-    const begin = window.setTimeout(() => setPhase(1), startDelay)
+    const t = reducedRef.current ? BOOT.reducedTimeline : BOOT.timeline
+    const begin = afterBoot(startRef.current, t.prompt, () => setPhase(1))
 
     return () => {
       window.removeEventListener("keydown", skip)
@@ -154,21 +174,20 @@ export function BootSequence() {
   // Phase 1 — type `whoami`, then ENTER (advance to the printed identity).
   useEffect(() => {
     if (!visible || phase !== 1) return
-    const reduced = reducedRef.current
+    const t = reducedRef.current ? BOOT.reducedTimeline : BOOT.timeline
+    const start = t.prompt
     const timers: number[] = []
 
-    if (reduced) {
+    if (reducedRef.current) {
       setWhoami(WHOAMI)
-      timers.push(window.setTimeout(() => setPhase(2), 220))
     } else {
-      const lead = 120
-      const per = 82
+      const lead = 100
+      const per = (t.whoami - lead - 260) / WHOAMI.length
       for (let i = 1; i <= WHOAMI.length; i += 1) {
-        timers.push(window.setTimeout(() => setWhoami(WHOAMI.slice(0, i)), lead + i * per))
+        timers.push(afterBoot(startRef.current, start + lead + i * per, () => setWhoami(WHOAMI.slice(0, i))))
       }
-      const typedAt = lead + WHOAMI.length * per
-      timers.push(window.setTimeout(() => setPhase(2), typedAt + 360))
     }
+    timers.push(afterBoot(startRef.current, start + t.whoami, () => setPhase(2)))
 
     return () => timers.forEach(window.clearTimeout)
   }, [phase, visible])
@@ -176,81 +195,88 @@ export function BootSequence() {
   // Phase 2 — cursor lands on the new line, then `hamza` prints; ENTER again.
   useEffect(() => {
     if (!visible || phase !== 2) return
-    const reduced = reducedRef.current
-    const timers: number[] = []
-
-    timers.push(window.setTimeout(() => setShowHamza(true), reduced ? 80 : 210))
-    timers.push(window.setTimeout(() => setPhase(3), reduced ? 320 : 880))
-
+    const t = reducedRef.current ? BOOT.reducedTimeline : BOOT.timeline
+    const start = t.prompt + t.whoami
+    const timers = [
+      afterBoot(startRef.current, start + (reducedRef.current ? 80 : 180), () => setShowHamza(true)),
+      afterBoot(startRef.current, start + t.identity, () => setPhase(3)),
+    ]
     return () => timers.forEach(window.clearTimeout)
   }, [phase, visible])
 
-  // Phase 3 — type the random startup command, then run it.
+  // Phase 3 — type the random startup command, then run it. The command types
+  // inside a fixed window whatever its length, so the total never depends on
+  // which routine was picked.
   useEffect(() => {
     if (!visible || phase !== 3) return
-    const reduced = reducedRef.current
+    const t = reducedRef.current ? BOOT.reducedTimeline : BOOT.timeline
+    const start = t.prompt + t.whoami + t.identity
     const timers: number[] = []
 
-    if (reduced) {
+    if (reducedRef.current) {
       setCmd(seq.cmd)
-      timers.push(window.setTimeout(() => setPhase(4), 220))
     } else {
-      const lead = 150
-      const per = 46
+      const lead = 100
+      const per = (t.command - lead - 240) / seq.cmd.length
       for (let i = 1; i <= seq.cmd.length; i += 1) {
-        timers.push(window.setTimeout(() => setCmd(seq.cmd.slice(0, i)), lead + i * per))
+        timers.push(afterBoot(startRef.current, start + lead + i * per, () => setCmd(seq.cmd.slice(0, i))))
       }
-      const typedAt = lead + seq.cmd.length * per
-      timers.push(window.setTimeout(() => setPhase(4), typedAt + 330))
     }
+    timers.push(afterBoot(startRef.current, start + t.command, () => setPhase(4)))
 
     return () => timers.forEach(window.clearTimeout)
   }, [phase, visible, seq.cmd])
 
   // Phase 4 — initialization. Drive a non-linear progress curve: rapid start,
-  // slow middle, quick finish (p = t + 0.14·sin(2πt), monotonic over [0,1]).
+  // slow middle, quick finish (p = t + 0.14·sin(2πt), monotonic over [0,1]),
+  // then hold a beat at 100%.
   useEffect(() => {
     if (!visible || phase !== 4) return
     const reduced = reducedRef.current
+    const t = reduced ? BOOT.reducedTimeline : BOOT.timeline
+    const start = t.prompt + t.whoami + t.identity + t.command
 
     if (!tonePlayedRef.current) {
       tonePlayedRef.current = true
       if (!reduced) playInterfaceTone()
     }
 
-    const duration = reduced ? 300 : 1500
-    const startTs = performance.now()
+    const duration = t.progress - (reduced ? 160 : 180)
+    const origin = startRef.current + start
     let raf = 0
+    let next = 0
 
     const tick = (now: number) => {
-      const t = Math.min(1, (now - startTs) / duration)
-      const eased = reduced ? t : t + 0.14 * Math.sin(2 * Math.PI * t)
+      const p = Math.min(1, Math.max(0, (now - origin) / duration))
+      const eased = reduced ? p : p + 0.14 * Math.sin(2 * Math.PI * p)
       setProgress(Math.max(0, Math.min(100, Math.round(eased * 100))))
-      if (t < 1) {
+      if (p < 1) {
         raf = requestAnimationFrame(tick)
       } else {
         setProgress(100)
-        progressHoldRef.current = window.setTimeout(() => setPhase(5), reduced ? 160 : 240)
+        next = afterBoot(startRef.current, start + t.progress, () => setPhase(5))
       }
     }
 
     raf = requestAnimationFrame(tick)
     return () => {
       cancelAnimationFrame(raf)
-      if (progressHoldRef.current) window.clearTimeout(progressHoldRef.current)
+      window.clearTimeout(next)
     }
   }, [phase, visible])
 
-  // Phase 5 — READY holds briefly, then hand off to the fade.
+  // Phase 5 — READY holds, then hand off on schedule.
   useEffect(() => {
     if (!visible || phase !== 5) return
-    const reduced = reducedRef.current
-    const hold = window.setTimeout(() => setPhase(6), reduced ? 320 : 580)
+    const t = reducedRef.current ? BOOT.reducedTimeline : BOOT.timeline
+    const handoffAt = t.prompt + t.whoami + t.identity + t.command + t.progress + t.ready
+    const hold = afterBoot(startRef.current, handoffAt, () => setPhase(6))
     return () => window.clearTimeout(hold)
   }, [phase, visible])
 
   // Phase 6 — the overlay fades and the Grid powers up beneath it, so the hero
   // comes online as the terminal clears. Then unmount and remember the boot.
+  // Relative timing on purpose: a skip enters here at any moment.
   useEffect(() => {
     if (!visible || phase !== 6) return
     bringGridOnline()
@@ -270,102 +296,140 @@ export function BootSequence() {
       {visible && (
         <motion.div
           key="boot"
-          className="fixed inset-0 overflow-hidden bg-[#05070A]"
-          style={{ zIndex: Z_INDEX.boot }}
+          className="fixed inset-0 overflow-hidden"
+          // Clicks reach the page as soon as the hand-off starts.
+          style={{ zIndex: Z_INDEX.boot, pointerEvents: fading ? "none" : undefined }}
           initial={{ opacity: 1 }}
-          animate={{ opacity: fading ? 0 : 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
           aria-hidden="true"
         >
+          {/* Backdrop and terminal clear first; the progress line stays and
+              drops into the Grid horizon as the Grid powers up beneath. */}
           <motion.div
-            className="absolute inset-0 boot-grid"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: initializing ? 0.05 : 0.012 }}
-            transition={{ duration: 0.62, ease: "easeOut" }}
+            className="absolute inset-0 bg-[#05070A]"
+            initial={false}
+            animate={{ opacity: fading ? 0 : 1 }}
+            transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
           />
-          <div className="scanline-texture opacity-60" />
 
+          <motion.div
+            className="absolute inset-0"
+            initial={false}
+            animate={{ opacity: fading ? 0 : 1 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            <motion.div
+              className="absolute inset-0 boot-grid"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: initializing ? 0.05 : 0.012 }}
+              transition={{ duration: 0.62, ease: "easeOut" }}
+            />
+            <div className="scanline-texture opacity-60" />
+
+            <div className="absolute left-1/2 top-1/2 w-[min(82vw,560px)] -translate-x-1/2 -translate-y-1/2">
+              <div className="font-mono text-sm leading-[1.9] text-[rgba(230,241,255,0.85)]">
+                {/* Line 1 — the whoami prompt */}
+                <div className="flex items-center min-h-[1.9em]">
+                  <span className="mr-2 text-[rgba(var(--mode-rgb),0.55)]">&gt;</span>
+                  <span>{whoami}</span>
+                  {phase <= 1 && <span className="boot-cursor" />}
+                </div>
+
+                {/* Line 2 — printed identity */}
+                {phase >= 2 && (
+                  <div className="flex items-center min-h-[1.9em]">
+                    <span className="text-[rgba(var(--mode-rgb),0.72)]">{showHamza ? "hamza" : ""}</span>
+                    {phase === 2 && <span className="boot-cursor" />}
+                  </div>
+                )}
+
+                {/* Line 3 — the operator startup command */}
+                {phase >= 3 && (
+                  <div className="flex items-center min-h-[1.9em]">
+                    <span className="mr-2 text-[rgba(var(--mode-rgb),0.55)]">&gt;</span>
+                    <span>{cmd}</span>
+                    {phase === 3 && <span className="boot-cursor" />}
+                  </div>
+                )}
+              </div>
+
+              {/* Initialization block */}
+              <motion.div
+                className="mt-6 font-mono text-sm"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: initializing ? 1 : 0, y: initializing ? 0 : 4 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <div className="subsystem-label mb-3" style={{ color: "rgba(var(--mode-rgb),0.6)" }}>
+                  {seq.status}
+                </div>
+
+                <div className="mb-2 text-[0.7rem] tracking-[0.22em] text-[rgba(230,241,255,0.5)]">
+                  SYSTEM INITIALIZING
+                </div>
+
+                <div className="boot-bar flex items-center gap-3">
+                  <span>
+                    <span style={{ color: "rgba(var(--mode-rgb),0.35)" }}>[</span>
+                    <span
+                      style={{
+                        color: "rgb(var(--mode-rgb))",
+                        textShadow: "0 0 8px rgba(var(--mode-rgb),0.5)",
+                      }}
+                    >
+                      {"█".repeat(filledCells)}
+                    </span>
+                    <span style={{ color: "rgba(var(--mode-rgb),0.16)" }}>
+                      {"░".repeat(PROGRESS_CELLS - filledCells)}
+                    </span>
+                    <span style={{ color: "rgba(var(--mode-rgb),0.35)" }}>]</span>
+                  </span>
+                  <span className="tabular-nums text-[rgba(230,241,255,0.7)]">{progress}%</span>
+                  {phase >= 5 && (
+                    <span
+                      className="tracking-[0.2em]"
+                      style={{
+                        color: "rgb(var(--mode-rgb))",
+                        textShadow: "0 0 10px rgba(var(--mode-rgb),0.45)",
+                      }}
+                    >
+                      READY
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Skip hint — the skip handler above takes any key, click or tap.
+                Pointer and touch wording swap in CSS (globals.css). */}
+            <motion.p
+              className="boot-skip-hint subsystem-label"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.4, ease: "easeOut" }}
+            >
+              <span className="boot-skip-pointer">Press any key or click to skip</span>
+              <span className="boot-skip-touch">Tap to skip</span>
+            </motion.p>
+          </motion.div>
+
+          {/* Progress line. On hand-off it drops from centre to the Grid's
+              horizon and dissolves there, so the terminal becomes the Grid. */}
           <motion.div
             className="absolute left-0 right-0 top-1/2 h-px bg-[linear-gradient(to_right,transparent,rgba(var(--mode-rgb),0.55),transparent)] shadow-[0_0_14px_rgba(var(--mode-rgb),0.24)]"
             initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: initializing ? 1 : 0, opacity: initializing ? 1 : 0 }}
-            transition={{ duration: 0.54, ease: [0.25, 0.1, 0.25, 1] }}
+            animate={
+              fading
+                ? { scaleX: 1, opacity: [1, 1, 0], y: reducedMotion ? 0 : "13vh" }
+                : { scaleX: initializing ? 1 : 0, opacity: initializing ? 1 : 0 }
+            }
+            transition={
+              fading
+                ? { duration: 0.8, ease: [0.22, 1, 0.36, 1], opacity: { duration: 0.8, times: [0, 0.6, 1] } }
+                : { duration: 0.54, ease: [0.25, 0.1, 0.25, 1] }
+            }
           />
-
-          <div className="absolute left-1/2 top-1/2 w-[min(82vw,560px)] -translate-x-1/2 -translate-y-1/2">
-            <div className="font-mono text-sm leading-[1.9] text-[rgba(230,241,255,0.85)]">
-              {/* Line 1 — the whoami prompt */}
-              <div className="flex items-center min-h-[1.9em]">
-                <span className="mr-2 text-[rgba(var(--mode-rgb),0.55)]">&gt;</span>
-                <span>{whoami}</span>
-                {phase <= 1 && <span className="boot-cursor" />}
-              </div>
-
-              {/* Line 2 — printed identity */}
-              {phase >= 2 && (
-                <div className="flex items-center min-h-[1.9em]">
-                  <span className="text-[rgba(var(--mode-rgb),0.72)]">{showHamza ? "hamza" : ""}</span>
-                  {phase === 2 && <span className="boot-cursor" />}
-                </div>
-              )}
-
-              {/* Line 3 — the operator startup command */}
-              {phase >= 3 && (
-                <div className="flex items-center min-h-[1.9em]">
-                  <span className="mr-2 text-[rgba(var(--mode-rgb),0.55)]">&gt;</span>
-                  <span>{cmd}</span>
-                  {phase === 3 && <span className="boot-cursor" />}
-                </div>
-              )}
-            </div>
-
-            {/* Initialization block */}
-            <motion.div
-              className="mt-6 font-mono text-sm"
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: initializing ? 1 : 0, y: initializing ? 0 : 4 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <div className="subsystem-label mb-3" style={{ color: "rgba(var(--mode-rgb),0.6)" }}>
-                {seq.status}
-              </div>
-
-              <div className="mb-2 text-[0.7rem] tracking-[0.22em] text-[rgba(230,241,255,0.5)]">
-                SYSTEM INITIALIZING
-              </div>
-
-              <div className="boot-bar flex items-center gap-3">
-                <span>
-                  <span style={{ color: "rgba(var(--mode-rgb),0.35)" }}>[</span>
-                  <span
-                    style={{
-                      color: "rgb(var(--mode-rgb))",
-                      textShadow: "0 0 8px rgba(var(--mode-rgb),0.5)",
-                    }}
-                  >
-                    {"█".repeat(filledCells)}
-                  </span>
-                  <span style={{ color: "rgba(var(--mode-rgb),0.16)" }}>
-                    {"░".repeat(PROGRESS_CELLS - filledCells)}
-                  </span>
-                  <span style={{ color: "rgba(var(--mode-rgb),0.35)" }}>]</span>
-                </span>
-                <span className="tabular-nums text-[rgba(230,241,255,0.7)]">{progress}%</span>
-                {phase >= 5 && (
-                  <span
-                    className="tracking-[0.2em]"
-                    style={{
-                      color: "rgb(var(--mode-rgb))",
-                      textShadow: "0 0 10px rgba(var(--mode-rgb),0.45)",
-                    }}
-                  >
-                    READY
-                  </span>
-                )}
-              </div>
-            </motion.div>
-          </div>
         </motion.div>
       )}
     </AnimatePresence>

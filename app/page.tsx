@@ -9,6 +9,7 @@ import { BootSequence } from "@/components/boot-sequence"
 import { CvSection } from "@/components/cv-section"
 import { SystemAtmosphere } from "@/components/system-atmosphere"
 import { LightcycleGrid } from "@/components/lightcycle-grid"
+import { SignalPath } from "@/components/signal-path"
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
       <SystemAtmosphere />
       <BootSequence />
       <LightcycleGrid />
+      <SignalPath />
       <Header />
       <Landing />
       <Projects />
