@@ -17,6 +17,7 @@ import {
 import { BOOT } from "@/lib/constants"
 import { bringGridOnline, useGridOnline, useLiveAttribute } from "@/lib/grid-runtime"
 import { resumeHref } from "@/components/cv-section"
+import { IdentityRing } from "@/components/identity-ring"
 
 const proof = [
   { label: "AWARD · 2026", value: "Winner · Superteam Germany Solana Ideathon" },
@@ -234,6 +235,9 @@ export function Landing() {
             />
           </svg>
         </div>
+
+        {/* ── Identity ring — the hero's identity object, beside the text ── */}
+        <IdentityRing />
       </div>
     </section>
   )
