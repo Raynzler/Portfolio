@@ -1162,6 +1162,21 @@ html.lenis body { height: auto; }
   animation: document-scan 5.6s ease-in-out infinite;
 }
 
+/* Phones: "Open PDF" in the viewer's header stands in for the preview.
+   Display comes from Tailwind (inline-flex / md:hidden), so it is not set
+   here: unlayered CSS would override the md:hidden utility. */
+.cv-open-link {
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgb(var(--mode-rgb));
+  transition: color 160ms ease;
+}
+.cv-open-link:hover { color: var(--foreground); }
+
 .clu-zone .tron-panel {
   border-color: rgba(var(--mode-rgb), 0.14);
 }

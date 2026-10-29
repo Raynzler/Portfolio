@@ -1,10 +1,19 @@
 "use client"
 
 import Link from "next/link"
-import { Award, Briefcase, Download, FileText, GraduationCap, ShieldCheck } from "lucide-react"
-import { motion, useInView } from "framer-motion"
-import { useEffect, useRef, useState } from "react"
-import { staggerContainer, staggerItem, duration } from "@/lib/motion"
+import {
+  Award,
+  Briefcase,
+  ChevronRight,
+  Download,
+  ExternalLink,
+  FileText,
+  GraduationCap,
+  ShieldCheck,
+} from "lucide-react"
+import { motion, AnimatePresence, useInView } from "framer-motion"
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"
+import { staggerContainer, staggerItem, duration, ease } from "@/lib/motion"
 import { AVAILABILITY } from "@/lib/constants"
 import { SectionSep } from "@/components/section-sep"
 import { SectionHeading } from "@/components/section-heading"
@@ -76,6 +85,16 @@ const certifications = [
   { name: "Postman API Fundamentals · Student Expert", year: "2023" },
 ]
 
+// The inline preview is for screens wide enough to show a page. On phones it
+// was an unreadable thumbnail (and some phone browsers render no inline PDF
+// at all), so they get an "Open PDF" link and never load the frame.
+const WIDE_QUERY = "(min-width: 768px)"
+function subscribeWide(onChange: () => void) {
+  const query = window.matchMedia(WIDE_QUERY)
+  query.addEventListener("change", onChange)
+  return () => query.removeEventListener("change", onChange)
+}
+
 export function CvSection() {
   const ref = useRef<HTMLElement>(null)
   const isInView = useInView(ref, { once: true, margin: "-60px 0px" })
@@ -83,6 +102,10 @@ export function CvSection() {
   // undefined while the probe is in flight, so the panel can distinguish
   // "still checking" from "confirmed missing".
   const [pdfAvailable, setPdfAvailable] = useState<boolean | undefined>(undefined)
+  const wide = useSyncExternalStore(subscribeWide, () => window.matchMedia(WIDE_QUERY).matches, () => false)
+  // The education, recognition and experience panels repeat facts shown in
+  // full elsewhere on the page; they stay one click away as the CV's text.
+  const [showText, setShowText] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -111,10 +134,10 @@ export function CvSection() {
             variants={staggerContainer(0.06, 0.04)}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
-            className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr]"
+            className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr] lg:items-start"
           >
             <motion.div variants={staggerItem} className="tron-panel cv-dossier rounded-sm p-6">
-              <div className="mb-8 flex items-start justify-between gap-6">
+              <div className="mb-6 flex items-start justify-between gap-6">
                 <div>
                   <p className="subsystem-label mb-3">PERSONNEL FILE</p>
                   <h3 className="text-xl font-light tracking-normal text-[#E6F1FF]">
@@ -127,6 +150,28 @@ export function CvSection() {
                   </p>
                 </div>
                 <ShieldCheck className="mt-1 h-5 w-5 shrink-0 text-[rgba(var(--mode-rgb),0.52)]" />
+              </div>
+
+              {/* The download comes first: it is why most people open this
+                  section, and the CV nav button lands here.
+                  No prefetch: a file has no route payload to prefetch (it 404s). */}
+              <div className="mb-8">
+                <Link
+                  href={resumeHref}
+                  download
+                  prefetch={false}
+                  aria-disabled={downloadDisabled}
+                  tabIndex={downloadDisabled ? -1 : undefined}
+                  className={`cta-sheen group inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[rgba(var(--mode-rgb),0.20)] bg-[rgba(var(--mode-rgb),0.045)] px-4 py-3 font-mono text-xs uppercase tracking-[0.14em] text-[rgba(230,241,255,0.82)] transition-colors hover:border-[rgba(var(--mode-rgb),0.40)] hover:bg-[rgba(var(--mode-rgb),0.075)]${downloadDisabled ? " pointer-events-none opacity-60" : ""}`}
+                  style={{ transitionDuration: `${duration.hover * 1000}ms` }}
+                >
+                  <Download className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.66)] transition-transform group-hover:-translate-y-0.5" />
+                  {downloadDisabled ? "Unavailable" : "Download PDF"}
+                </Link>
+
+                <p className="mt-3 text-center font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-[var(--label)]">
+                  Last updated · {resumeUpdated}
+                </p>
               </div>
 
               <div className="mb-8 space-y-3">
@@ -145,7 +190,7 @@ export function CvSection() {
                 ))}
               </div>
 
-              <div className="mb-8">
+              <div>
                 <p className="subsystem-label mb-4">CAPABILITIES</p>
                 <div className="space-y-2">
                   {capabilities.map((capability, index) => (
@@ -161,44 +206,41 @@ export function CvSection() {
                   ))}
                 </div>
               </div>
-
-              {/* No prefetch: a file has no route payload to prefetch (it 404s). */}
-              <Link
-                href={resumeHref}
-                download
-                prefetch={false}
-                aria-disabled={downloadDisabled}
-                tabIndex={downloadDisabled ? -1 : undefined}
-                className={`cta-sheen group inline-flex w-full items-center justify-center gap-2 rounded-sm border border-[rgba(var(--mode-rgb),0.20)] bg-[rgba(var(--mode-rgb),0.045)] px-4 py-3 font-mono text-xs uppercase tracking-[0.14em] text-[rgba(230,241,255,0.82)] transition-colors hover:border-[rgba(var(--mode-rgb),0.40)] hover:bg-[rgba(var(--mode-rgb),0.075)]${downloadDisabled ? " pointer-events-none opacity-60" : ""}`}
-                style={{ transitionDuration: `${duration.hover * 1000}ms` }}
-              >
-                <Download className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.66)] transition-transform group-hover:-translate-y-0.5" />
-                {downloadDisabled ? "Unavailable" : "Download PDF"}
-              </Link>
-
-              <p className="mt-3 text-center font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-[var(--label)]">
-                Last updated · {resumeUpdated}
-              </p>
             </motion.div>
 
             <motion.div variants={staggerItem} className="tron-panel document-viewer rounded-sm">
-              <div className="flex items-center justify-between border-b border-[rgba(var(--mode-rgb),0.08)] px-5 py-3">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.5)]" />
-                  <span className="font-mono text-xs text-[var(--foreground-muted)]">
+              <div className="flex items-center justify-between gap-4 border-b border-[rgba(var(--mode-rgb),0.08)] px-5 py-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <FileText className="h-3.5 w-3.5 shrink-0 text-[rgba(var(--mode-rgb),0.5)]" />
+                  <span className="truncate font-mono text-xs text-[var(--foreground-muted)]">
                     {resumeFile}
                   </span>
                 </div>
-                <span className="subsystem-label">PDF</span>
+                <span className="subsystem-label hidden md:inline">PDF</span>
+                {/* Phones: the file itself, in the browser's own viewer */}
+                <Link
+                  href={resumeHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  prefetch={false}
+                  className="cv-open-link inline-flex shrink-0 items-center gap-1.5 md:hidden"
+                >
+                  Open PDF
+                  <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
               </div>
 
-              <div className="relative overflow-hidden p-4 sm:p-6">
+              <div className="relative hidden overflow-hidden p-4 sm:p-6 md:block">
                 <div className="document-scan" aria-hidden="true" />
                 <div className="mx-auto aspect-[8.5/11] max-h-[620px] w-full max-w-[440px] overflow-hidden rounded-[2px] border border-[rgba(var(--mode-rgb),0.14)] bg-[#F1F5F8] shadow-[0_0_36px_rgba(var(--mode-rgb),0.06)]">
-                  {pdfAvailable ? (
+                  {pdfAvailable && wide ? (
+                    // Out of the tab order: in Chrome, focus otherwise drops
+                    // into the hidden PDF viewer controls for ~14 presses.
+                    // Download and the CV text below carry the content.
                     <iframe
                       title="CV PDF preview"
                       src={`${resumeHref}#toolbar=0&navpanes=0&scrollbar=0`}
+                      tabIndex={-1}
                       className="h-full w-full bg-[#F1F5F8]"
                     />
                   ) : (
@@ -211,125 +253,151 @@ export function CvSection() {
             </motion.div>
           </motion.div>
 
-          {/* ── Dossier detail — education, experience, recognition ─────────── */}
+          {/* ── CV as text: education, recognition, experience ─────────────── */}
           <motion.div
-            variants={staggerContainer(0.06, 0.05)}
+            variants={staggerItem}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
-            className="mt-6 grid gap-6 lg:grid-cols-2"
+            className="mt-6"
           >
-            {/* Education */}
-            <motion.div variants={staggerItem} className="tron-panel rounded-sm p-6">
-              <div className="mb-5 flex items-center gap-2.5">
-                <GraduationCap className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.55)]" />
-                <span className="subsystem-label">Education</span>
-              </div>
-              <div className="space-y-5">
-                {education.map((e) => (
-                  <div key={e.school}>
-                    <div className="flex items-baseline justify-between gap-3">
-                      <h3 className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-                        {e.degree}
-                      </h3>
-                      <span className="font-mono text-[0.65rem] shrink-0" style={{ color: "var(--foreground-dim)" }}>
-                        {e.period}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs" style={{ color: "var(--foreground-muted)" }}>
-                      {e.school} · {e.place}
-                    </p>
-                    <p className="mt-1 text-xs" style={{ color: "var(--foreground-dim)" }}>
-                      {e.detail}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Recognition */}
-            <motion.div variants={staggerItem} className="tron-panel rounded-sm p-6">
-              <div className="mb-5 flex items-center gap-2.5">
-                <Award className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.55)]" />
-                <span className="subsystem-label">Recognition</span>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-                    Winner · Superteam Germany / neosfer Solana Ideathon
-                  </p>
-                  <p className="mt-1 text-xs" style={{ color: "var(--foreground-dim)" }}>
-                    Frankfurt 2026 · $250 · for SentinelSOL
-                  </p>
-                </div>
-
-                <div className="border-t border-[rgba(var(--mode-rgb),0.07)] pt-4">
-                  <p className="subsystem-label mb-3" style={{ color: "rgba(var(--mode-rgb),0.4)" }}>
-                    Certifications
-                  </p>
-                  <div className="space-y-2">
-                    {certifications.map((c) => (
-                      <div key={c.name} className="flex items-baseline justify-between gap-3">
-                        <span className="text-xs" style={{ color: "var(--foreground-muted)" }}>
-                          {c.name}
-                        </span>
-                        <span className="font-mono text-[0.65rem] shrink-0" style={{ color: "var(--foreground-dim)" }}>
-                          {c.year}
-                        </span>
+            <button
+              type="button"
+              onClick={() => setShowText((v) => !v)}
+              aria-expanded={showText}
+              aria-controls="cv-text"
+              className="disclosure-toggle"
+            >
+              <ChevronRight
+                className="h-3.5 w-3.5 shrink-0 transition-transform"
+                style={{ transform: showText ? "rotate(90deg)" : "none" }}
+              />
+              <span>CV as text</span>
+              <span className="en-hint">education · recognition · experience</span>
+            </button>
+            <AnimatePresence initial={false}>
+              {showText && (
+                <motion.div
+                  id="cv-text"
+                  key="cv-text"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.28, ease: ease.outSoft }}
+                  style={{ overflow: "hidden" }}
+                >
+                  <div className="grid gap-6 pt-6 lg:grid-cols-2">
+                    {/* Education */}
+                    <div className="tron-panel rounded-sm p-6">
+                      <div className="mb-5 flex items-center gap-2.5">
+                        <GraduationCap className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.55)]" />
+                        <span className="subsystem-label">Education</span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="border-t border-[rgba(var(--mode-rgb),0.07)] pt-4">
-                  <p className="subsystem-label mb-2" style={{ color: "rgba(var(--mode-rgb),0.4)" }}>
-                    Publication
-                  </p>
-                  <p className="text-xs leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
-                    GridCast · IEEE ICSPCRE 2024 (Paper ID 652), B.E. capstone (submitted)
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Experience */}
-            <motion.div variants={staggerItem} className="tron-panel rounded-sm p-6 lg:col-span-2">
-              <div className="mb-5 flex items-center gap-2.5">
-                <Briefcase className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.55)]" />
-                <span className="subsystem-label">Experience</span>
-              </div>
-              <div className="space-y-6">
-                {experience.map((x) => (
-                  <div key={x.role}>
-                    <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between">
-                      <h3 className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-                        {x.role}
-                      </h3>
-                      <span className="font-mono text-[0.65rem] shrink-0" style={{ color: "var(--foreground-dim)" }}>
-                        {x.period}
-                      </span>
+                      <div className="space-y-5">
+                        {education.map((e) => (
+                          <div key={e.school}>
+                            <div className="flex items-baseline justify-between gap-3">
+                              <h3 className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                                {e.degree}
+                              </h3>
+                              <span className="font-mono text-xs shrink-0" style={{ color: "var(--foreground-dim)" }}>
+                                {e.period}
+                              </span>
+                            </div>
+                            <p className="mt-1 text-sm" style={{ color: "var(--foreground-muted)" }}>
+                              {e.school} · {e.place}
+                            </p>
+                            <p className="mt-1 text-sm" style={{ color: "var(--foreground-dim)" }}>
+                              {e.detail}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <p className="mt-0.5 text-xs" style={{ color: "var(--foreground-dim)" }}>
-                      {x.org}
-                    </p>
-                    <ul className="mt-3 space-y-2">
-                      {x.points.map((p, i) => (
-                        <li
-                          key={i}
-                          className="text-xs leading-relaxed pl-4"
-                          style={{
-                            color: "var(--foreground-muted)",
-                            borderLeft: "1px solid rgba(var(--mode-rgb), 0.14)",
-                          }}
-                        >
-                          {p}
-                        </li>
-                      ))}
-                    </ul>
+
+                    {/* Recognition */}
+                    <div className="tron-panel rounded-sm p-6">
+                      <div className="mb-5 flex items-center gap-2.5">
+                        <Award className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.55)]" />
+                        <span className="subsystem-label">Recognition</span>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                            Winner · Superteam Germany / neosfer Solana Ideathon
+                          </p>
+                          <p className="mt-1 text-sm" style={{ color: "var(--foreground-dim)" }}>
+                            Frankfurt 2026 · $250 · for SentinelSOL
+                          </p>
+                        </div>
+
+                        <div className="border-t border-[rgba(var(--mode-rgb),0.07)] pt-4">
+                          <p className="subsystem-label mb-3">Certifications</p>
+                          <div className="space-y-2">
+                            {certifications.map((c) => (
+                              <div key={c.name} className="flex items-baseline justify-between gap-3">
+                                <span className="text-sm" style={{ color: "var(--foreground-muted)" }}>
+                                  {c.name}
+                                </span>
+                                <span className="font-mono text-xs shrink-0" style={{ color: "var(--foreground-dim)" }}>
+                                  {c.year}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="border-t border-[rgba(var(--mode-rgb),0.07)] pt-4">
+                          <p className="subsystem-label mb-2">Publication</p>
+                          <p className="text-sm leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
+                            GridCast · IEEE ICSPCRE 2024 (Paper ID 652), B.E. capstone (submitted)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Experience */}
+                    <div className="tron-panel rounded-sm p-6 lg:col-span-2">
+                      <div className="mb-5 flex items-center gap-2.5">
+                        <Briefcase className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.55)]" />
+                        <span className="subsystem-label">Experience</span>
+                      </div>
+                      <div className="space-y-6">
+                        {experience.map((x) => (
+                          <div key={x.role}>
+                            <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between">
+                              <h3 className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                                {x.role}
+                              </h3>
+                              <span className="font-mono text-xs shrink-0" style={{ color: "var(--foreground-dim)" }}>
+                                {x.period}
+                              </span>
+                            </div>
+                            <p className="mt-0.5 text-sm" style={{ color: "var(--foreground-dim)" }}>
+                              {x.org}
+                            </p>
+                            <ul className="mt-3 space-y-2">
+                              {x.points.map((p, i) => (
+                                <li
+                                  key={i}
+                                  className="text-sm leading-relaxed pl-4"
+                                  style={{
+                                    color: "var(--foreground-muted)",
+                                    borderLeft: "1px solid rgba(var(--mode-rgb), 0.14)",
+                                  }}
+                                >
+                                  {p}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </div>
       </div>
