@@ -4,8 +4,10 @@ import { Mail, Github, Linkedin, Twitter, Send } from "lucide-react"
 import Link from "next/link"
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
-import { fadeUp, ruleDraw, staggerContainer, staggerItem } from "@/lib/motion"
+import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
+import { AVAILABILITY } from "@/lib/constants"
 import { SectionSep } from "@/components/section-sep"
+import { SectionHeading } from "@/components/section-heading"
 
 const links = [
   {
@@ -56,42 +58,23 @@ export function Contact() {
       <div className="py-24">
         <div className="max-w-5xl mx-auto px-6">
 
-          {/* Section label */}
-          <motion.div
+          <SectionHeading eyebrow="RELAY" title="Contact" className="mb-10" />
+
+          <motion.p
             variants={fadeUp}
             initial="hidden"
             animate={isInView ? "visible" : "hidden"}
-            className="flex items-center gap-4 mb-16"
+            transition={{ delay: 0.04 }}
+            className="text-sm leading-relaxed mb-10 max-w-lg"
+            style={{ color: "var(--foreground-muted)" }}
           >
-            <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.45)" }}>
-              RELAY
+            Open to {AVAILABILITY.roles} · {AVAILABILITY.authorisation}. {AVAILABILITY.blueCard}
+            <span className="mt-2 block" style={{ color: "var(--foreground-dim)" }}>
+              Fastest reach: Telegram or email.
             </span>
-            <motion.span
-              variants={ruleDraw}
-              className="h-px origin-left"
-              style={{
-                width: "120px",
-                background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",
-              }}
-            />
-            <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
-              Contact
-            </span>
-          </motion.div>
+          </motion.p>
 
           <div className="max-w-sm">
-            <motion.p
-              variants={fadeUp}
-              initial="hidden"
-              animate={isInView ? "visible" : "hidden"}
-              transition={{ delay: 0.04 }}
-              className="text-xs leading-relaxed mb-10"
-              style={{ color: "var(--foreground-dim)" }}
-            >
-              Open to backend, infrastructure, platform, and SRE roles across Europe and the GCC.
-              Fastest reach: Telegram or email.
-            </motion.p>
-
             {/* Contact links — terminal console feel */}
             <motion.div
               variants={staggerContainer(0.07, 0.08)}
@@ -107,14 +90,13 @@ export function Contact() {
                     rel={link.name !== "Email" ? "noopener noreferrer" : undefined}
                     className="contact-link flex items-center gap-4 px-4 py-3 rounded-sm"
                   >
-                    <span className="subsystem-label w-12 shrink-0"
-                          style={{ color: "rgba(var(--mode-rgb), 0.3)" }}>
+                    <span className="subsystem-label w-14 shrink-0" aria-hidden="true">
                       {link.subsystem}
                     </span>
 
                     <link.icon className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--foreground-dim)" }} />
 
-                    <span className="font-mono text-xs" style={{ color: "var(--foreground-muted)" }}>
+                    <span className="font-mono text-sm" style={{ color: "var(--foreground-muted)" }}>
                       {link.label}
                     </span>
                   </Link>

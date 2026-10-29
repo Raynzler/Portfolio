@@ -4,8 +4,10 @@ import Link from "next/link"
 import { Award, Briefcase, Download, FileText, GraduationCap, ShieldCheck } from "lucide-react"
 import { motion, useInView } from "framer-motion"
 import { useEffect, useRef, useState } from "react"
-import { fadeUp, ruleDraw, staggerContainer, staggerItem, duration } from "@/lib/motion"
+import { staggerContainer, staggerItem, duration } from "@/lib/motion"
+import { AVAILABILITY } from "@/lib/constants"
 import { SectionSep } from "@/components/section-sep"
+import { SectionHeading } from "@/components/section-heading"
 import { useLiveAttribute } from "@/lib/grid-runtime"
 
 // Single source of truth for the CV asset. The path is deliberately stable —
@@ -20,7 +22,7 @@ const dossier = [
   ["Focus", "Observability, failure testing, cloud cost"],
   ["Education", "M.Sc. Computer Science · RPTU Kaiserslautern"],
   ["Base", "Kaiserslautern, Germany"],
-  ["Open to", "Werkstudent / internship / junior F-T · Germany"],
+  ["Open to", `${AVAILABILITY.roles} · ${AVAILABILITY.authorisation}. ${AVAILABILITY.blueCard}`],
 ]
 
 const capabilities = [
@@ -103,21 +105,7 @@ export function CvSection() {
 
       <div className="py-24">
         <div className="max-w-5xl mx-auto px-6">
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
-            className="flex items-center gap-4 mb-16"
-          >
-            <span className="subsystem-label">DOSSIER</span>
-            <motion.span
-              variants={ruleDraw}
-              className="h-px flex-1 max-w-[180px] origin-left bg-[linear-gradient(to_right,rgba(var(--mode-rgb),0.16),transparent)]"
-            />
-            <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
-              Curriculum Vitae
-            </span>
-          </motion.div>
+          <SectionHeading eyebrow="DOSSIER" title="Curriculum Vitae" className="mb-12" />
 
           <motion.div
             variants={staggerContainer(0.06, 0.04)}
@@ -129,10 +117,10 @@ export function CvSection() {
               <div className="mb-8 flex items-start justify-between gap-6">
                 <div>
                   <p className="subsystem-label mb-3">PERSONNEL FILE</p>
-                  <h2 className="text-xl font-light tracking-normal text-[#E6F1FF]">
+                  <h3 className="text-xl font-light tracking-normal text-[#E6F1FF]">
                     Hamza Shaikh
-                  </h2>
-                  <p className="mt-2 text-xs leading-relaxed text-[rgba(170,182,195,0.72)]">
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
                     Infrastructure and reliability engineer. Sole DevOps owner at a Shark Tank India
                     D2C food brand, now doing a distributed systems master&apos;s at RPTU. Shipped
                     SentinelSOL, building AutoSRE.
@@ -147,10 +135,10 @@ export function CvSection() {
                     key={label}
                     className="grid grid-cols-[86px_1fr] gap-4 border-b border-[rgba(var(--mode-rgb),0.07)] pb-3"
                   >
-                    <span className="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-[rgba(var(--mode-rgb),0.38)]">
+                    <span className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-[var(--label)]">
                       {label}
                     </span>
-                    <span className="text-xs leading-relaxed text-[rgba(170,182,195,0.78)]">
+                    <span className="text-sm leading-relaxed text-[var(--foreground-muted)]">
                       {value}
                     </span>
                   </div>
@@ -166,7 +154,7 @@ export function CvSection() {
                         className="tactical-dot"
                         style={{ animationDelay: `${index * 0.42}s` }}
                       />
-                      <span className="text-xs text-[rgba(170,182,195,0.72)]">
+                      <span className="text-sm text-[var(--foreground-muted)]">
                         {capability}
                       </span>
                     </div>
@@ -188,7 +176,7 @@ export function CvSection() {
                 {downloadDisabled ? "Unavailable" : "Download PDF"}
               </Link>
 
-              <p className="mt-3 text-center font-mono text-[0.6rem] uppercase tracking-[0.14em] text-[rgba(var(--mode-rgb),0.34)]">
+              <p className="mt-3 text-center font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-[var(--label)]">
                 Last updated · {resumeUpdated}
               </p>
             </motion.div>
@@ -197,7 +185,7 @@ export function CvSection() {
               <div className="flex items-center justify-between border-b border-[rgba(var(--mode-rgb),0.08)] px-5 py-3">
                 <div className="flex items-center gap-3">
                   <FileText className="h-3.5 w-3.5 text-[rgba(var(--mode-rgb),0.5)]" />
-                  <span className="font-mono text-xs text-[rgba(170,182,195,0.7)]">
+                  <span className="font-mono text-xs text-[var(--foreground-muted)]">
                     {resumeFile}
                   </span>
                 </div>

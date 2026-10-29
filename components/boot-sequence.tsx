@@ -361,7 +361,7 @@ export function BootSequence() {
                 animate={{ opacity: initializing ? 1 : 0, y: initializing ? 0 : 4 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
               >
-                <div className="subsystem-label mb-3" style={{ color: "rgba(var(--mode-rgb),0.6)" }}>
+                <div className="boot-status subsystem-label mb-3" style={{ color: "rgba(var(--mode-rgb),0.6)" }}>
                   {seq.status}
                 </div>
 

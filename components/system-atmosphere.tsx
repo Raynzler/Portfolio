@@ -21,7 +21,8 @@ const COMMANDS: Record<string, string> = {
 const FLYNN_RGB = "79, 223, 255"
 const CLU_RGB = "255, 138, 61"
 
-const ZONE_IDS = ["home", "projects", "experience", "stack", "cv", "fieldlog", "contact"]
+// Skills (#stack) sit inside #experience, so they are not a zone of their own.
+const ZONE_IDS = ["home", "projects", "experience", "cv", "fieldlog", "contact"]
 
 // Traffic riding the perspective floor. `lane` counts grid lines from the
 // centre (the floor's background is centred to match), so trails ride the

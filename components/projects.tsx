@@ -23,11 +23,12 @@ import {
 import Link from "next/link"
 import { motion, AnimatePresence, useInView } from "framer-motion"
 import { useRef, useState, type CSSProperties } from "react"
-import { fadeUp, staggerContainer, staggerItem, duration, ease, ruleDraw } from "@/lib/motion"
+import { fadeUp, staggerContainer, staggerItem, duration, ease } from "@/lib/motion"
 import { useGridOnline, useLiveAttribute } from "@/lib/grid-runtime"
 import { IncidentReplay } from "@/components/incident-replay"
 import { ArchitectureReveal, type ArchStage } from "@/components/architecture-reveal"
 import { SectionSep } from "@/components/section-sep"
+import { SectionHeading } from "@/components/section-heading"
 
 interface PipelineNode {
   label: string
@@ -373,14 +374,12 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
 function CaseStudyList({ label, items }: { label: string; items: string[] }) {
   return (
     <div>
-      <p className="subsystem-label mb-3" style={{ color: "rgba(var(--mode-rgb), 0.4)" }}>
-        {label}
-      </p>
+      <p className="subsystem-label mb-3">{label}</p>
       <ul className="space-y-2">
         {items.map((item, i) => (
           <li
             key={i}
-            className="text-xs leading-relaxed pl-4"
+            className="text-sm leading-relaxed pl-4"
             style={{
               color: "var(--foreground-muted)",
               borderLeft: "1px solid rgba(var(--mode-rgb), 0.14)",
@@ -398,10 +397,8 @@ function CaseStudyBody({ cs }: { cs: CaseStudy }) {
   return (
     <div className="case-study pt-5 grid gap-7">
       <div>
-        <p className="subsystem-label mb-3" style={{ color: "rgba(var(--mode-rgb), 0.4)" }}>
-          Problem
-        </p>
-        <p className="text-xs leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
+        <p className="subsystem-label mb-3">Problem</p>
+        <p className="text-sm leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
           {cs.problem}
         </p>
       </div>
@@ -513,9 +510,7 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
           style={{ borderColor: "var(--glass-border)" }}
         >
           <div className="flex items-center gap-4">
-            <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.4)" }}>
-              {project.subsystem}
-            </span>
+            <span className="subsystem-label">{project.subsystem}</span>
             <span className="activation-dots" aria-hidden="true">
               <span style={{ "--d": "0.35s" } as CSSProperties} />
               <span style={{ "--d": "0.49s" } as CSSProperties} />
@@ -656,9 +651,7 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
 
           {/* Tradeoffs */}
           <div className="mb-8">
-            <p className="subsystem-label mb-4" style={{ color: "rgba(var(--mode-rgb), 0.35)" }}>
-              Tradeoffs
-            </p>
+            <p className="subsystem-label mb-4">Tradeoffs</p>
             <motion.ul
               variants={staggerContainer(0.05)}
               initial="hidden"
@@ -669,7 +662,7 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
                 <motion.li
                   key={idx}
                   variants={staggerItem}
-                  className="text-xs pl-4 leading-relaxed"
+                  className="text-sm pl-4 leading-relaxed"
                   style={{
                     color: "var(--foreground-muted)",
                     borderLeft: "1px solid rgba(var(--mode-rgb), 0.14)",
@@ -699,9 +692,6 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
 }
 
 export function Projects() {
-  const headerRef = useRef<HTMLDivElement>(null)
-  const headerInView = useInView(headerRef, { once: true, margin: "-40px 0px" })
-
   return (
     <section id="projects">
       {/* Section separator */}
@@ -709,29 +699,7 @@ export function Projects() {
 
       <div className="py-24">
         <div className="max-w-5xl mx-auto px-6">
-          {/* Section label */}
-          <motion.div
-            ref={headerRef}
-            variants={fadeUp}
-            initial="hidden"
-            animate={headerInView ? "visible" : "hidden"}
-            className="flex items-center gap-4 mb-20"
-          >
-            <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.45)" }}>
-              OBSERVE
-            </span>
-            <motion.span
-              variants={ruleDraw}
-              className="h-px flex-1 origin-left"
-              style={{
-                background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",
-                maxWidth: "200px",
-              }}
-            />
-            <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
-              Selected Projects
-            </span>
-          </motion.div>
+          <SectionHeading eyebrow="OBSERVE" title="Selected Projects" className="mb-12" />
 
           <div className="space-y-8">
             {projects.map((project, i) => (

@@ -23,7 +23,8 @@ import { prefersReducedMotion } from "@/lib/grid-runtime"
  */
 
 const HEAD_LINE = 0.82 // fraction of the viewport; matches useScrollScrub's `enter`
-const CHAPTERS = ["home", "projects", "experience", "stack", "cv", "contact"] as const
+// Skills (#stack) are part of the Experience chapter, so no fold there.
+const CHAPTERS = ["home", "projects", "experience", "cv", "contact"] as const
 const SPREAD: Record<string, string> = { tl: "-2px -2px", tr: "2px -2px", br: "2px 2px", bl: "-2px 2px" }
 
 type Chapter = (typeof CHAPTERS)[number]

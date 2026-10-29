@@ -8,16 +8,18 @@ import { duration, ease } from "@/lib/motion"
 import { SCROLL, Z_INDEX } from "@/lib/constants"
 import { scrollState } from "@/lib/scroll-state"
 
+// Four section links, then CV as a button closing the bar. Skills live inside
+// EXPERIENCE (/#stack still lands on them).
 const NAV_LINKS = [
   { id: "home", label: "HOME" },
   { id: "projects", label: "PROJECTS" },
   { id: "experience", label: "EXPERIENCE" },
-  { id: "stack", label: "STACK" },
-  { id: "cv", label: "CV" },
   { id: "contact", label: "CONTACT" },
 ] as const
 
-const NAV_IDS = NAV_LINKS.map((link) => link.id)
+// Scroll-spy reads sections in page order, where CV sits between EXPERIENCE
+// and CONTACT. While CV is active the trace steps aside and its button lights.
+const SPY_IDS = ["home", "projects", "experience", "cv", "contact"] as const
 
 function useScrollState(ids: readonly string[]) {
   const [active, setActive] = useState(ids[0] ?? "")
@@ -64,7 +66,7 @@ function useScrollState(ids: readonly string[]) {
 }
 
 export function Header() {
-  const { active, scrolled } = useScrollState(NAV_IDS)
+  const { active, scrolled } = useScrollState(SPY_IDS)
 
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({})
   const navRef = useRef<HTMLUListElement>(null)
@@ -173,7 +175,7 @@ export function Header() {
                   ref={(el) => {
                     itemRefs.current[id] = el
                   }}
-                  className="nav-link relative block px-0.5 py-1 font-mono text-[0.62rem] tracking-[0.04em] sm:px-1 sm:text-xs sm:tracking-[0.16em]"
+                  className="nav-link relative block px-0.5 py-1 font-mono text-[0.6875rem] tracking-[0.08em] sm:px-1 sm:text-xs sm:tracking-[0.16em]"
                   aria-current={isActive ? "location" : undefined}
                   data-active={isActive}
                   onClick={(event) => scrollToSection(event, id)}
@@ -183,6 +185,18 @@ export function Header() {
               </li>
             )
           })}
+
+          <li>
+            <Link
+              href="#cv"
+              className="nav-link nav-cv relative block rounded-sm px-2 py-0.5 font-mono text-[0.6875rem] tracking-[0.08em] sm:px-2.5 sm:text-xs sm:tracking-[0.16em]"
+              aria-current={active === "cv" ? "location" : undefined}
+              data-active={active === "cv"}
+              onClick={(event) => scrollToSection(event, "cv")}
+            >
+              CV
+            </Link>
+          </li>
         </ul>
       </nav>
     </motion.header>

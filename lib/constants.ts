@@ -15,6 +15,14 @@ export const Z_INDEX = {
   boot: 200,
 } as const
 
+// One availability statement, used word for word in the hero, the CV dossier
+// and Contact. The Blue Card sentence is the source CV's own wording.
+export const AVAILABILITY = {
+  roles: 'Werkstudent, internship and junior roles in Germany',
+  authorisation: '140 full / 280 half days work authorisation',
+  blueCard: 'Completed B.E. is ANABIN-verified, so EU Blue Card eligibility does not depend on finishing the M.Sc.',
+} as const
+
 export const SCROLL = {
   headerOffset: 80,
   // Fraction of the viewport height at which a section is considered active.

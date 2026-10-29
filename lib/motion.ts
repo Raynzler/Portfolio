@@ -45,9 +45,10 @@ export const staggerItem = {
  * A slower, more deliberate rhythm than section reveals: subsystems reporting
  * in one at a time. Still 6px travel max; opacity carries the effect. The
  * whole sequence settles within ~1.3s, the boot's hand-off beat
- * (BOOT.timeline.handoff), so the boot ends on a finished hero.
+ * (BOOT.timeline.handoff), so the boot ends on a finished hero: six items,
+ * the proof rail last, its final cell's ignite ending at ~1.28s.
  */
-export const heroSequence = staggerContainer(0.085, 0.12)
+export const heroSequence = staggerContainer(0.075, 0.12)
 
 export const heroItem = {
   hidden:  { opacity: 0, y: 6 },
@@ -70,7 +71,7 @@ export const proofRail = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.45, ease: ease.outSoft, staggerChildren: 0.08, delayChildren: 0.06 },
+    transition: { duration: 0.45, ease: ease.outSoft, staggerChildren: 0.06 },
   },
 }
 

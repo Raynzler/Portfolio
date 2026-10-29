@@ -2,8 +2,10 @@
 
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
-import { fadeUp, ruleDraw, staggerContainer, staggerItem } from "@/lib/motion"
+import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
 import { SectionSep } from "@/components/section-sep"
+import { SectionHeading } from "@/components/section-heading"
+import { Skills } from "@/components/tools"
 
 const experiences = [
   {
@@ -13,10 +15,11 @@ const experiences = [
     period: "Jun – Aug 2023",
     description:
       "Sole infrastructure engineer in a 10-person team, behind a storefront running roughly 2,500 orders a month.",
+    // The cost result and the outage lead: the two outcomes a reader should not miss.
     achievements: [
       "Migrated production from EC2 to ECS/Fargate; dynamic task provisioning cut AWS spend 27%, $230 to $168 a month",
-      "Built the AWS network and access layer: VPC subnets, routing, security groups, S3, and least-privilege IAM scoped separately for founders, developers and logistics staff",
       "Root-caused a three-day chatbot outage to a whitespace character intermittently injected into the integration URL",
+      "Built the AWS network and access layer: VPC subnets, routing, security groups, S3, and least-privilege IAM scoped separately for founders, developers and logistics staff",
       "GitHub Actions pipelines gating main-branch deploys with rollback, supporting weekly releases",
       "Moved fulfilment off the synchronous checkout path with a BullMQ-on-Redis queue",
     ],
@@ -62,27 +65,6 @@ const education = [
   },
 ]
 
-function SectionLabel({ subsystem, title }: { subsystem: string; title: string }) {
-  return (
-    <div className="flex items-center gap-4 mb-16">
-      <span className="subsystem-label">
-        {subsystem}
-      </span>
-      <motion.span
-        variants={ruleDraw}
-        className="h-px flex-1 origin-left"
-        style={{
-          background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",
-          maxWidth: "160px",
-        }}
-      />
-      <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
-        {title}
-      </span>
-    </div>
-  )
-}
-
 function ExperienceBlock({
   exp,
   index,
@@ -110,7 +92,7 @@ function ExperienceBlock({
         {/* Header row */}
         <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-2 mb-4">
           <div>
-            <h3 className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+            <h3 className="text-base font-medium" style={{ color: "var(--foreground)" }}>
               {exp.company}
               {exp.note && (
                 <span className="font-mono text-xs ml-2 font-normal" style={{ color: "var(--foreground-dim)" }}>
@@ -118,7 +100,7 @@ function ExperienceBlock({
                 </span>
               )}
             </h3>
-            <p className="text-xs mt-0.5" style={{ color: "var(--foreground-dim)" }}>
+            <p className="text-sm mt-0.5" style={{ color: "var(--foreground-muted)" }}>
               {exp.role}
             </p>
           </div>
@@ -127,7 +109,7 @@ function ExperienceBlock({
           </span>
         </div>
 
-        <p className="text-xs leading-relaxed mb-5" style={{ color: "var(--foreground-dim)" }}>
+        <p className="text-sm leading-relaxed mb-5" style={{ color: "var(--foreground-dim)" }}>
           {exp.description}
         </p>
 
@@ -141,7 +123,7 @@ function ExperienceBlock({
             <motion.li
               key={i}
               variants={staggerItem}
-              className="text-xs pl-4 leading-relaxed"
+              className="text-sm pl-4 leading-relaxed"
                 style={{
                   color: "var(--foreground-muted)",
                   borderLeft: "1px solid rgba(var(--mode-rgb), 0.14)",
@@ -163,9 +145,6 @@ function ExperienceBlock({
 }
 
 export function Experience() {
-  const sectionRef = useRef<HTMLDivElement>(null)
-  const sectionInView = useInView(sectionRef, { once: true, margin: "-40px 0px" })
-
   const eduRef = useRef<HTMLDivElement>(null)
   const eduInView = useInView(eduRef, { once: true, margin: "-40px 0px" })
 
@@ -177,32 +156,18 @@ export function Experience() {
         <div className="max-w-5xl mx-auto px-6">
 
           {/* Experience */}
-          <div ref={sectionRef}>
-            <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              animate={sectionInView ? "visible" : "hidden"}
-            >
-              <SectionLabel subsystem="TRACE" title="Experience" />
-            </motion.div>
+          <SectionHeading eyebrow="TRACE" title="Experience" className="mb-12" />
 
-            <div className="space-y-6 mb-24">
-              {experiences.map((exp, idx) => (
-                <ExperienceBlock key={idx} exp={exp} index={idx} />
-              ))}
-            </div>
+          <div className="space-y-6 mb-20">
+            {experiences.map((exp, idx) => (
+              <ExperienceBlock key={idx} exp={exp} index={idx} />
+            ))}
           </div>
 
           {/* Education */}
-          <div ref={eduRef}>
-            <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              animate={eduInView ? "visible" : "hidden"}
-            >
-              <SectionLabel subsystem="ARCHIVE" title="Education" />
-            </motion.div>
+          <SectionHeading eyebrow="ARCHIVE" title="Education" as="h3" className="mb-8" />
 
+          <div ref={eduRef}>
             <motion.div
               variants={staggerContainer(0.07)}
               initial="hidden"
@@ -216,7 +181,7 @@ export function Experience() {
                   className="tron-panel rounded-sm px-6 py-5 flex flex-col md:flex-row md:items-baseline md:justify-between gap-2"
                 >
                   <div>
-                    <h3 className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+                    <h4 className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
                       {edu.institution}
                       <span
                         className="font-mono text-xs ml-2 font-normal"
@@ -224,8 +189,8 @@ export function Experience() {
                       >
                         · {edu.location}
                       </span>
-                    </h3>
-                    <p className="text-xs mt-0.5" style={{ color: "var(--foreground-dim)" }}>
+                    </h4>
+                    <p className="text-sm mt-0.5" style={{ color: "var(--foreground-dim)" }}>
                       {edu.degree},{" "}
                       <span style={{ color: "var(--foreground-muted)" }}>{edu.focus}</span>
                     </p>
@@ -240,6 +205,9 @@ export function Experience() {
               ))}
             </motion.div>
           </div>
+
+          {/* Skills and certifications close the chapter */}
+          <Skills />
         </div>
       </div>
     </section>

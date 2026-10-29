@@ -14,7 +14,7 @@ import {
   proofRail,
   proofText,
 } from "@/lib/motion"
-import { BOOT } from "@/lib/constants"
+import { AVAILABILITY, BOOT } from "@/lib/constants"
 import { bringGridOnline, useGridOnline, useLiveAttribute } from "@/lib/grid-runtime"
 import { resumeHref } from "@/components/cv-section"
 import { IdentityRing } from "@/components/identity-ring"
@@ -75,10 +75,12 @@ export function Landing() {
         transition={{ duration: 1.2, ease: ease.outSoft }}
       />
 
-      <div className="relative max-w-5xl mx-auto px-6 pt-28 pb-12 w-full">
+      <div className="relative max-w-5xl mx-auto px-6 pt-[4.5rem] md:pt-24 pb-12 w-full">
 
 
-        {/* ── Main identity block ────────────────────────────────────────── */}
+        {/* ── Main identity block: who, what, for whom, then the actions and
+            the proof. Phones get a smaller headline so the status and the
+            buttons still land on the first screen. ───────────────────── */}
         <motion.div
           className="max-w-2xl"
           variants={heroSequence}
@@ -87,15 +89,15 @@ export function Landing() {
         >
           <motion.p
             variants={heroItem}
-            className="font-mono text-xs mb-5 tracking-widest uppercase"
-            style={{ color: "rgba(var(--mode-rgb), 0.55)" }}
+            className="font-mono text-xs mb-3 sm:mb-5 tracking-widest uppercase"
+            style={{ color: "rgba(var(--mode-rgb), 0.8)" }}
           >
             Hamza Shaikh
           </motion.p>
 
           <motion.h1
             variants={heroItem}
-            className="text-3xl md:text-4xl font-light leading-tight mb-6 text-balance"
+            className="text-[1.5rem] sm:text-3xl md:text-4xl font-light leading-tight mb-4 sm:mb-6 text-balance"
             style={{
               color: "var(--foreground)",
               letterSpacing: "-0.01em",
@@ -106,24 +108,94 @@ export function Landing() {
             <br />
             <motion.span variants={heroSubline} style={{ color: "var(--foreground-muted)", fontWeight: 300 }}>
               I keep production systems observable,
-              <br />
+              {/* Phones wrap the line on their own; a forced break leaves "observable," stranded. */}
+              <br className="hidden sm:inline" />{" "}
               quick to recover, and cheap to run.
             </motion.span>
           </motion.h1>
 
           <motion.p
             variants={heroItem}
-            className="text-sm leading-relaxed mb-8 max-w-xl"
+            className="text-[0.8125rem] sm:text-sm leading-relaxed mb-5 sm:mb-6 max-w-xl"
             style={{ color: "var(--foreground-dim)" }}
           >
             In practice that&apos;s validator telemetry, Prometheus alerting, CI/CD,
             and the production cloud underneath them, usually with me as the only person on call.
           </motion.p>
 
-          {/* ── Proof rail — credibility above the fold ───────────────────── */}
+          {/* ── Status: who this is for, straight after the pitch ───────── */}
+          <motion.div variants={heroItem} className="mb-6 sm:mb-7 space-y-2 max-w-xl">
+            <div className="flex items-start gap-3">
+              {/* Pulse dot: pings once as the hero finishes coming online.
+                  The signal path leaves from here. */}
+              <span className="flex h-[1.375rem] w-3.5 shrink-0 items-center justify-center">
+                <span
+                  className="signal-dot w-1.5 h-1.5 rounded-full"
+                  style={{
+                    backgroundColor: "rgb(var(--mode-rgb))",
+                    animation: "pulse-dot 3.5s ease-in-out infinite",
+                    boxShadow: "0 0 6px rgba(var(--mode-rgb), 0.5)",
+                  }}
+                />
+              </span>
+              <p className="text-sm leading-[1.375rem]">
+                <span style={{ color: "var(--foreground)" }}>{AVAILABILITY.roles}</span>
+                <span
+                  className="mt-0.5 block text-xs sm:text-[0.8125rem] leading-relaxed"
+                  style={{ color: "var(--foreground-muted)" }}
+                >
+                  {AVAILABILITY.authorisation}. {AVAILABILITY.blueCard}
+                </span>
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--label)" }} />
+              <span className="font-mono text-[0.6875rem] sm:text-xs sm:tracking-wider" style={{ color: "var(--foreground-dim)" }}>
+                {/* Each place stays whole when the line wraps */}
+                <span className="whitespace-nowrap">Kaiserslautern, DE</span> ·{" "}
+                <span className="whitespace-nowrap">Dammam, KSA</span> ·{" "}
+                <span className="whitespace-nowrap">Mumbai, IND</span>
+              </span>
+            </div>
+          </motion.div>
+
+          {/* ── Primary actions ───────────────────────────────────────────── */}
+          <motion.div variants={heroItem} className="flex flex-wrap items-center gap-3 mb-8">
+            <Link
+              href="#projects"
+              className="hero-cta hero-cta-primary cta-sheen inline-flex items-center gap-2 rounded-sm px-3.5 sm:px-4 py-2.5 font-mono text-xs uppercase tracking-[0.12em] sm:tracking-[0.14em]"
+            >
+              View Projects
+              <ArrowDown className="h-3.5 w-3.5" />
+            </Link>
+            {/* Straight to the PDF: the same file and download attribute as
+                the CV section, so a recruiter can grab it from the first screen.
+                No prefetch: a file has no route payload, so Next's viewport
+                prefetch of it only ever 404s. */}
+            <Link
+              href={resumeHref}
+              download
+              prefetch={false}
+              className="hero-cta hero-cta-ghost inline-flex items-center gap-2 rounded-sm px-3.5 sm:px-4 py-2.5 font-mono text-xs uppercase tracking-[0.12em] sm:tracking-[0.14em]"
+            >
+              Download CV
+              <Download className="h-3.5 w-3.5" />
+            </Link>
+            <Link
+              href="https://github.com/Raynzler"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hero-cta hero-cta-ghost inline-flex items-center gap-2 rounded-sm px-3.5 sm:px-4 py-2.5 font-mono text-xs uppercase tracking-[0.12em] sm:tracking-[0.14em]"
+            >
+              GitHub
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Link>
+          </motion.div>
+
+          {/* ── Proof rail: the evidence behind the pitch ─────────────────── */}
           <motion.div
             variants={proofRail}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-px rounded-sm overflow-hidden mb-8"
+            className="grid grid-cols-2 sm:grid-cols-4 gap-px rounded-sm overflow-hidden"
             style={{
               background: "rgba(var(--mode-rgb), 0.10)",
               border: "1px solid rgba(var(--mode-rgb), 0.10)",
@@ -137,11 +209,7 @@ export function Landing() {
                 style={{ background: "var(--bg-panel)" }}
               >
                 <motion.span className="proof-ignite" variants={proofIgnite} aria-hidden="true" />
-                <motion.p
-                  variants={proofText}
-                  className="subsystem-label mb-1.5"
-                  style={{ color: "rgba(var(--mode-rgb), 0.5)" }}
-                >
+                <motion.p variants={proofText} className="subsystem-label mb-1.5">
                   {item.label}
                 </motion.p>
                 <motion.p
@@ -153,71 +221,6 @@ export function Landing() {
                 </motion.p>
               </motion.div>
             ))}
-          </motion.div>
-
-          {/* ── Primary actions ───────────────────────────────────────────── */}
-          <motion.div variants={heroItem} className="flex flex-wrap items-center gap-3 mb-10">
-            <Link
-              href="#projects"
-              className="hero-cta hero-cta-primary cta-sheen inline-flex items-center gap-2 rounded-sm px-4 py-2.5 font-mono text-xs uppercase tracking-[0.14em]"
-            >
-              View Projects
-              <ArrowDown className="h-3.5 w-3.5" />
-            </Link>
-            <Link
-              href="https://github.com/Raynzler"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hero-cta hero-cta-ghost inline-flex items-center gap-2 rounded-sm px-4 py-2.5 font-mono text-xs uppercase tracking-[0.14em]"
-            >
-              GitHub
-              <ExternalLink className="h-3.5 w-3.5" />
-            </Link>
-            {/* Straight to the PDF: the same file and download attribute as
-                the CV section, so a recruiter can grab it from the first screen.
-                No prefetch: a file has no route payload, so Next's viewport
-                prefetch of it only ever 404s. */}
-            <Link
-              href={resumeHref}
-              download
-              prefetch={false}
-              className="hero-cta hero-cta-ghost inline-flex items-center gap-2 rounded-sm px-4 py-2.5 font-mono text-xs uppercase tracking-[0.14em]"
-            >
-              Download CV
-              <Download className="h-3.5 w-3.5" />
-            </Link>
-          </motion.div>
-
-          <motion.div
-            variants={heroItem}
-            className="flex items-center gap-2 mb-6"
-          >
-            <MapPin className="w-3.5 h-3.5" style={{ color: "rgba(var(--mode-rgb), 0.35)" }} />
-            <span className="font-mono text-xs tracking-wider" style={{ color: "var(--foreground-dim)" }}>
-              Kaiserslautern,DE · Dammam,KSA · Mumbai,IND
-            </span>
-          </motion.div>
-
-          {/* ── Availability signal ───────────────────────────────────── */}
-          <motion.div
-            variants={heroItem}
-            className="flex items-center gap-3"
-          >
-            {/* Pulse dot — pings once as the hero finishes coming online */}
-            <span
-              className="signal-dot w-1.5 h-1.5 rounded-full shrink-0"
-              style={{
-                backgroundColor: "rgb(var(--mode-rgb))",
-                animation: "pulse-dot 3.5s ease-in-out infinite",
-                boxShadow: "0 0 6px rgba(var(--mode-rgb), 0.5)",
-              }}
-            />
-            <span
-              className="font-mono text-xs tracking-wider"
-              style={{ color: "rgba(var(--mode-rgb), 0.5)" }}
-            >
-              SIGNAL · Werkstudent, internship and junior roles in Germany · 140 full / 280 half days work authorisation
-            </span>
           </motion.div>
         </motion.div>
 

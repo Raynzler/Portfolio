@@ -2,8 +2,8 @@
 
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
-import { fadeUp, ruleDraw, staggerContainer, staggerItem } from "@/lib/motion"
-import { SectionSep } from "@/components/section-sep"
+import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion"
+import { SectionHeading } from "@/components/section-heading"
 
 // Mirrors the CV's skill groups. Nothing appears here that isn't on the CV —
 // that is what makes the caption below the grid true.
@@ -23,146 +23,97 @@ const certifications = [
   { name: "Postman API Fundamentals · Student Expert", year: "2023" },
 ]
 
-export function Tools() {
-  const sectionRef = useRef<HTMLElement>(null)
-  const isInView = useInView(sectionRef, { once: true, margin: "-60px 0px" })
+/**
+ * Skills and certifications, the last part of the Experience chapter (no
+ * longer a section of its own). It keeps id="stack", so /#stack links and the
+ * deep-link boot bypass still land here.
+ */
+export function Skills() {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once: true, margin: "-60px 0px" })
 
   const certRef = useRef<HTMLDivElement>(null)
   const certInView = useInView(certRef, { once: true, margin: "-40px 0px" })
 
   return (
-    <section id="stack" ref={sectionRef}>
-      <SectionSep />
+    <div id="stack" ref={ref} className="mt-20">
+      <SectionHeading eyebrow="IO" title="Skills" as="h3" className="mb-4" />
 
-      <div className="py-24">
-        <div className="max-w-5xl mx-auto px-6">
+      <motion.p
+        variants={fadeUp}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+        className="text-sm leading-relaxed mb-8 max-w-md"
+        style={{ color: "var(--foreground-dim)" }}
+      >
+        What I reach for, grouped by where it sits in the stack. Listed because I&apos;ve shipped
+        or operated something with it, not to pad a list.
+      </motion.p>
 
-          {/* Section label */}
+      {/* Tool grid: two rows of four on wide screens, so no cell sits empty */}
+      <motion.div
+        variants={staggerContainer(0.06, 0.05)}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+        className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px mb-16"
+        style={{ background: "rgba(var(--mode-rgb), 0.06)" }}
+      >
+        {toolCategories.map((category) => (
           <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
-            className="flex items-center gap-4 mb-16"
+            key={category.name}
+            variants={staggerItem}
+            className="px-5 py-5"
+            style={{ background: "var(--background)" }}
           >
-            <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.45)" }}>
-              IO
-            </span>
-            <motion.span
-              variants={ruleDraw}
-              className="h-px flex-1 origin-left"
-              style={{
-                background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",
-                maxWidth: "160px",
-              }}
-            />
-            <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
-              Stack &amp; Capabilities
-            </span>
-          </motion.div>
-
-          <motion.p
-            variants={fadeUp}
-            initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
-            className="text-xs leading-relaxed mb-12 max-w-md"
-            style={{ color: "var(--foreground-dim)" }}
-          >
-            What I reach for, grouped by where it sits in the stack. Listed because I&apos;ve shipped
-            or operated something with it, not to pad a list.
-          </motion.p>
-
-          {/* Tool grid */}
-          <motion.div
-            variants={staggerContainer(0.06, 0.05)}
-            initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-px mb-16"
-            style={{ background: "rgba(var(--mode-rgb), 0.06)" }}
-          >
-            {toolCategories.map((category) => (
-              <motion.div
-                key={category.name}
-                variants={staggerItem}
-                className="px-5 py-5"
-                style={{ background: "var(--background)" }}
-              >
-                <h3
-                  className="subsystem-label mb-3"
-                  style={{ color: "rgba(var(--mode-rgb), 0.4)" }}
+            <h4 className="subsystem-label mb-3">{category.name}</h4>
+            <div className="flex flex-wrap gap-1.5">
+              {category.items.map((item) => (
+                <span
+                  key={item}
+                  className="stack-tag font-mono text-xs px-2 py-0.5 rounded-sm"
                 >
-                  {category.name}
-                </h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {category.items.map((item) => (
-                    <span
-                      key={item}
-                      className="stack-tag font-mono text-xs px-2 py-0.5 rounded-sm"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
+                  {item}
+                </span>
+              ))}
+            </div>
           </motion.div>
+        ))}
+      </motion.div>
 
-          {/* Certifications */}
-          <div ref={certRef}>
+      {/* Certifications */}
+      <SectionHeading eyebrow="SIGNAL" title="Certifications" as="h3" className="mb-6" />
+
+      <div ref={certRef}>
+        <motion.div
+          variants={staggerContainer(0.06)}
+          initial="hidden"
+          animate={certInView ? "visible" : "hidden"}
+          className="space-y-3"
+        >
+          {certifications.map((cert) => (
             <motion.div
-              variants={fadeUp}
-              initial="hidden"
-              animate={certInView ? "visible" : "hidden"}
-              className="flex items-center gap-4 mb-8"
+              key={cert.name}
+              variants={staggerItem}
+              className="flex items-center gap-4 tron-panel rounded-sm px-5 py-3"
             >
-              <span className="subsystem-label" style={{ color: "rgba(var(--mode-rgb), 0.4)" }}>
-                SIGNAL
-              </span>
-              <motion.span
-                variants={ruleDraw}
-                className="h-px origin-left"
+              {/* Illuminated dot */}
+              <span
+                className="w-1.5 h-1.5 rounded-full shrink-0"
                 style={{
-                  width: "80px",
-                  background: "linear-gradient(to right, rgba(var(--mode-rgb), 0.15), transparent)",
+                  background: "rgba(var(--mode-rgb), 0.5)",
+                  boxShadow: "0 0 4px rgba(var(--mode-rgb), 0.3)",
                 }}
               />
+              <span className="text-sm flex-1" style={{ color: "var(--foreground-muted)" }}>
+                {cert.name}
+              </span>
               <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
-                Certifications
+                {cert.year}
               </span>
             </motion.div>
-
-            <motion.div
-              variants={staggerContainer(0.06)}
-              initial="hidden"
-              animate={certInView ? "visible" : "hidden"}
-              className="space-y-3"
-            >
-              {certifications.map((cert) => (
-                <motion.div
-                  key={cert.name}
-                  variants={staggerItem}
-                  className="flex items-center gap-4 tron-panel rounded-sm px-5 py-3"
-                >
-                  {/* Illuminated dot */}
-                  <span
-                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{
-                      background: "rgba(var(--mode-rgb), 0.5)",
-                      boxShadow: "0 0 4px rgba(var(--mode-rgb), 0.3)",
-                    }}
-                  />
-                  <span className="text-xs flex-1" style={{ color: "var(--foreground-muted)" }}>
-                    {cert.name}
-                  </span>
-                  <span className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
-                    {cert.year}
-                  </span>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-
-        </div>
+          ))}
+        </motion.div>
       </div>
-    </section>
+    </div>
   )
 }

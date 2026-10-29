@@ -2,7 +2,6 @@ import { Header } from "@/components/header"
 import { Landing } from "@/components/landing"
 import { Projects } from "@/components/projects"
 import { Experience } from "@/components/experience"
-import { Tools } from "@/components/tools"
 import { Contact } from "@/components/contact"
 // import { FieldLog } from "@/components/field-log" // hidden for now — coming soon
 import { BootSequence } from "@/components/boot-sequence"
@@ -22,7 +21,6 @@ export default function Home() {
       <Landing />
       <Projects />
       <Experience />
-      <Tools />
       <CvSection />
       {/* <FieldLog /> hidden for now — coming soon */}
       <Contact />
