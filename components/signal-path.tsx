@@ -106,7 +106,9 @@ export function SignalPath() {
       for (const rail of panel.querySelectorAll<HTMLElement>(".incident-rail-base, .arch-rail-base")) {
         const visual = rail.closest<HTMLElement>(".sentinel-visual")
         if (!visual) continue
-        addPort("diagram", () => ({ y: layoutBox(rail).y, toX: layoutBox(visual).x }))
+        // A folded diagram (the incident replay on phones) has no rail laid
+        // out to plug into: no offsetParent, so no port until it unfolds.
+        addPort("diagram", () => (rail.offsetParent ? { y: layoutBox(rail).y, toX: layoutBox(visual).x } : null))
       }
     }
     // The CV: the route delivers to the download in the dossier panel.
@@ -138,7 +140,10 @@ export function SignalPath() {
 
       for (const port of ports) {
         const at = port.find()
-        if (!at) continue
+        if (!at) {
+          port.el.style.display = port.node.style.display = "none"
+          continue
+        }
         port.y = at.y
         port.el.style.cssText = `left:${routeX}px;top:${at.y}px;width:${Math.max(0, at.toX - routeX)}px`
         port.node.style.cssText = `left:${routeX}px;top:${at.y}px`

@@ -937,35 +937,20 @@ html.lenis body { height: auto; }
   opacity: 1;
 }
 
-.activation-dots {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.activation-dots span,
 .tactical-dot {
   display: block;
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 999px;
   background: rgb(var(--mode-rgb));
   box-shadow: 0 0 6px rgba(var(--mode-rgb), 0.34);
   animation: tactical-pulse 3.7s ease-in-out infinite;
 }
 
-.activation-dots span {
-  opacity: 0.24;
-}
-
-.tactical-dot {
-  width: 5px;
-  height: 5px;
-}
-
+/* SentinelSOL evidence: the dashboard at full card width, the pipeline under it. */
 .sentinel-assets {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 
@@ -1001,14 +986,22 @@ html.lenis body { height: auto; }
   border-bottom: 1px solid rgba(var(--mode-rgb), 0.08);
 }
 
+/* Framed to the screenshot's top row (2418×1642 source): the Grafana header
+   and the two real panels, slot progression and vote credits, end ~985px
+   down, where the mocked Jito row begins. The frame's aspect ratio does the
+   crop; the image is pinned top left at the frame's width. */
 .sentinel-graph-frame {
   position: relative;
-  height: clamp(320px, 38vw, 480px);
+  aspect-ratio: 2418 / 990;
   overflow: hidden;
   background: #0E1117;
 }
 
 .sentinel-graph-frame img {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: auto;
   filter: saturate(0.92) contrast(1.04) brightness(0.86);
   transform: scale(1.012);
   transform-origin: left top;
@@ -1097,6 +1090,20 @@ html.lenis body { height: auto; }
   background: linear-gradient(to bottom, rgba(var(--mode-rgb), 0.58), transparent);
 }
 
+/* Wide cards lay the pipeline out left to right, connectors between nodes. */
+@media (min-width: 768px) {
+  .architecture-map { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .architecture-node i {
+    left: auto;
+    right: -13px;
+    top: 50%;
+    bottom: auto;
+    width: 13px;
+    height: 1px;
+    background: linear-gradient(to right, rgba(var(--mode-rgb), 0.58), transparent);
+  }
+}
+
 .architecture-notes {
   position: relative;
   z-index: 2;
@@ -1104,6 +1111,8 @@ html.lenis body { height: auto; }
   gap: 1px;
   padding: 0 18px 18px;
 }
+/* Inside the engineering notes the list sits flush with the other notes. */
+.case-study .architecture-notes { padding: 0; }
 
 .architecture-notes div {
   border-left: 1px solid rgba(var(--mode-rgb), 0.18);
@@ -1181,8 +1190,15 @@ html.lenis body { height: auto; }
     opacity: 1;
   }
 
-  .sentinel-assets {
-    grid-template-columns: 1fr;
+  /* The slot-progression panel alone (source x 0–1137, y 226–967), so its
+     chart reads at phone width. A percentage margin resolves against the
+     frame's width, which is what scales the image here. */
+  .sentinel-graph-frame {
+    aspect-ratio: 1137 / 741;
+  }
+  .sentinel-graph-frame img {
+    width: calc(100% * 2418 / 1137);
+    margin-top: calc(-100% * 226 / 1137);
   }
 
   .sentinel-metric-rail {
@@ -1515,13 +1531,14 @@ html.lenis body { height: auto; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
-/* ENGINEERING NOTES — expandable case study                                   */
+/* DISCLOSURES — engineering notes, the incident replay on phones, CV as text   */
 /* ─────────────────────────────────────────────────────────────────────────── */
-.engineering-notes-toggle {
+.disclosure-toggle {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   width: 100%;
+  min-height: 44px;
   padding: 10px 12px;
   border: 1px solid rgba(var(--mode-rgb), 0.12);
   background: rgba(var(--mode-rgb), 0.02);
@@ -1533,19 +1550,19 @@ html.lenis body { height: auto; }
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
 }
-.engineering-notes-toggle:hover {
+.disclosure-toggle:hover {
   border-color: rgba(var(--mode-rgb), 0.3);
   background: rgba(var(--mode-rgb), 0.045);
   color: rgb(var(--mode-rgb));
 }
-.engineering-notes-toggle svg { color: rgba(var(--mode-rgb), 0.7); }
+.disclosure-toggle svg { color: rgba(var(--mode-rgb), 0.7); }
 
 /* One-time cue when the toggle is first reached (data-cue, ProjectPanel):
    a check along the top edge, a border pulse and a chevron nudge, so the
    case study gets noticed without opening by itself. Keyframes end on the
    resting state, so hover is untouched afterwards. */
-.engineering-notes-toggle { position: relative; overflow: hidden; }
-.engineering-notes-toggle::after {
+.disclosure-toggle { position: relative; overflow: hidden; }
+.disclosure-toggle::after {
   content: "";
   position: absolute;
   left: 0;
@@ -1557,13 +1574,13 @@ html.lenis body { height: auto; }
   opacity: 0;
   transform: scaleX(0);
 }
-[data-cue="on"] > .engineering-notes-toggle {
+[data-cue="on"] > .disclosure-toggle {
   animation: notes-cue 1400ms ease 150ms backwards;
 }
-[data-cue="on"] > .engineering-notes-toggle::after {
+[data-cue="on"] > .disclosure-toggle::after {
   animation: action-check 900ms cubic-bezier(0.25, 0.1, 0.25, 1) 150ms backwards;
 }
-[data-cue="on"] > .engineering-notes-toggle svg {
+[data-cue="on"] > .disclosure-toggle svg {
   animation: notes-chevron 900ms cubic-bezier(0.22, 1, 0.36, 1) 320ms backwards;
 }
 @keyframes notes-cue {
@@ -1579,6 +1596,21 @@ html.lenis body { height: auto; }
   color: rgba(170, 182, 195, 0.72);
   font-size: 0.6875rem;
   letter-spacing: 0.08em;
+}
+
+/* The incident replay folds behind this toggle on phones only, where it is
+   over a screen tall; wider screens always show it and never the toggle. */
+.incident-toggle {
+  display: none;
+  z-index: 2;
+  border-width: 0 0 1px;
+  background: transparent;
+}
+@media (max-width: 720px) {
+  .incident-toggle { display: flex; }
+  .incident-replay[data-open="false"] .incident-toggle { border-bottom-width: 0; }
+  .incident-replay[data-open="false"] .incident-board,
+  .incident-replay[data-open="false"] .incident-content { display: none; }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -1768,7 +1800,7 @@ html[data-zone="contact"] .grid-horizon { opacity: 0.2; }
 /* ─────────────────────────────────────────────────────────────────────────── */
 .hero-cta:active { transform: translateY(0.5px); }
 .contact-link:active { background: rgba(var(--mode-rgb), 0.05); }
-.engineering-notes-toggle:active { background: rgba(var(--mode-rgb), 0.07); }
+.disclosure-toggle:active { background: rgba(var(--mode-rgb), 0.07); }
 .stack-tag:active { border-color: rgba(var(--mode-rgb), 0.4); }
 .creds-close:active { background: rgba(var(--mode-rgb), 0.08); }
 
@@ -2006,31 +2038,10 @@ html[data-grid="online"] .hero-cta-primary.cta-sheen::before {
   100% { transform: scaleY(1); opacity: 0; }
 }
 
-/* Activation dots: dark until power-on, ignite in order, then settle into the
-   existing tactical pulse (ignite ends on the pulse's first frame). */
-.project-module[data-power="off"] .activation-dots span {
-  animation: none;
-  opacity: 0.1;
-  box-shadow: none;
-}
-.project-module[data-power="on"] .activation-dots span {
-  animation:
-    dot-ignite 560ms ease-out var(--d, 0s) both,
-    tactical-pulse 3.7s ease-in-out calc(var(--d, 0s) + 560ms) infinite;
-}
-@keyframes dot-ignite {
-  0%   { opacity: 0.1;  transform: scale(0.6); }
-  45%  { opacity: 1;    transform: scale(1.25); }
-  100% { opacity: 0.22; transform: scale(0.88); }
-}
-
-/* Status badge and sector readout report in after the dots. */
-.project-status,
-.sector-readout { transition: opacity 600ms ease; }
+/* The status badge reports in after the panel's edge trace. */
+.project-status { transition: opacity 600ms ease; }
 .project-module[data-power="off"] .project-status { opacity: 0.3; }
-.project-module[data-power="off"] .sector-readout { opacity: 0; }
 .project-module[data-power="on"] .project-status { transition-delay: 480ms; }
-.project-module[data-power="on"] .sector-readout { transition-delay: 700ms; }
 
 /* Actions run a one-time systems check along their top edge, in order. The
    keyframes end on the resting state (collapsed), so hover is unaffected. */
@@ -2039,7 +2050,6 @@ html[data-grid="online"] .hero-cta-primary.cta-sheen::before {
 }
 .project-module[data-power="on"] .project-action:nth-child(2)::after { animation-delay: 710ms; }
 .project-module[data-power="on"] .project-action:nth-child(3)::after { animation-delay: 800ms; }
-.project-module[data-power="on"] .project-action:nth-child(4)::after { animation-delay: 890ms; }
 @keyframes action-check {
   0%   { transform: scaleX(0); opacity: 1; }
   45%  { transform: scaleX(1); opacity: 1; }
@@ -2080,6 +2090,17 @@ html[data-grid="online"] .hero-cta-primary.cta-sheen::before {
   12%  { opacity: 1; }
   40%  { transform: translateY(11px); opacity: 0; }
   100% { transform: translateY(11px); opacity: 0; }
+}
+/* Left to right on wide cards, along the horizontal connectors. */
+@media (min-width: 768px) {
+  .architecture-node i::after { top: -1px; left: 0; width: 4px; height: 3px; }
+  .sentinel-assets[data-power="on"] .architecture-node i::after { animation-name: packet-hop-x; }
+}
+@keyframes packet-hop-x {
+  0%   { transform: translateX(-3px); opacity: 0; }
+  12%  { opacity: 1; }
+  40%  { transform: translateX(11px); opacity: 0; }
+  100% { transform: translateX(11px); opacity: 0; }
 }
 
 /* Metric rail lights left to right once the dashboard is reached. */
@@ -2470,7 +2491,7 @@ html[data-grid-boot] .ring-core { transition-delay: 560ms; }
 /* PAUSING — nothing animates unseen                                            */
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* Continuous in-panel animation holds while its panel is offscreen. */
-[data-live="off"] :is(.activation-dots span, .tactical-dot, .incident-pip, .status-dot, .signal-dot, .dashboard-scan, .document-scan, .ring-segments, .ring-inner, .ring-core),
+[data-live="off"] :is(.tactical-dot, .incident-pip, .status-dot, .signal-dot, .dashboard-scan, .document-scan, .ring-segments, .ring-inner, .ring-core),
 [data-live="off"] :is(.incident-rail-fill, .arch-rail-fill, .architecture-node i)::after {
   animation-play-state: paused !important;
 }

@@ -3,6 +3,8 @@
 import {
   Activity,
   BellRing,
+  BookOpen,
+  ChevronDown,
   ChevronRight,
   Cpu,
   Database,
@@ -10,7 +12,6 @@ import {
   FileText,
   Github,
   Map as MapIcon,
-  Network,
   RadioTower,
   RotateCcw,
   Server,
@@ -23,7 +24,7 @@ import {
 import Link from "next/link"
 import { motion, AnimatePresence, useInView } from "framer-motion"
 import { useRef, useState, type CSSProperties } from "react"
-import { fadeUp, staggerContainer, staggerItem, duration, ease } from "@/lib/motion"
+import { fadeUp, duration, ease } from "@/lib/motion"
 import { useGridOnline, useLiveAttribute } from "@/lib/grid-runtime"
 import { IncidentReplay } from "@/components/incident-replay"
 import { ArchitectureReveal, type ArchStage } from "@/components/architecture-reveal"
@@ -260,6 +261,14 @@ const sentinelPipeline: PipelineNode[] = [
   { label: "Alertmanager → Telegram", icon: BellRing },
 ]
 
+// Read with the engineering notes, not on the card face: the card already
+// says each of these in its description and pipeline.
+const sentinelNotes: ArchitectureNote[] = [
+  { title: "Predictive", body: "Vote-credit velocity moves before the node is marked delinquent." },
+  { title: "Decoupled", body: "Runs as its own process against a configurable RPC endpoint, deployable on an isolated host." },
+  { title: "Reproducible", body: "The whole telemetry stack comes up from one Docker Compose command, dashboards provisioned as code." },
+]
+
 function PipelineMap({ nodes }: { nodes: PipelineNode[] }) {
   return (
     <div className="architecture-map">
@@ -329,11 +338,13 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
           </div>
           <span className="subsystem-label">SNAPSHOT</span>
         </div>
+        {/* Framed to the dashboard's top row (header, slot progression, vote
+            credits) at full card width; phones show the slot panel alone.
+            Sizing lives in .sentinel-graph-frame (globals.css). */}
         <div className="sentinel-graph-frame">
           <img
             src="/sentinelsol/graphs.png"
             alt="SentinelSOL Grafana dashboard showing node slot progression and absolute vote credits from the Go telemetry daemon."
-            className="h-full w-full object-cover object-left-top"
           />
           <span className="dashboard-scan" aria-hidden="true" />
         </div>
@@ -358,14 +369,6 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
         </div>
 
         <PipelineMap nodes={sentinelPipeline} />
-
-        <ArchitectureNotes
-          notes={[
-            { title: "Predictive", body: "Vote-credit velocity moves before the node is marked delinquent." },
-            { title: "Decoupled", body: "Runs as its own process against a configurable RPC endpoint, deployable on an isolated host." },
-            { title: "Reproducible", body: "The whole telemetry stack comes up from one Docker Compose command, dashboards provisioned as code." },
-          ]}
-        />
       </div>
     </motion.div>
   )
@@ -393,7 +396,17 @@ function CaseStudyList({ label, items }: { label: string; items: string[] }) {
   )
 }
 
-function CaseStudyBody({ cs }: { cs: CaseStudy }) {
+// The depth behind each card: everything here stays one click away, so the
+// card face can stop restating it.
+function CaseStudyBody({
+  cs,
+  tradeoffs,
+  notes,
+}: {
+  cs: CaseStudy
+  tradeoffs: string[]
+  notes?: ArchitectureNote[]
+}) {
   return (
     <div className="case-study pt-5 grid gap-7">
       <div>
@@ -403,6 +416,13 @@ function CaseStudyBody({ cs }: { cs: CaseStudy }) {
         </p>
       </div>
       <CaseStudyList label="Key Decisions" items={cs.decisions} />
+      <CaseStudyList label="Tradeoffs" items={tradeoffs} />
+      {notes && (
+        <div>
+          <p className="subsystem-label mb-3">Architecture Notes</p>
+          <ArchitectureNotes notes={notes} />
+        </div>
+      )}
       <div className="grid gap-7 md:grid-cols-2">
         <CaseStudyList label="Lessons Learned" items={cs.lessons} />
         <CaseStudyList label="Failure Modes" items={cs.failureModes} />
@@ -413,14 +433,12 @@ function CaseStudyBody({ cs }: { cs: CaseStudy }) {
 
 function ProjectActions({
   project,
-  hasArch,
-  onArchitecture,
-  onCaseStudy,
+  notesOpen,
+  onNotes,
 }: {
   project: Project
-  hasArch: boolean
-  onArchitecture: () => void
-  onCaseStudy: () => void
+  notesOpen: boolean
+  onNotes: () => void
 }) {
   return (
     <div className="project-actions mb-8" role="group" aria-label={`${project.title} actions`}>
@@ -444,16 +462,19 @@ function ProjectActions({
           <span>Source Code</span>
         </Link>
       )}
+      {/* In-page, not a link: it opens the same notes as the toggle at the
+          foot of the card (same name), and the down chevron says so. */}
       {project.caseStudy && (
-        <button type="button" className="project-action" onClick={onCaseStudy}>
+        <button
+          type="button"
+          className="project-action"
+          onClick={onNotes}
+          aria-expanded={notesOpen}
+          aria-controls={`notes-${project.id}`}
+        >
           <FileText aria-hidden="true" />
-          <span>Case Study</span>
-        </button>
-      )}
-      {hasArch && (
-        <button type="button" className="project-action" onClick={onArchitecture}>
-          <Network aria-hidden="true" />
-          <span>Architecture</span>
+          <span>Engineering notes</span>
+          <ChevronDown aria-hidden="true" />
         </button>
       )}
     </div>
@@ -470,17 +491,13 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
   useLiveAttribute(ref)
   const sc = statusColors[project.status as keyof typeof statusColors] ?? statusColors.shipped
   const [showNotes, setShowNotes] = useState(false)
-  const archRef = useRef<HTMLDivElement>(null)
   const notesRef = useRef<HTMLDivElement>(null)
-  // The case study sits far below the panel top, so its toggle gets its own
+  // The notes sit far below the panel top, so their toggle gets its own
   // one-time cue when it is actually reached (see [data-cue] in globals.css).
   const notesReached = useInView(notesRef, { once: true, margin: "-20% 0px" })
-  const hasArch = project.id === "sentinelsol" || !!project.pipeline
 
-  const goToArchitecture = () => {
-    archRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
-  }
-  const openCaseStudy = () => {
+  // From the action row: open the notes (never close them) and go there.
+  const openNotes = () => {
     setShowNotes(true)
     window.setTimeout(() => {
       notesRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
@@ -504,112 +521,79 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
         {/* Power-on trace along the top and left edges, once */}
         <span className="panel-power" aria-hidden="true" />
 
-        {/* Panel top bar */}
+        {/* Panel top bar: subsystem code and status */}
         <div
           className="flex items-center justify-between px-6 py-3 border-b"
           style={{ borderColor: "var(--glass-border)" }}
         >
-          <div className="flex items-center gap-4">
-            <span className="subsystem-label">{project.subsystem}</span>
-            <span className="activation-dots" aria-hidden="true">
-              <span style={{ "--d": "0.35s" } as CSSProperties} />
-              <span style={{ "--d": "0.49s" } as CSSProperties} />
-              <span style={{ "--d": "0.63s" } as CSSProperties} />
-            </span>
-            <span
-              className="w-px h-3 block"
-              style={{ background: "rgba(var(--mode-rgb), 0.15)" }}
-            />
-            <h3 className="text-sm font-medium tracking-wide" style={{ color: "var(--foreground)" }}>
-              {project.title}
-            </h3>
-            {/* Status badge */}
-            <span
-              className="project-status flex items-center gap-1.5 font-mono text-xs px-2 py-0.5 rounded-sm"
-              style={{ background: sc.bg, color: sc.text }}
-            >
-              <span
-                className="status-dot w-1 h-1 rounded-full"
-                style={{
-                  background: sc.dot,
-                  ...(project.status === "live"
-                    ? { animation: "pulse-dot 3s ease-in-out infinite", boxShadow: `0 0 4px ${sc.dot}` }
-                    : {}),
-                }}
-              />
-              {project.status}
-            </span>
-          </div>
-
-          {/* Status indicator — primary actions live in the body action bar below */}
+          <span className="subsystem-label">{project.subsystem}</span>
           <span
-            className="sector-readout hidden sm:flex items-center gap-2 font-mono text-[0.6rem] tracking-[0.14em] uppercase"
-            style={{ color: "rgba(var(--mode-rgb), 0.4)" }}
-            aria-hidden="true"
+            className="project-status flex items-center gap-1.5 font-mono text-xs px-2 py-0.5 rounded-sm"
+            style={{ background: sc.bg, color: sc.text }}
           >
-            SECTOR {String(index + 1).padStart(2, "0")}
+            <span
+              className="status-dot w-1 h-1 rounded-full"
+              style={{
+                background: sc.dot,
+                ...(project.status === "live"
+                  ? { animation: "pulse-dot 3s ease-in-out infinite", boxShadow: `0 0 4px ${sc.dot}` }
+                  : {}),
+              }}
+            />
+            {project.status}
           </span>
         </div>
 
-        {/* Panel body */}
-        <div className="px-6 py-8">
-          {/* Tagline */}
-          <p className="text-sm mb-4 font-light" style={{ color: "var(--foreground-muted)" }}>
+        {/* Panel body: what it is, its credential, where to look, how it
+            works, then the evidence. Depth waits behind the notes. */}
+        <div className="px-6 pt-6 pb-8">
+          <h3
+            className="text-lg sm:text-xl font-medium tracking-tight mb-1.5"
+            style={{ color: "var(--foreground)" }}
+          >
+            {project.title}
+          </h3>
+          <p className="text-[0.9375rem] leading-relaxed mb-4" style={{ color: "var(--foreground-muted)" }}>
             {project.tagline}
           </p>
 
-          {/* Award */}
+          {/* Credential: award or publication, one line each */}
           {project.award && (
-            <div
-              className="flex items-start gap-3 p-4 rounded-sm mb-6"
-              style={{
-                background: "rgba(var(--mode-rgb), 0.04)",
-                border: "1px solid rgba(var(--mode-rgb), 0.12)",
-              }}
-            >
-              <Trophy className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: "var(--cyan-bright)" }} />
-              <p className="text-xs leading-relaxed" style={{ color: "var(--foreground)" }}>
-                {project.award}
-              </p>
-            </div>
+            <p className="mb-2 flex items-start gap-2.5 text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>
+              <Trophy className="mt-[3px] h-3.5 w-3.5 shrink-0" style={{ color: "rgb(var(--mode-rgb))" }} />
+              {project.award}
+            </p>
           )}
-
-          {/* Publication */}
           {project.publication && (
-            <p className="font-mono text-xs mb-6" style={{ color: "var(--foreground-dim)" }}>
+            <p className="mb-2 flex items-start gap-2.5 text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>
+              <BookOpen className="mt-[3px] h-3.5 w-3.5 shrink-0" style={{ color: "rgb(var(--mode-rgb))" }} />
               {project.publication}
             </p>
           )}
 
-          {/* Explicit, obvious actions — no hunting for where to click */}
-          <ProjectActions
-            project={project}
-            hasArch={hasArch}
-            onArchitecture={goToArchitecture}
-            onCaseStudy={openCaseStudy}
-          />
+          <div className="mt-5">
+            <ProjectActions project={project} notesOpen={showNotes} onNotes={openNotes} />
+          </div>
 
           <p className="text-sm leading-relaxed mb-8" style={{ color: "var(--foreground-dim)" }}>
             {project.description}
           </p>
 
-          <div ref={archRef} style={{ scrollMarginTop: "96px" }}>
-            {project.id === "sentinelsol" ? (
-              <>
-                <SentinelOperationalAssets inView={powered} />
-                <IncidentReplay />
-              </>
-            ) : project.architecture ? (
-              <ArchitectureReveal
-                title={`${project.title} · Architecture`}
-                flow="DATA FLOW"
-                stages={project.architecture}
-                metrics={project.metrics}
-              />
-            ) : null}
-          </div>
+          {project.id === "sentinelsol" ? (
+            <>
+              <SentinelOperationalAssets inView={powered} />
+              <IncidentReplay />
+            </>
+          ) : project.architecture ? (
+            <ArchitectureReveal
+              title={`${project.title} · Architecture`}
+              flow="DATA FLOW"
+              stages={project.architecture}
+              metrics={project.metrics}
+            />
+          ) : null}
 
-          {/* Engineering notes — expandable case study */}
+          {/* Engineering notes: problem, decisions, tradeoffs, lessons, failure modes */}
           {project.caseStudy && (
             <div
               className="mb-8"
@@ -622,14 +606,14 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
                 onClick={() => setShowNotes((v) => !v)}
                 aria-expanded={showNotes}
                 aria-controls={`notes-${project.id}`}
-                className="engineering-notes-toggle"
+                className="disclosure-toggle"
               >
                 <ChevronRight
                   className="h-3.5 w-3.5 shrink-0 transition-transform"
                   style={{ transform: showNotes ? "rotate(90deg)" : "none" }}
                 />
                 <span>Engineering notes</span>
-                <span className="en-hint">problem · decisions · lessons · failure modes</span>
+                <span className="en-hint">problem · decisions · tradeoffs · lessons · failure modes</span>
               </button>
               <AnimatePresence initial={false}>
                 {showNotes && (
@@ -642,37 +626,16 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
                     transition={{ duration: 0.28, ease: ease.outSoft }}
                     style={{ overflow: "hidden" }}
                   >
-                    <CaseStudyBody cs={project.caseStudy} />
+                    <CaseStudyBody
+                      cs={project.caseStudy}
+                      tradeoffs={project.tradeoffs}
+                      notes={project.id === "sentinelsol" ? sentinelNotes : undefined}
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
           )}
-
-          {/* Tradeoffs */}
-          <div className="mb-8">
-            <p className="subsystem-label mb-4">Tradeoffs</p>
-            <motion.ul
-              variants={staggerContainer(0.05)}
-              initial="hidden"
-              animate={powered ? "visible" : "hidden"}
-              className="space-y-2"
-            >
-              {project.tradeoffs.map((tradeoff, idx) => (
-                <motion.li
-                  key={idx}
-                  variants={staggerItem}
-                  className="text-sm pl-4 leading-relaxed"
-                  style={{
-                    color: "var(--foreground-muted)",
-                    borderLeft: "1px solid rgba(var(--mode-rgb), 0.14)",
-                  }}
-                >
-                  {tradeoff}
-                </motion.li>
-              ))}
-            </motion.ul>
-          </div>
 
           {/* Stack */}
           <div className="flex flex-wrap gap-2">

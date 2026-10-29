@@ -1,6 +1,7 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
+import { ChevronRight } from "lucide-react"
 import { useScrollScrub } from "@/lib/use-scroll-scrub"
 import { useLiveAttribute } from "@/lib/grid-runtime"
 
@@ -93,18 +94,22 @@ export function IncidentReplay() {
   const ref = useRef<HTMLDivElement>(null)
   const active = useScrollScrub(ref, STEPS.length)
   useLiveAttribute(ref)
+  // Phones only (CSS, globals.css): the replay folds behind a toggle, since it
+  // is over a screen tall there. Wider screens always show it; the toggle is
+  // hidden and this state does nothing.
+  const [open, setOpen] = useState(false)
 
   const current = STEPS[active]
   const state = STATE[current.phase]
 
   return (
-    <div className="sentinel-visual incident-replay mb-8" ref={ref}>
+    <div className="sentinel-visual incident-replay mb-8" ref={ref} data-open={open ? "true" : "false"}>
       <div className="sentinel-visual-bar">
         <div className="flex items-center gap-3">
           <span className="incident-pip" aria-hidden="true" />
           <span className="font-mono text-xs text-[rgba(230,241,255,0.78)]">Incident Replay</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="incident-board flex items-center gap-3">
           <span
             className="incident-status font-mono"
             style={{
@@ -120,47 +125,64 @@ export function IncidentReplay() {
         </div>
       </div>
 
-      <ol
-        className="incident-steps"
-        aria-label="SentinelSOL incident timeline, vote-credit velocity to resolution"
+      <button
+        type="button"
+        className="disclosure-toggle incident-toggle"
+        aria-expanded={open}
+        aria-controls="incident-replay-content"
+        onClick={() => setOpen((v) => !v)}
       >
-        <div className="incident-rail-base" aria-hidden="true" />
-        <div className="incident-rail-fill" aria-hidden="true" />
-        <div className="incident-playhead" aria-hidden="true">
-          <span key={active} className="incident-ping" />
-        </div>
+        <ChevronRight
+          className="h-3.5 w-3.5 shrink-0 transition-transform"
+          style={{ transform: open ? "rotate(90deg)" : "none" }}
+        />
+        <span>{open ? "Hide the replay" : "Replay the incident"}</span>
+        <span className="en-hint">{STEPS.length} steps</span>
+      </button>
 
-        {STEPS.map((step, i) => {
-          const stepState = i < active ? "past" : i === active ? "active" : "future"
-          return (
-            <li key={step.t + step.title} className="incident-step" data-state={stepState}>
-              <span className="incident-time font-mono">{step.t}</span>
-              <span className="incident-marker" aria-hidden="true" />
-              <div className="incident-body">
-                <div className="flex items-center gap-2">
-                  <span className="incident-title">{step.title}</span>
-                  <span className="incident-phase font-mono">{step.phase}</span>
+      <div id="incident-replay-content" className="incident-content">
+        <ol
+          className="incident-steps"
+          aria-label="SentinelSOL incident timeline, vote-credit velocity to resolution"
+        >
+          <div className="incident-rail-base" aria-hidden="true" />
+          <div className="incident-rail-fill" aria-hidden="true" />
+          <div className="incident-playhead" aria-hidden="true">
+            <span key={active} className="incident-ping" />
+          </div>
+
+          {STEPS.map((step, i) => {
+            const stepState = i < active ? "past" : i === active ? "active" : "future"
+            return (
+              <li key={step.t + step.title} className="incident-step" data-state={stepState}>
+                <span className="incident-time font-mono">{step.t}</span>
+                <span className="incident-marker" aria-hidden="true" />
+                <div className="incident-body">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                    <span className="incident-title">{step.title}</span>
+                    <span className="incident-phase font-mono">{step.phase}</span>
+                  </div>
+                  <p className="incident-detail">{step.detail}</p>
                 </div>
-                <p className="incident-detail">{step.detail}</p>
-              </div>
-            </li>
-          )
-        })}
-      </ol>
+              </li>
+            )
+          })}
+        </ol>
 
-      <div className="incident-summary">
-        <span>
-          <b>1m13s</b>
-          detect to page · automated
-        </span>
-        <span>
-          <b>~5m</b>
-          page to resolve · operator
-        </span>
-        <span>
-          <b>0</b>
-          slots delinquent
-        </span>
+        <div className="incident-summary">
+          <span>
+            <b>1m13s</b>
+            detect to page · automated
+          </span>
+          <span>
+            <b>~5m</b>
+            page to resolve · operator
+          </span>
+          <span>
+            <b>0</b>
+            slots delinquent
+          </span>
+        </div>
       </div>
     </div>
   )
