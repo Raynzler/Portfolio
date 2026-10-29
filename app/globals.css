@@ -767,9 +767,13 @@ html.lenis body { height: auto; }
   }
 }
 
+/* The bar row (cells, percentage, READY) is ~25em wide and never wraps; on
+   narrow phones it scales with the viewport so READY is not clipped at the
+   edge. 14px from ~450px up, as before. */
 .boot-bar {
   letter-spacing: 1px;
   white-space: nowrap;
+  font-size: min(0.875rem, 3.1vw);
 }
 
 /* Skip hint at the foot of the boot overlay; the wording follows the input. */
@@ -937,6 +941,8 @@ html.lenis body { height: auto; }
   opacity: 1;
 }
 
+/* Capability markers: each lights once, in turn, when the CV is first seen
+   (data-seen; the stagger is the inline animation-delay), then holds still. */
 .tactical-dot {
   display: block;
   width: 5px;
@@ -944,7 +950,15 @@ html.lenis body { height: auto; }
   border-radius: 999px;
   background: rgb(var(--mode-rgb));
   box-shadow: 0 0 6px rgba(var(--mode-rgb), 0.34);
-  animation: tactical-pulse 3.7s ease-in-out infinite;
+  opacity: 0.72;
+}
+#cv[data-seen] .tactical-dot {
+  animation: dot-ignite-once 700ms ease-out both;
+}
+@keyframes dot-ignite-once {
+  0%   { opacity: 0.22; transform: scale(0.88); }
+  50%  { opacity: 1;    transform: scale(1.2); }
+  100% { opacity: 0.72; transform: scale(1); }
 }
 
 /* SentinelSOL evidence: the dashboard at full card width, the pipeline under it. */
@@ -1007,13 +1021,18 @@ html.lenis body { height: auto; }
   transform-origin: left top;
 }
 
+/* One pass across the dashboard as the evidence powers on, then still: a
+   looping band over the charts competed with reading them. */
 .dashboard-scan {
   position: absolute;
   inset: 0 auto 0 0;
   width: 34%;
   pointer-events: none;
+  opacity: 0;
   background: linear-gradient(90deg, transparent, rgba(var(--mode-rgb), 0.09), transparent);
-  animation: dashboard-scan 5.4s ease-in-out infinite 0.8s;
+}
+.sentinel-assets[data-power="on"] .dashboard-scan {
+  animation: dashboard-scan 2.4s ease-in-out 0.8s both;
 }
 
 .sentinel-metric-rail {
@@ -1151,6 +1170,8 @@ html.lenis body { height: auto; }
   box-shadow: inset -10px 0 24px rgba(var(--mode-rgb), 0.025);
 }
 
+/* One pass down the CV preview when the section is first seen (data-seen,
+   CvSection), then still. */
 .document-scan {
   position: absolute;
   left: 0;
@@ -1158,8 +1179,11 @@ html.lenis body { height: auto; }
   top: 0;
   height: 52px;
   pointer-events: none;
+  opacity: 0;
   background: linear-gradient(to bottom, transparent, rgba(var(--mode-rgb), 0.07), transparent);
-  animation: document-scan 5.6s ease-in-out infinite;
+}
+#cv[data-seen] .document-scan {
+  animation: document-scan 2.6s ease-in-out 0.5s both;
 }
 
 /* Phones: "Open PDF" in the viewer's header stands in for the preview.
@@ -1195,14 +1219,10 @@ html.lenis body { height: auto; }
     display: none;
   }
 
-  /* The fixed sign-off sat on top of content all the way down; on phones it
-     only appears at the end of the line, in CONTACT. */
-  .end-of-line {
-    opacity: 0;
-    transition: opacity 600ms ease;
-  }
-  html[data-zone="contact"] .end-of-line {
-    opacity: 1;
+  /* The route would hug the screen edge here (no margin to run in) and read
+     as a second border beside every panel, so phones go without it. */
+  .signal-path {
+    display: none;
   }
 
   /* The slot-progression panel alone (source x 0–1137, y 226–967), so its
@@ -1255,10 +1275,21 @@ html.lenis body { height: auto; }
     0 0 8px rgba(var(--mode-rgb), 0.18);
 
   user-select: none;
+
+  /* Fixed bottom right, it sat over content all the way down (and over panel
+     text on tablets). It appears only at the end of the line, in CONTACT. */
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+html[data-zone="contact"] .end-of-line {
+  opacity: 1;
 }
 
 .footer-cursor {
   animation: footerBlink 1.2s steps(1) infinite;
+}
+html:not([data-zone="contact"]) .footer-cursor {
+  animation-play-state: paused;
 }
 
 @keyframes footerBlink {
@@ -1727,16 +1758,20 @@ html.lenis body { height: auto; }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* SECTION ATMOSPHERE STATES — subtle per-zone shifts (data-zone on <html>)     */
-/* The feeling of traversing systems: signal up on PROJECTS, archive on the     */
-/* FIELD LOG, calm shutdown on CONTACT. EXPERIENCE warmth is the CLU pass.       */
+/* The Grid runs at full strength in the hero and settles where people read:   */
+/* PROJECTS, EXPERIENCE and the CV are calm, CONTACT calmer still (shutdown).   */
+/* EXPERIENCE warmth is the CLU pass.                                           */
 /* ─────────────────────────────────────────────────────────────────────────── */
 .traffic-layer,
 .trace-highway { transition: opacity 800ms ease; }
 .grid-horizon { transition: opacity 700ms ease; }
 
-html[data-zone="projects"] .grid-field { opacity: 0.058; }
+html[data-zone="projects"] .grid-field,
+html[data-zone="experience"] .grid-field { opacity: 0.036; }
 html[data-zone="projects"] .traffic-layer,
-html[data-zone="projects"] .trace-highway { opacity: 0.68; }
+html[data-zone="projects"] .trace-highway,
+html[data-zone="experience"] .traffic-layer,
+html[data-zone="experience"] .trace-highway { opacity: 0.36; }
 
 html[data-zone="fieldlog"] .grid-field { opacity: 0.024; }
 html[data-zone="fieldlog"] .traffic-layer,
@@ -1908,12 +1943,16 @@ html.identity-cursor-on select { cursor: auto !important; }
 /* Zone tuning for the new layers (the original zone rules sit further up) */
 /* The hero carries its own 64px grid; keep the 72px field from doubling it. */
 html[data-zone="home"] .grid-field { opacity: 0.03; }
-html[data-zone="projects"] .grid-horizon { opacity: 0.42; }
+/* Reading zones: quieter floor and lightcycle traffic behind the text. */
+html[data-zone="projects"] .grid-horizon,
+html[data-zone="experience"] .grid-horizon { opacity: 0.26; }
+html[data-zone="projects"] .lc-root,
+html[data-zone="experience"] .lc-root { opacity: 0.6; }
 html[data-zone="cv"] .grid-field { opacity: 0.036; }
 html[data-zone="cv"] .traffic-layer,
-html[data-zone="cv"] .trace-highway { opacity: 0.4; }
-html[data-zone="cv"] .grid-horizon { opacity: 0.28; }
-html[data-zone="cv"] .lc-root { opacity: 0.66; }
+html[data-zone="cv"] .trace-highway { opacity: 0.36; }
+html[data-zone="cv"] .grid-horizon { opacity: 0.26; }
+html[data-zone="cv"] .lc-root { opacity: 0.6; }
 html[data-zone="contact"] .lc-root { opacity: 0.5; }
 
 /* ─────────────────────────────────────────────────────────────────────────── */

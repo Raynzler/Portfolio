@@ -123,7 +123,7 @@ export function CvSection() {
   const downloadDisabled = pdfAvailable === false
 
   return (
-    <section id="cv" ref={ref}>
+    <section id="cv" ref={ref} data-seen={isInView ? "" : undefined}>
       <SectionSep />
 
       <div className="py-24">
