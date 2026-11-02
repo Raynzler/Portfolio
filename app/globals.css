@@ -816,10 +816,15 @@ html.lenis body { height: auto; }
   inset: -10px -6px;
 }
 
-/* CV closes the bar as a button; it lights while its section is in view. */
+/* CV closes the bar as a button; it lights while its section is in view.
+   Its box is shorter than the text links' and the hit area is measured from
+   inside its 1px border, so the inset reaches further to stay 44px tall. */
 .nav-cv {
   border: 1px solid rgba(var(--mode-rgb), 0.3);
   transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+.nav-cv::before {
+  inset: -12px -8px;
 }
 .nav-cv:hover,
 .nav-cv[data-active="true"] {
@@ -1000,25 +1005,64 @@ html.lenis body { height: auto; }
   border-bottom: 1px solid rgba(var(--mode-rgb), 0.08);
 }
 
-/* Framed to the screenshot's top row (2418×1642 source): the Grafana header
-   and the two real panels, slot progression and vote credits, end ~985px
-   down, where the mocked Jito row begins. The frame's aspect ratio does the
-   crop; the image is pinned top left at the frame's width. */
+/* The images are exact crops of the snapshot's real panels (see
+   SentinelOperationalAssets), so the frame only holds their aspect ratio
+   while they load: the top row with both panels, or the slot-progression
+   panel alone below 1024px. */
 .sentinel-graph-frame {
   position: relative;
-  aspect-ratio: 2418 / 990;
+  aspect-ratio: 2418 / 979;
   overflow: hidden;
   background: #0E1117;
+}
+@media (max-width: 1023px) {
+  .sentinel-graph-frame { aspect-ratio: 1140 / 760; }
+}
+
+.sentinel-graph-frame picture {
+  display: block;
 }
 
 .sentinel-graph-frame img {
   display: block;
   width: 100%;
-  max-width: none;
   height: auto;
   filter: saturate(0.92) contrast(1.04) brightness(0.86);
-  transform: scale(1.012);
-  transform-origin: left top;
+}
+
+/* The snapshot opens at full resolution in a new tab: on phones its axis
+   text is too small to read in place. The frame clips overflow, so focus is
+   drawn inside it; the corner mark sits above the panel's bottom shade, over
+   empty Grafana chrome: the side rail on wide screens, the slot panel's title
+   row below 1024px, so it never covers a value. */
+.sentinel-graph-link {
+  display: block;
+  cursor: zoom-in;
+}
+.sentinel-graph-link:focus-visible {
+  outline-offset: -3px;
+}
+.sentinel-graph-expand {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  padding: 7px;
+  border: 1px solid rgba(var(--mode-rgb), 0.22);
+  border-radius: 2px;
+  background: rgba(5, 7, 10, 0.72);
+  color: rgba(var(--mode-rgb), 0.7);
+  transition: color 160ms ease, border-color 160ms ease;
+}
+.sentinel-graph-link:hover .sentinel-graph-expand,
+.sentinel-graph-link:focus-visible .sentinel-graph-expand {
+  color: rgb(var(--mode-rgb));
+  border-color: rgba(var(--mode-rgb), 0.5);
+}
+@media (max-width: 1023px) {
+  .sentinel-graph-expand { top: 8px; right: 8px; bottom: auto; }
 }
 
 /* One pass across the dashboard as the evidence powers on, then still: a
@@ -1217,23 +1261,6 @@ html.lenis body { height: auto; }
   .floor-trail:first-child,
   .floor-trail:last-child {
     display: none;
-  }
-
-  /* The route would hug the screen edge here (no margin to run in) and read
-     as a second border beside every panel, so phones go without it. */
-  .signal-path {
-    display: none;
-  }
-
-  /* The slot-progression panel alone (source x 0–1137, y 226–967), so its
-     chart reads at phone width. A percentage margin resolves against the
-     frame's width, which is what scales the image here. */
-  .sentinel-graph-frame {
-    aspect-ratio: 1137 / 741;
-  }
-  .sentinel-graph-frame img {
-    width: calc(100% * 2418 / 1137);
-    margin-top: calc(-100% * 226 / 1137);
   }
 
   .sentinel-metric-rail {
@@ -1796,7 +1823,7 @@ html[data-zone="contact"] .grid-horizon { opacity: 0.2; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 42px;
+  min-height: 44px;
   padding: 0 15px;
   border: 1px solid rgba(var(--mode-rgb), 0.16);
   border-radius: 2px;
@@ -1982,6 +2009,36 @@ html[data-grid-boot] .signal-path       { transition: opacity 800ms ease 500ms; 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* HERO — system coming online (Landing; framer drives the text sequence)      */
 /* ─────────────────────────────────────────────────────────────────────────── */
+/* A soft veil behind the hero copy. The Grid's traffic (lightcycles, traffic
+   runs, trace highways) lives on fixed layers behind the page, so as the hero
+   scrolls any lane can cross the headline. The veil scrolls with the copy and
+   fades that traffic out behind the name, headline, lead and status, then
+   eases off before the proof strip and over the side margins, so the Grid
+   stays intact around it. `isolation` makes the copy its own stacking
+   context: the veil (z -1 inside it) paints above the fixed layers and
+   below the text. Same colour as the page, so only what is behind it shows
+   the change. */
+.hero-copy {
+  position: relative;
+  isolation: isolate;
+}
+.hero-copy::before {
+  content: "";
+  position: absolute;
+  inset: -48px -64px 0 -64px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(5, 7, 10, 0) 0,
+    rgba(5, 7, 10, 0.94) 48px,
+    rgba(5, 7, 10, 0.94) 58%,
+    rgba(5, 7, 10, 0) 82%
+  );
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 64px, #000 calc(100% - 64px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 64px, #000 calc(100% - 64px), transparent);
+}
+
 .proof-ignite {
   position: absolute;
   left: 0;
@@ -2289,14 +2346,25 @@ html[data-grid="online"] .hero-cta-primary.cta-sheen::before {
 /* The component sets geometry inline in document coordinates; these rules    */
 /* only draw it. Ember through EXPERIENCE, the mode colour everywhere else.    */
 /* ─────────────────────────────────────────────────────────────────────────── */
+/* One layer above the page so the hero veil never fades the route where it
+   leaves the status dot. Safe: the route stays in the margin and never
+   crosses text (only its ports touch panel edges). */
 .signal-path {
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 1;
   width: 0;
   height: 0;
   pointer-events: none;
   transition: opacity 900ms ease;
+}
+
+/* The route runs in the page's side margin, 44px clear of the content. Below
+   1152px that margin is under 88px, so the route would hug the screen edge
+   or crowd the panels (phones, tablets, small laptops): it is left out. */
+@media (max-width: 1151px) {
+  .signal-path { display: none; }
 }
 .signal-path > * {
   position: absolute;

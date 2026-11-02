@@ -82,7 +82,7 @@ export function Landing() {
             the proof. Phones get a smaller headline so the status and the
             buttons still land on the first screen. ───────────────────── */}
         <motion.div
-          className="max-w-2xl"
+          className="hero-copy max-w-2xl"
           variants={heroSequence}
           initial="hidden"
           animate={online ? "visible" : "hidden"}
@@ -163,7 +163,7 @@ export function Landing() {
           <motion.div variants={heroItem} className="flex flex-wrap items-center gap-3 mb-8">
             <Link
               href="#projects"
-              className="hero-cta hero-cta-primary cta-sheen inline-flex items-center gap-2 rounded-sm px-3.5 sm:px-4 py-2.5 font-mono text-xs uppercase tracking-[0.12em] sm:tracking-[0.14em]"
+              className="hero-cta hero-cta-primary cta-sheen inline-flex min-h-11 items-center gap-2 rounded-sm px-3.5 sm:px-4 py-2.5 font-mono text-xs uppercase tracking-[0.12em] sm:tracking-[0.14em]"
             >
               View Projects
               <ArrowDown className="h-3.5 w-3.5" />
@@ -176,7 +176,7 @@ export function Landing() {
               href={resumeHref}
               download
               prefetch={false}
-              className="hero-cta hero-cta-ghost inline-flex items-center gap-2 rounded-sm px-3.5 sm:px-4 py-2.5 font-mono text-xs uppercase tracking-[0.12em] sm:tracking-[0.14em]"
+              className="hero-cta hero-cta-ghost inline-flex min-h-11 items-center gap-2 rounded-sm px-3.5 sm:px-4 py-2.5 font-mono text-xs uppercase tracking-[0.12em] sm:tracking-[0.14em]"
             >
               Download CV
               <Download className="h-3.5 w-3.5" />
@@ -185,7 +185,7 @@ export function Landing() {
               href="https://github.com/Raynzler"
               target="_blank"
               rel="noopener noreferrer"
-              className="hero-cta hero-cta-ghost inline-flex items-center gap-2 rounded-sm px-3.5 sm:px-4 py-2.5 font-mono text-xs uppercase tracking-[0.12em] sm:tracking-[0.14em]"
+              className="hero-cta hero-cta-ghost inline-flex min-h-11 items-center gap-2 rounded-sm px-3.5 sm:px-4 py-2.5 font-mono text-xs uppercase tracking-[0.12em] sm:tracking-[0.14em]"
             >
               GitHub
               <ExternalLink className="h-3.5 w-3.5" />

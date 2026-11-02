@@ -12,6 +12,7 @@ import {
   FileText,
   Github,
   Map as MapIcon,
+  Maximize2,
   RadioTower,
   RotateCcw,
   Server,
@@ -23,7 +24,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { motion, AnimatePresence, useInView } from "framer-motion"
-import { useRef, useState, type CSSProperties } from "react"
+import { useRef, useState, useSyncExternalStore, type CSSProperties } from "react"
 import { fadeUp, duration, ease } from "@/lib/motion"
 import { useGridOnline, useLiveAttribute } from "@/lib/grid-runtime"
 import { IncidentReplay } from "@/components/incident-replay"
@@ -61,6 +62,9 @@ interface Project {
   url: string
   repo?: string
   tagline: string
+  // The candidate's own part, stated only where both the CV and the repo
+  // history show it (SentinelSOL had a second contributor).
+  built?: string
   description: string
   stack: string[]
   deployment: string
@@ -83,6 +87,8 @@ const projects: Project[] = [
     url: "https://sentinelsol-sre.vercel.app",
     repo: "https://github.com/Raynzler/SentinelSOL",
     tagline: "Separate-process telemetry and anomaly detection for Solana validators.",
+    built:
+      "The Go telemetry daemon and the 3σ alert rules. I also fixed the denominator bug that silenced the alert as a validator stalled.",
     description:
       "A Go daemon polls the validator's Solana JSON-RPC out of process and exports vote-credit accrual and slot progression to Prometheus. 3-sigma Z-score over a rolling one-hour baseline, routed through Alertmanager to Telegram.",
     stack: ["Go", "Prometheus", "PromQL", "Alertmanager", "Telegram API", "Docker Compose"],
@@ -116,10 +122,12 @@ const projects: Project[] = [
     id: "autosre",
     subsystem: "NODE",
     title: "AutoSRE",
-    status: "active",
+    status: "in development",
     url: "https://auto-sre.vercel.app",
     repo: "https://github.com/Raynzler/Auto-SRE",
     tagline: "Chaos engineering platform: inject failure into live services and prove the resilience patterns hold.",
+    built:
+      "End to end: the fault-injection control plane, the circuit breaker and rate limiter, RED metrics with SLO alert rules, and the security-scanned CI.",
     description:
       "Injects latency, errors, CPU burn and memory pressure into live services through a REST control plane. Experiments are bounded, time-limited and self-reverting. RED metrics via ASGI middleware against a p95 500ms SLO, alerting at 750ms.",
     stack: ["Python", "FastAPI", "Prometheus", "Docker", "Docker Compose", "GitHub Actions"],
@@ -250,7 +258,7 @@ const projects: Project[] = [
 
 const statusColors = {
   live:    { bg: "rgba(var(--mode-rgb), 0.08)",  text: "var(--cyan-bright)", dot: "var(--cyan-bright)"  },
-  active:  { bg: "rgba(var(--mode-rgb), 0.05)",  text: "var(--cyan)",        dot: "var(--cyan)"        },
+  "in development": { bg: "rgba(var(--mode-rgb), 0.05)", text: "var(--cyan)", dot: "var(--cyan)" },
   shipped: { bg: "rgba(107, 118, 132, 0.12)",    text: "var(--foreground-muted)", dot: "var(--foreground-dim)"  },
 } as const
 
@@ -309,11 +317,23 @@ function ArchitectureNotes({ notes }: { notes: ArchitectureNote[] }) {
   )
 }
 
+// Below 1024px the dashboard shows the slot-progression panel alone. On phones
+// its axis text still lands near 6px, so the snapshot links to whichever crop
+// is showing, at full resolution, to open and zoom.
+const NARROW_QUERY = "(max-width: 1023px)"
+function subscribeNarrow(onChange: () => void) {
+  const query = window.matchMedia(NARROW_QUERY)
+  query.addEventListener("change", onChange)
+  return () => query.removeEventListener("change", onChange)
+}
+
 function SentinelOperationalAssets({ inView }: { inView: boolean }) {
   // Powers on when the assets themselves are reached, not when the panel top
   // is: metrics light and the pipeline starts carrying packets in view.
   const ref = useRef<HTMLDivElement>(null)
   const reached = useInView(ref, { once: true, margin: "-15% 0px" })
+  const narrow = useSyncExternalStore(subscribeNarrow, () => window.matchMedia(NARROW_QUERY).matches, () => false)
+  const fullSize = narrow ? "/sentinelsol/graphs-slot.png" : "/sentinelsol/graphs-panels.png"
 
   return (
     <motion.div
@@ -338,14 +358,22 @@ function SentinelOperationalAssets({ inView }: { inView: boolean }) {
           </div>
           <span className="subsystem-label">SNAPSHOT</span>
         </div>
-        {/* Framed to the dashboard's top row (header, slot progression, vote
-            credits) at full card width; phones show the slot panel alone.
-            Sizing lives in .sentinel-graph-frame (globals.css). */}
+        {/* Real panels only: crops of the original snapshot (graphs.png, kept
+            unchanged), whose lower row is a mock. From 1024px the top row
+            with both panels; below that the slot-progression panel alone, so
+            its axis stays readable. Sizing lives in .sentinel-graph-frame. */}
         <div className="sentinel-graph-frame">
-          <img
-            src="/sentinelsol/graphs.png"
-            alt="SentinelSOL Grafana dashboard showing node slot progression and absolute vote credits from the Go telemetry daemon."
-          />
+          <a href={fullSize} target="_blank" rel="noopener noreferrer" className="sentinel-graph-link">
+            <picture>
+              <source media={NARROW_QUERY} srcSet="/sentinelsol/graphs-slot.png" />
+              <img
+                src="/sentinelsol/graphs-panels.png"
+                alt="Snapshot of the SentinelSOL Grafana dashboard fed by the Go telemetry daemon: node slot progression, with absolute vote credits beside it on wide screens."
+              />
+            </picture>
+            <span className="sr-only">Opens full size in a new tab.</span>
+            <Maximize2 className="sentinel-graph-expand" aria-hidden="true" />
+          </a>
           <span className="dashboard-scan" aria-hidden="true" />
         </div>
         <MetricRail
@@ -556,6 +584,12 @@ function ProjectPanel({ project, index }: { project: Project; index: number }) {
           <p className="text-[0.9375rem] leading-relaxed mb-4" style={{ color: "var(--foreground-muted)" }}>
             {project.tagline}
           </p>
+          {project.built && (
+            <p className="mb-4 text-sm leading-relaxed" style={{ color: "var(--foreground-muted)" }}>
+              <span className="subsystem-label mr-1">What I built</span>{" "}
+              {project.built}
+            </p>
+          )}
 
           {/* Credential: award or publication, one line each */}
           {project.award && (

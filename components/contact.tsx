@@ -105,20 +105,6 @@ export function Contact() {
             </motion.div>
           </div>
 
-          {/* Footer */}
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
-            transition={{ delay: 0.35 }}
-            className="mt-24 pt-8"
-            style={{ borderTop: "1px solid var(--glass-border)" }}
-          >
-            <p className="font-mono text-xs" style={{ color: "var(--foreground-dim)" }}>
-                Portfolio still in development. Thanks for stopping by!
-              </p>
-          </motion.div>
-
         </div>
       </div>
     </section>
