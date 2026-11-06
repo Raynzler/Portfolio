@@ -8,7 +8,7 @@ import { SectionHeading } from "@/components/section-heading"
 // Mirrors the CV's skill groups. Nothing appears here that isn't on the CV —
 // that is what makes the caption below the grid true.
 const toolCategories = [
-  { name: "Infrastructure", items: ["Docker", "Docker Compose", "Linux", "Terraform", "NGINX", "Kubernetes (foundational)"] },
+  { name: "Infrastructure", items: ["Docker", "Docker Compose", "Linux", "NGINX", "Kubernetes (foundational)"] },
   { name: "Observability",  items: ["Prometheus", "PromQL", "Grafana", "Alertmanager", "RED metrics", "SLOs"] },
   { name: "Cloud",          items: ["AWS", "Cloudflare", "DigitalOcean"] },
   { name: "Languages",      items: ["Go", "Python", "Bash", "C++"] },

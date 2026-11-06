@@ -93,7 +93,7 @@ const projects: Project[] = [
       "A Go daemon polls the validator's Solana JSON-RPC out of process and exports vote-credit accrual and slot progression to Prometheus. 3-sigma Z-score over a rolling one-hour baseline, routed through Alertmanager to Telegram.",
     stack: ["Go", "Prometheus", "PromQL", "Alertmanager", "Telegram API", "Docker Compose"],
     deployment: "Docker Compose, bare-metal",
-    award: "Winner, Superteam Germany / neosfer Ideathon Frankfurt 2026. $250 USD.",
+    award: "Winner, Superteam Germany / neosfer Ideathon Frankfurt 2026.",
     tradeoffs: [
       "A separate process with a configurable RPC endpoint, rather than a sidecar, so it can be moved to an isolated host without touching the validator",
       "3-sigma over a rolling one-hour mean and standard deviation, learned from the validator's own history rather than a fixed threshold",

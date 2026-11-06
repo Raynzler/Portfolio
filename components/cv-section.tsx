@@ -24,7 +24,7 @@ import { useLiveAttribute } from "@/lib/grid-runtime"
 // links already shared on LinkedIn and in email keep resolving.
 const resumeFile = "Hamza_Shaikh_CV.pdf"
 export const resumeHref = `/${resumeFile}`
-const resumeUpdated = "2 NOV 2026"
+const resumeUpdated = "6 NOV 2026"
 
 const dossier = [
   ["Role", "Site Reliability · DevOps · Cloud Infrastructure"],
@@ -48,7 +48,7 @@ const education = [
     place: "Kaiserslautern, Germany",
     degree: "M.Sc. Computer Science",
     detail: "Specialisation 1: Distributed Systems · 2: Software Engineering",
-    period: "Oct 2025 – Expected 2027",
+    period: "Oct 2025 – Expected 2028",
   },
   {
     school: "Xavier Institute of Engineering",
@@ -327,7 +327,7 @@ export function CvSection() {
                             Winner · Superteam Germany / neosfer Solana Ideathon
                           </p>
                           <p className="mt-1 text-sm" style={{ color: "var(--foreground-dim)" }}>
-                            Frankfurt 2026 · $250 · for SentinelSOL
+                            Frankfurt 2026 · for SentinelSOL
                           </p>
                         </div>
 
