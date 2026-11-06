@@ -12,7 +12,7 @@ const experiences = [
     company: "Patil Kaki",
     note: "Shark Tank India D2C food brand",
     role: "DevOps Engineering Intern, sole infrastructure owner",
-    period: "Jun – Aug 2023",
+    period: "Jun – Jul 2023",
     description:
       "Sole infrastructure engineer in a 10-person team, behind a storefront running roughly 2,500 orders a month.",
     // The cost result and the outage lead: the two outcomes a reader should not miss.

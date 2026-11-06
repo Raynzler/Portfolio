@@ -63,7 +63,7 @@ const experience = [
   {
     role: "DevOps Engineering Intern · Sole Infrastructure Owner",
     org: "Patil Kaki · Shark Tank India D2C food brand",
-    period: "Jun – Aug 2023",
+    period: "Jun – Jul 2023",
     points: [
       "Migrated production from EC2 to ECS/Fargate as the sole infrastructure engineer in a 10-person team.",
       "GitHub Actions CI/CD gating main with rollback; a BullMQ-on-Redis queue for async jobs.",
